@@ -24,3 +24,6 @@ backend/data/*
 *.log
 .vscode/
 .idea/
+
+# Caché de compilación de TypeScript
+*.tsbuildinfo
