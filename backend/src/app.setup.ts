@@ -1,4 +1,6 @@
 import { INestApplication, StandardSchemaValidationPipe } from '@nestjs/common';
+import { AllExceptionsFilter } from './common/all-exceptions.filter.js';
+import { ValidationException } from './common/exceptions.js';
 
 /**
  * Configuración global de la aplicación.
@@ -13,5 +15,31 @@ export function configureApp(app: INestApplication): void {
   });
 
   // Valida los parámetros que declaran un esquema: @Body({ schema }).
-  app.useGlobalPipes(new StandardSchemaValidationPipe());
+  // Los fallos se convierten en un error con el detalle por campo.
+  app.useGlobalPipes(
+    new StandardSchemaValidationPipe({
+      exceptionFactory: (issues) =>
+        new ValidationException(
+          issues.map((issue) => ({
+            field: fieldName(issue.path),
+            message: issue.message,
+          })),
+        ),
+    }),
+  );
+
+  // Todas las respuestas de error salen con el mismo formato.
+  app.useGlobalFilters(new AllExceptionsFilter());
+}
+
+type IssuePath = ReadonlyArray<PropertyKey | { readonly key: PropertyKey }>;
+
+/** Convierte la ruta de un error de validación en un nombre de campo. */
+function fieldName(path: IssuePath | undefined): string {
+  if (!path || path.length === 0) return 'body';
+  return path
+    .map((segment) =>
+      String(typeof segment === 'object' ? segment.key : segment),
+    )
+    .join('.');
 }
