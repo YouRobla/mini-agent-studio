@@ -242,3 +242,23 @@ Tailwind CSS 4 + daisyUI 5 · NestJS 12 + Zod (pipe nativo) · archivo JSON · p
 9. `feat(frontend): panel de consulta con estados de carga y error`
 10. `docs: README con arquitectura, endpoints y limitaciones`
 11. `docs: AI_USAGE con el uso de IA documentado`
+
+---
+
+## 2026-11-12 · Etapa 9 — Construcción de la fase 1
+
+- **Decisión mía:** usar esta carpeta como repositorio (no una subcarpeta) y verificar que
+  las versiones no tengan fallos de seguridad reportados.
+- **Versiones:** Node 26.13.1 (parche de seguridad del 10-nov-2026, instalado con nvm; la
+  del sistema era 26.13.0), NestJS 12.5, React 19.3, Vite 8.3, Zod 4.6, Tailwind 4.3,
+  daisyUI 5.8, TanStack Query 5.107. `npm audit`: 0 vulnerabilidades en ambas partes.
+- **Hallazgo:** el proyecto generado por Nest traía 5 vulnerabilidades por `@nestjs/mau`
+  (despliegue, sin uso). Se eliminó.
+- **Commits 1–11:** estructura, backend (proyecto, SQLite, crear/listar, errores, mock y
+  ejecución), frontend (proyecto, creación/listado, consulta), README y AI_USAGE.
+- **Pruebas hechas:** `curl` a cada endpoint y caso de error; flujo completo en el
+  navegador; backend detenido; persistencia tras reinicio; instalación limpia desde un clon.
+- **Errores encontrados y corregidos durante la construcción:** ver la tabla de
+  `AI_USAGE.md`.
+- **Pendiente (decisión mía):** renombrar la carpeta local, crear el repositorio remoto,
+  y las fases 2 y 3.
