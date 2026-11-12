@@ -1,13 +1,13 @@
-import { errorMessage } from '../api/client.ts'
-import { useAgents } from '../hooks/useAgents.ts'
+import { errorMessage } from "../api/client.ts";
+import { useAgents } from "../hooks/useAgents.ts";
 
 interface AgentListProps {
-  selectedId: string | null
-  onSelect: (id: string) => void
+  selectedId: string | null;
+  onSelect: (id: string) => void;
 }
 
 export function AgentList({ selectedId, onSelect }: AgentListProps) {
-  const agents = useAgents()
+  const agents = useAgents();
 
   return (
     <section className="card card-border bg-base-100">
@@ -22,7 +22,10 @@ export function AgentList({ selectedId, onSelect }: AgentListProps) {
         )}
 
         {agents.isError && (
-          <div role="alert" className="alert alert-error alert-soft alert-vertical">
+          <div
+            role="alert"
+            className="alert alert-error alert-soft alert-vertical"
+          >
             <span>{errorMessage(agents.error)}</span>
             <button
               type="button"
@@ -30,7 +33,7 @@ export function AgentList({ selectedId, onSelect }: AgentListProps) {
               onClick={() => agents.refetch()}
               disabled={agents.isFetching}
             >
-              {agents.isFetching ? 'Reintentando…' : 'Reintentar'}
+              {agents.isFetching ? "Reintentando…" : "Reintentar"}
             </button>
           </div>
         )}
@@ -44,10 +47,10 @@ export function AgentList({ selectedId, onSelect }: AgentListProps) {
         {agents.isSuccess && agents.data.length > 0 && (
           <ul className="list">
             {agents.data.map((agent) => {
-              const isSelected = agent.id === selectedId
+              const isSelected = agent.id === selectedId;
               return (
                 <li key={agent.id} className="list-row items-center px-0">
-                  <div className="min-w-0">
+                  <div className="list-col-grow min-w-0">
                     <p className="truncate font-medium">{agent.name}</p>
                     <p className="truncate text-sm text-base-content/70">
                       {agent.instructions}
@@ -55,18 +58,18 @@ export function AgentList({ selectedId, onSelect }: AgentListProps) {
                   </div>
                   <button
                     type="button"
-                    className={`btn btn-sm ${isSelected ? 'btn-active' : 'btn-outline'}`}
+                    className={`btn btn-sm ${isSelected ? "btn-active" : "btn-outline"}`}
                     aria-pressed={isSelected}
                     onClick={() => onSelect(agent.id)}
                   >
-                    {isSelected ? 'Seleccionado' : 'Seleccionar'}
+                    {isSelected ? "Seleccionado" : "Seleccionar"}
                   </button>
                 </li>
-              )
+              );
             })}
           </ul>
         )}
       </div>
     </section>
-  )
+  );
 }
