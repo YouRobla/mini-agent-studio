@@ -1,6 +1,233 @@
 # Mini Agent Studio
 
-Aplicación web local para crear agentes de IA, guardarlos, seleccionarlos y consultarlos.
+Aplicación web local para crear agentes de IA, guardarlos, seleccionarlos y enviarles
+consultas. Un agente es un nombre y unas instrucciones (por ejemplo, "Eres un asistente
+que resume textos"). Funciona sin API key, sin costo y sin conexión a internet gracias a
+un proveedor de IA simulado (modo mock).
+
 Prueba técnica Fullstack.
 
-> Documentación en construcción. Este archivo se completa al cerrar la fase 1.
+## Requisitos
+
+- **Node.js 24 o superior** (probado con 26.13.1; ver `.nvmrc`). El backend usa el
+  módulo `node:sqlite` integrado en Node, así que no hay que instalar ninguna base de datos.
+- npm (incluido con Node).
+
+## Instalación y ejecución
+
+Se necesitan dos terminales, una para cada parte.
+
+**Backend** (queda en `http://localhost:3000/api`):
+
+```bash
+cd backend
+npm install
+npm run start
+```
+
+**Frontend** (queda en `http://localhost:5173`):
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Abre `http://localhost:5173` en el navegador.
+
+No hace falta crear ningún archivo `.env`: todos los valores tienen un valor por defecto.
+La base de datos se crea sola en `backend/data/agents.db` en el primer arranque.
+
+### Variables de entorno (opcionales)
+
+| Variable | Dónde | Valor por defecto | Para qué |
+| --- | --- | --- | --- |
+| `PORT` | backend | `3000` | Puerto de la API |
+| `CORS_ORIGIN` | backend | `http://localhost:5173` | Origen del frontend permitido |
+| `DATABASE_PATH` | backend | `backend/data/agents.db` | Ruta del archivo SQLite |
+| `VITE_API_URL` | frontend | `http://localhost:3000/api` | Dirección de la API |
+
+Hay un `.env.example` en cada carpeta. Ninguna variable contiene secretos.
+
+## Demostración del flujo
+
+1. Arranca backend y frontend sin configurar nada.
+2. En **Nuevo agente**, escribe el nombre "Asistente de resúmenes" y las instrucciones
+   "Eres un asistente que resume textos". Pulsa **Guardar agente**.
+3. El agente aparece en **Agentes guardados** y queda seleccionado.
+4. Detén el backend (`Ctrl+C`), vuelve a ejecutar `npm run start` y recarga la página:
+   el agente sigue en el listado.
+5. Selecciónalo, escribe una consulta y pulsa **Ejecutar**: la respuesta aparece debajo.
+6. Para ver el manejo de errores: guarda un agente con los campos vacíos, ejecuta una
+   consulta vacía, o detén el backend y pulsa **Ejecutar**.
+
+## Estructura del proyecto
+
+```
+├── backend/                         API (NestJS)
+│   ├── src/
+│   │   ├── main.ts                  Arranque del servidor
+│   │   ├── app.setup.ts             Configuración global: prefijo, CORS, validación, errores
+│   │   ├── agents/
+│   │   │   ├── agents.controller.ts Rutas HTTP
+│   │   │   ├── agents.service.ts    Lógica: crear, listar, ejecutar
+│   │   │   ├── agents.repository.ts PERSISTENCIA (SQLite)
+│   │   │   └── agents.schemas.ts    Reglas de validación (Zod)
+│   │   ├── ai/
+│   │   │   ├── ai-provider.ts       Contrato del proveedor de IA
+│   │   │   └── mock-ai.provider.ts  ADAPTADOR DE IA simulado
+│   │   └── common/                  Excepciones y filtro global de errores
+│   └── data/                        Archivo de la base de datos (no se sube a Git)
+├── frontend/                        Interfaz (React)
+│   └── src/
+│       ├── App.tsx                  La única pantalla
+│       ├── api/                     Cliente HTTP: único lugar que conoce el backend
+│       ├── hooks/                   Peticiones con TanStack Query
+│       ├── schemas/                 Validación de formularios (Zod)
+│       └── components/              AgentForm, AgentList, QueryPanel
+├── AI_USAGE.md                      Uso de IA durante el desarrollo
+└── BITACORA.md                      Registro del proceso y de las decisiones
+```
+
+## Flujo de una consulta
+
+```
+Navegador                         Backend (NestJS)
+─────────                         ────────────────
+QueryPanel ──POST /api/agents/:id/run──▶ AgentsController
+   ▲                                          │  valida el cuerpo con Zod
+   │                                          ▼
+   │                                     AgentsService
+   │                                          │  1. busca el agente
+   │                                          ├────────▶ AgentsRepository ──▶ SQLite
+   │                                          │  2. pide la respuesta
+   │                                          └────────▶ AiProvider (MockAiProvider)
+   │                                          │
+   └────────── respuesta o error ◀────────────┘
+```
+
+1. El usuario escribe la consulta y pulsa **Ejecutar**. El frontend valida que no esté
+   vacía y envía `POST /api/agents/:id/run`.
+2. El controlador recibe la petición; el pipe global valida el cuerpo.
+3. El servicio busca el agente en el repositorio. Si no existe, responde `404`.
+4. El servicio entrega el nombre, las instrucciones y la consulta al proveedor de IA.
+   El servicio solo conoce el contrato `AiProvider`, no la implementación.
+5. El proveedor devuelve el texto y el frontend lo muestra. Cualquier fallo llega al
+   frontend con el mismo formato de error y se muestra como un mensaje legible.
+
+### El modo mock
+
+`MockAiProvider` no llama a ningún servicio externo. Construye la respuesta con las
+instrucciones del agente y la consulta, mostrando el mensaje que se enviaría a un modelo
+real. Es determinista y no finge inteligencia. Añade una espera de medio segundo para que
+el estado de carga sea visible.
+
+Conectar un LLM real consiste en crear otra clase que cumpla `AiProvider` y registrarla
+en `ai.module.ts`. El controlador, el servicio y el frontend no cambian.
+
+## Endpoints
+
+Todos bajo el prefijo `/api`.
+
+| Método | Ruta | Descripción | Respuesta |
+| --- | --- | --- | --- |
+| `POST` | `/api/agents` | Crea un agente | `201` con el agente |
+| `GET` | `/api/agents` | Lista los agentes, del más reciente al más antiguo | `200` con la lista |
+| `POST` | `/api/agents/:id/run` | Ejecuta una consulta sobre un agente | `200` con la respuesta |
+
+### Ejemplo: crear un agente
+
+```bash
+curl -X POST http://localhost:3000/api/agents \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Asistente de resúmenes","instructions":"Eres un asistente que resume textos"}'
+```
+
+```json
+{
+  "id": "1c4c8e63-2f0e-4c24-aad6-57b31dfdc208",
+  "name": "Asistente de resúmenes",
+  "instructions": "Eres un asistente que resume textos",
+  "createdAt": "2026-11-12T23:51:48.959Z"
+}
+```
+
+### Ejemplo: ejecutar una consulta
+
+```bash
+curl -X POST http://localhost:3000/api/agents/1c4c8e63-2f0e-4c24-aad6-57b31dfdc208/run \
+  -H "Content-Type: application/json" \
+  -d '{"query":"Resume este párrafo"}'
+```
+
+```json
+{
+  "agentId": "1c4c8e63-2f0e-4c24-aad6-57b31dfdc208",
+  "response": "[Modo simulado] Soy \"Asistente de resúmenes\".\n\nEsto es lo que se enviaría al modelo de IA:\n• Instrucciones (mensaje de sistema): \"Eres un asistente que resume textos\"\n• Consulta (mensaje del usuario): \"Resume este párrafo\"\n\nCon un proveedor real, aquí verías la respuesta generada siguiendo esas instrucciones.",
+  "provider": "mock"
+}
+```
+
+### Validación y errores
+
+| Campo | Regla |
+| --- | --- |
+| `name` | Obligatorio, máximo 100 caracteres |
+| `instructions` | Obligatorio, máximo 5000 caracteres |
+| `query` | Obligatorio, máximo 5000 caracteres |
+
+Los espacios al inicio y al final se recortan. Todos los errores tienen el mismo formato:
+
+```json
+{
+  "statusCode": 400,
+  "error": "VALIDATION_ERROR",
+  "message": "Los datos enviados no son válidos",
+  "details": [{ "field": "name", "message": "El nombre es obligatorio" }]
+}
+```
+
+| Código | `error` | Cuándo |
+| --- | --- | --- |
+| `400` | `VALIDATION_ERROR` | Faltan campos o superan el máximo (`details` indica cuáles) |
+| `400` | `BAD_REQUEST` | El cuerpo no es JSON válido |
+| `404` | `AGENT_NOT_FOUND` | El agente no existe |
+| `502` | `AI_PROVIDER_ERROR` | El proveedor de IA falló |
+| `500` | `INTERNAL_ERROR` | Cualquier otro fallo; el servidor sigue en marcha |
+
+## Tecnologías y razones
+
+| Tecnología | Razón |
+| --- | --- |
+| React + TypeScript + Vite | Stack que domino; arranque inmediato y tipado de extremo a extremo |
+| TanStack Query | Gestiona los estados de carga y error de cada petición y refresca el listado al crear un agente |
+| React Hook Form + Zod | Validación de formularios con el error junto a cada campo |
+| Tailwind CSS 4 + daisyUI 5 | Estándar visual consistente con poco código; es solo CSS y se compila localmente |
+| NestJS 12 | Su inyección de dependencias hace explícita la separación entre controlador, lógica, persistencia y proveedor de IA |
+| Zod en el backend | NestJS 12 lo valida de forma nativa (`StandardSchemaValidationPipe`), sin clases DTO |
+| SQLite (`node:sqlite`) | Persistencia real con escritura segura, sin instalar dependencias ni un servidor |
+
+Decisiones tomadas a propósito para no añadir complejidad: sin ORM (una tabla y tres
+consultas parametrizadas), sin enrutador ni estado global en el frontend (una sola
+pantalla), sin monorepo con paquetes compartidos. El razonamiento completo está en
+`BITACORA.md`.
+
+## Limitaciones conocidas
+
+- Las reglas de validación están duplicadas en frontend y backend.
+- No se guarda el historial de consultas; la respuesta se pierde al recargar la página.
+- Los agentes no se pueden editar ni eliminar.
+- El modo mock no genera respuestas reales: muestra lo que se enviaría al modelo.
+- No hay pruebas automatizadas todavía.
+- La selección del agente es estado de la interfaz y no sobrevive a una recarga.
+
+## Mejoras con más tiempo
+
+1. **Proveedor LLM real**, seleccionable por variable de entorno y con el mock como
+   respaldo cuando no hay API key. La interfaz `AiProvider` ya lo permite.
+2. **Esquemas de validación compartidos** entre frontend y backend en un paquete común,
+   para tener una sola fuente de reglas.
+
+Otras: historial de conversaciones por agente, editar y eliminar agentes, pruebas e2e de
+la API, ejecución con Docker Compose y, a más largo plazo, un editor visual de flujos
+para agentes con varios pasos.
