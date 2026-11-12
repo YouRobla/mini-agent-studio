@@ -1,0 +1,3 @@
+/* Tailwind CSS 4 + daisyUI 5. Todo se compila localmente: sin CDN ni fuentes externas. */
+@import "tailwindcss";
+@plugin "daisyui";
