@@ -1,0 +1,26 @@
+# Dependencias y compilados
+node_modules/
+dist/
+build/
+coverage/
+
+# Variables de entorno (nunca subir secretos)
+.env
+.env.*
+!.env.example
+
+# Base de datos local
+backend/data/*
+!backend/data/.gitkeep
+
+# Herramientas de IA locales (se restauran con `npx skills experimental_install`)
+.claude/
+
+# Enunciado de la prueba (documento de la empresa)
+*.pdf
+
+# Sistema y editores
+.DS_Store
+*.log
+.vscode/
+.idea/

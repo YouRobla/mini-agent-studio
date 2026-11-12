@@ -1,0 +1,244 @@
+# Bitácora del proceso — Mini Agent Studio
+
+Registro de trabajo. Sirve de materia prima para `AI_USAGE.md` (PDF §5), que exige:
+herramientas usadas, al menos dos prompts, qué hizo la IA y qué cambié yo, cómo verifiqué
+y qué recomendaciones corregí o descarté.
+
+Formato de cada entrada: fecha · etapa · prompt (resumido) · resultado · qué validé / corregí / descarté.
+
+---
+
+## 2026-11-12 · Etapa 1 — Análisis de requisitos
+
+- **Herramienta:** Claude Code (Claude Fable 5.2).
+- **Prompt (resumen):** "Actúa como analista de requisitos y arquitecto. Analiza el PDF de la
+  prueba, clasifica requisitos (explícito / inferido / propuesto), define MVP, riesgos y
+  criterios de aceptación. No escribas código ni elijas stack todavía."
+- **Resultado:** documento "Análisis de Requisitos y Definición de Alcance v1.0"
+  (11 requisitos funcionales, 20 casos de aceptación, 10 decisiones pendientes).
+- **Validado por mí:** _(pendiente: contrastar cada RF con el PDF)_
+- **Corregido o descartado:** _(pendiente)_
+
+## 2026-11-12 · Etapa 2 — Cómo funciona el agente, Docker y referencias
+
+- **Prompt (resumen):** "¿Qué indica el PDF para el desarrollo? Quiero usar Docker para la
+  reproducción. ¿Cómo haremos funcionar el agente, qué librerías caben en las reglas, qué tan
+  dinámico debe ser y qué proyectos similares sirven de inspiración?"
+- **Resultado:** el agente es nombre + instrucciones, de un solo turno; el mock no necesita
+  librerías; Docker se recomienda como vía secundaria, no única.
+- **Validado por mí:** _(pendiente)_
+- **Corregido o descartado:** _(pendiente)_
+
+---
+
+## Decisiones tomadas
+
+| Fecha | Decisión | Motivo |
+| --- | --- | --- |
+| 2026-11-12 | Docker como segunda vía de ejecución, no la principal | El evaluador sigue el README (§8) y puede no tener Docker; se añade al final |
+| 2026-11-12 | El agente es de un solo turno, sin memoria ni herramientas; el mock no usa librerías | El PDF solo pide nombre + instrucciones y una respuesta de prueba (§3) |
+
+## Sugerencias de la IA descartadas o corregidas
+
+| Fecha | Sugerencia | Qué hice y por qué |
+| --- | --- | --- |
+| | | |
+
+---
+
+## 2026-11-12 · Etapa 3 — Arquitectura aprobada, validación independiente y skills
+
+### Decisión de arquitectura (tomada por mí)
+
+La IA presentó opciones y una recomendación; **la decisión de aprobarla fue mía**.
+_(Revisar y reescribir los motivos con mis propias palabras antes de pasarlos a AI_USAGE.md.)_
+
+**Elegido:** un repositorio con dos carpetas independientes, `backend/` (NestJS) y
+`frontend/` (React + TypeScript + Vite); persistencia en archivo JSON detrás de un
+repositorio; proveedor de IA como interfaz + `MockProvider` inyectado; tres endpoints
+(`POST /agents`, `GET /agents`, `POST /agents/:id/run`).
+
+**Por qué:**
+- La inyección de dependencias de Nest hace visible la separación proveedor/controlador que exige §3.C.
+- Dos carpetas independientes dejan claro dónde está cada parte (§6, §10) y simplifican la instalación limpia (§8).
+- Prioridad: primero cumplir el escenario del evaluador, luego calidad, luego extras (§9).
+
+**Descartado y por qué:**
+
+| Opción descartada | Motivo |
+| --- | --- |
+| Monorepo con paquete compartido (workspaces) | Complejidad de build e instalación para compartir ~10 líneas de esquemas |
+| Zod compartido entre frontend y backend | En Nest lo idiomático es `class-validator`; lo exigido es validar en servidor. Queda como "mejora futura" en el README |
+| SQLite | Dependencia extra y riesgo de instalación; el JSON cumple §3.A |
+| Librería de estado / caché de datos en frontend | Son tres llamadas; `useState` + `fetch` bastan |
+| LangChain o frameworks de agentes | El agente es de un solo turno; el mock es una función |
+| Docker como única vía de ejecución | El evaluador puede no tener Docker; queda como segunda vía |
+
+### Validación independiente con otro modelo
+
+- **Herramienta:** subagente Claude Sonnet lanzado desde Claude Code, solo lectura.
+- **Prompt (resumen):** "Eres un revisor independiente. Lee el PDF y valida este plan:
+  busca requisitos omitidos, elementos sin respaldo en el PDF que añadan riesgo, y riesgos
+  frente al escenario de §8. Da un veredicto."
+- **Veredicto:** aprobado con cambios. No encontró requisitos obligatorios omitidos.
+
+| Observación del revisor | Qué hacemos | Estado |
+| --- | --- | --- |
+| Falta nombrar la demostración reproducible (§7.5) | Sección "Demostración" en el README con los pasos del flujo | Aceptada |
+| `.env.example` y commits por etapa deben ir desde el inicio, no en fase 2 | Pasan a fase 1 | Aceptada |
+| Variable `AI_PROVIDER` es prematura con un solo proveedor | Se mantiene la interfaz + mock; la variable solo si se hace el LLM real | Aceptada |
+| Swagger compite con el README obligatorio | Se hace solo después de terminar el README | Aceptada |
+| Definir comandos exactos de arranque y resolver CORS pronto | Se resuelve en la primera conexión frontend-backend | Aceptada |
+| Persistencia robusta: ruta fija, archivo inexistente o vacío, escritura segura | Se incluye en fase 1 | Aceptada |
+| Mostrar error también cuando el backend está caído | Ya estaba en el análisis (CA-11); se confirma | Aceptada |
+| NestJS es mucho andamiaje; Express bastaría | Se mantiene NestJS por decisión mía; se justifica en el README | Descartada _(confirmar)_ |
+
+### Herramientas de IA usadas hasta ahora (para AI_USAGE.md §5)
+
+| Herramienta | Para qué |
+| --- | --- |
+| Claude Code (Claude Fable 5.2) | Análisis de requisitos, propuesta de arquitectura, bitácora |
+| Subagente Claude Sonnet | Revisión independiente del plan contra el PDF |
+| Claude Docs | Documento "Análisis de Requisitos y Definición de Alcance v1.0" |
+| Orca | Entorno de trabajo / orquestación de agentes _(completar cómo lo usé)_ |
+| CLI `npx skills` (skills.sh) | Búsqueda de skills para el stack |
+
+### Skills evaluadas
+
+Criterio: que aporte algo práctico a este proyecto y no empuje a sobreingeniería. Se revisó el contenido antes de recomendar.
+
+| Skill | Veredicto | Motivo |
+| --- | --- | --- |
+| `kadajett/agent-nestjs-skills@nestjs-best-practices` | Útil, uso selectivo | 40 reglas; aplican las de DI con interfaces y tokens, filtros de excepción, validación de entrada, patrón repositorio y test e2e con Supertest. Se ignoran JWT, caché, microservicios, ORM |
+| `vercel-labs/agent-skills@vercel-react-best-practices` | Descartada | Orientada a Next.js y rendimiento; no aporta a una sola pantalla con tres llamadas |
+| `github/awesome-copilot@git-commit` | No necesaria | Solo formaliza Conventional Commits; se adopta la convención sin instalar nada |
+| `docker-patterns` / `docker-development` (ya instaladas) | Para la fase 3 | Dockerfile y Compose con volumen |
+| `ui-ux-pro-max` (ya instalada) | Uso mínimo | El PDF no evalúa diseño visual (§1) |
+
+---
+
+## 2026-11-12 · Etapa 4 — Corrección sobre Zod, librería de UI y skills instaladas
+
+### Corrección mía a una recomendación de la IA (ejemplo para AI_USAGE.md)
+
+- **Lo que dijo la IA:** "con Nest, Zod no es lo natural; lo idiomático es `class-validator`
+  y meter Zod exige un adaptador".
+- **Lo que yo señalé:** las versiones recientes de NestJS soportan Zod de forma nativa.
+- **Verificación:** NestJS está en la versión 12.5 (npm). Desde la 12, `@Body()`, `@Query()` y
+  `@Param()` aceptan una opción `schema` con cualquier librería Standard Schema (Zod, Valibot,
+  ArkType) mediante el `StandardSchemaValidationPipe` integrado. `class-validator` sigue
+  soportado. Fuentes: notas de la versión 12.0.0 y guía de migración oficial.
+- **Resultado:** la recomendación de la IA estaba desactualizada. Se cambia a **Zod con el
+  pipe nativo de Nest 12** para la validación en servidor.
+- **Lo que se mantiene:** sin paquete compartido ni monorepo con workspaces; compartir
+  esquemas queda como mejora futura.
+
+### Decisiones
+
+| Decisión | Motivo |
+| --- | --- |
+| Validación en servidor con Zod y el pipe nativo de NestJS 12 | Menos código que DTOs con decoradores; refleja el estado actual del framework |
+| UI con Tailwind CSS 4 + daisyUI 5 | Elección mía. Solo CSS, sin JavaScript extra; trae `chat`, `alert`, `loading`, `card`. Estándar visual mínimo con poco esfuerzo |
+| Gráfico | Pendiente: definir qué dato mostraría. El MVP no guarda consultas |
+
+### Skills instaladas en el proyecto (`.claude/skills/`)
+
+| Skill | Origen | Revisión |
+| --- | --- | --- |
+| `nestjs-best-practices` | `kadajett/agent-nestjs-skills` | Solo archivos Markdown. Escrita para `class-validator`: sus reglas de validación se contrastan con la documentación oficial de Nest 12 |
+| `daisyui` | `saadeghi/daisyui` (oficial del autor de daisyUI) | Solo archivos Markdown; guía de instalación, clases y componentes de daisyUI 5 |
+
+---
+
+## 2026-11-12 · Etapa 5 — Control de alcance del frontend
+
+Pregunté si aportaba un editor visual de nodos (tipo Rete.js) y si hacían falta React Router,
+TanStack Query, Zustand, shadcn o WebSockets. Mi intuición era que no; la IA coincidió.
+
+| Opción evaluada | Decisión | Motivo |
+| --- | --- | --- |
+| Editor visual de nodos (Rete.js, React Flow) | Descartado | Sirve para flujos de pasos conectados; el agente de la prueba es nombre + instrucciones, sin pasos ni herramientas. Sería decoración sin datos. Candidata a "mejora futura" en el README |
+| Gráficos estadísticos | Descartado para el MVP | No se guardan consultas; no hay dato que mostrar |
+| React Router | Descartado | Una sola pantalla |
+| TanStack Query | Descartado | Tres llamadas; `fetch` + `useState` con estados de carga y error explícitos |
+| Zustand | Descartado | El estado (lista, agente seleccionado, respuesta) cabe en un componente |
+| shadcn/ui | Descartado | Ya se eligió daisyUI; no mezclar dos sistemas de UI |
+| WebSockets / streaming | Descartado | El PDF pide una petición y una respuesta (§3.B); HTTP normal basta |
+
+**Stack cerrado:** React + TypeScript + Vite · Tailwind CSS 4 + daisyUI 5 · NestJS 12 · Zod (pipe nativo) · archivo JSON · proveedor mock inyectado.
+
+---
+
+## 2026-11-12 · Etapa 6 — Librerías de frontend (decisión mía, corrige un descarte de la IA)
+
+- **Lo que propuso la IA:** descartar TanStack Query y validar el formulario a mano, por ser pocas llamadas.
+- **Lo que decidí yo:** usar **TanStack Query, Zod y React Hook Form** en el frontend.
+- **Mi motivo:** tengo experiencia con ellas; el desarrollo, la gestión y la comprensión del
+  código me resultan más fáciles, y dejan una base útil para los extras.
+- **La IA reconsideró:** su descarte asumía un costo de aprendizaje que en mi caso no existe.
+  TanStack Query cubre directamente estados de carga y error (§3.B).
+- **Se mantiene descartado:** Zustand y React Router (sin estado global ni varias pantallas).
+- **Compromisos:** razón breve de cada librería en el README (§6); la validación de servidor
+  sigue siendo la obligatoria (§3.C); los dos esquemas Zod se duplican en frontend y backend.
+
+**Stack final:** React + TypeScript + Vite · TanStack Query · React Hook Form + Zod ·
+Tailwind CSS 4 + daisyUI 5 · NestJS 12 + Zod (pipe nativo) · archivo JSON · proveedor mock inyectado.
+
+---
+
+## 2026-11-12 · Etapa 7 — Backend: arquitectura, contrato de API y persistencia
+
+### Decisiones (aprobadas por mí)
+
+| Decisión | Motivo |
+| --- | --- |
+| CORS en el backend + `VITE_API_URL` con valor por defecto, **sin proxy de Vite** | Corrección mía: el proxy era innecesario para este alcance |
+| Arquitectura: módulos por funcionalidad con controlador → servicio → repositorio | Estándar de Nest; hace visible la separación que pide §3.C y §6. Se descartan hexagonal, Clean Architecture y CQRS |
+| Errores centralizados con un filtro de excepciones global y excepciones propias | Formato único de error; el servidor no se cae (§3.C) |
+| Respuestas correctas sin envoltorio `{ data }` | Ningún requisito lo pide; evita un interceptor |
+| Endpoints `POST /api/agents`, `GET /api/agents`, `POST /api/agents/:id/run` | Las tres operaciones de §3.C |
+| **SQLite integrado en Node (`node:sqlite`), sin ORM**, con sentencias preparadas | Cambio respecto al JSON: escritura segura garantizada y cero dependencias. Verificado en Node 26 |
+
+### Sobre el ORM (pregunta mía, análisis con fuentes)
+
+- Pregunté si convenía un ORM por seguridad (inyección SQL) y facilidad de uso.
+- Verificado: la inyección se evita con consultas parametrizadas, con o sin ORM. Drizzle solo
+  soporta `node:sqlite` en versión beta; TypeORM necesita un driver nativo (`better-sqlite3`).
+- **Decisión:** sin ORM para una sola tabla. "Migrar a un ORM si el modelo crece" va como mejora futura en el README.
+- **Compromiso:** fijar la versión de Node en el README y en `.nvmrc`.
+
+---
+
+## 2026-11-12 · Etapa 8 — Lógica del agente, mock y plan de construcción
+
+### Decisiones (aprobadas por mí)
+
+| Decisión | Motivo |
+| --- | --- |
+| Crear un agente solo guarda una fila; el agente "funciona" al consultarlo | El PDF define el agente como nombre + instrucciones (§3.A) |
+| Fase 1: mock con plantilla que muestra el mensaje que se enviaría al modelo (instrucciones como sistema, consulta como usuario) | Cumple §3.C de forma honesta, sin fingir inteligencia |
+| Espera artificial de ~0,5 s en el mock | Hace visible el estado de carga (§3.B); se documenta en el README |
+| Contrato del proveedor asíncrono desde el inicio | El LLM real (extra) no obligará a cambiar el servicio |
+| Fase 2: regla de resumen cuando las instrucciones mencionan "resum…" | Idea mía de que el mock "haga algo"; la IA la acotó a una sola regla. Coincide con el agente del escenario (§8.2) |
+| Descartado: tipos de agente preseleccionables | Cambia el modelo de datos y el formulario que define el PDF |
+| Descartado: reglas por palabras clave para cada tipo de agente | Respuestas falsas y frágiles; eso es trabajo del LLM real |
+| Funcionamiento sin internet tras instalar: sin CDN ni fuentes externas | Consecuencia de "sin API key ni costo" (§3.C); se añade como caso de aceptación |
+
+### Dudas mías que la IA respondió (útil para AI_USAGE.md)
+
+- "¿Seguro que el mock no debe hacer nada inteligente?" → El PDF pide "una respuesta de prueba"; responder de verdad requiere un LLM, que es el extra de §9.
+- "¿No esperan que me ingenie algo?" → No lo exige el documento; se acordó una mejora pequeña y honesta para la fase 2.
+
+### Plan de commits (Conventional Commits)
+
+1. `chore: estructura inicial, .gitignore y .nvmrc`
+2. `feat(backend): proyecto NestJS con CORS y prefijo /api`
+3. `feat(backend): repositorio de agentes con SQLite`
+4. `feat(backend): crear y listar agentes con validación Zod`
+5. `feat(backend): filtro global de errores con formato único`
+6. `feat(backend): proveedor de IA mock y ejecución de consultas`
+7. `feat(frontend): proyecto React con Tailwind y daisyUI`
+8. `feat(frontend): creación y listado de agentes`
+9. `feat(frontend): panel de consulta con estados de carga y error`
+10. `docs: README con arquitectura, endpoints y limitaciones`
+11. `docs: AI_USAGE con el uso de IA documentado`
