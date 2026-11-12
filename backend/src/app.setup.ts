@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, StandardSchemaValidationPipe } from '@nestjs/common';
 
 /**
  * Configuración global de la aplicación.
@@ -11,4 +11,7 @@ export function configureApp(app: INestApplication): void {
   app.enableCors({
     origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
   });
+
+  // Valida los parámetros que declaran un esquema: @Body({ schema }).
+  app.useGlobalPipes(new StandardSchemaValidationPipe());
 }
