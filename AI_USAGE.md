@@ -207,7 +207,9 @@ principio, con una sola pantalla, y lo incorporé cuando pasé a dos vistas.
   con Vite en otro puerto (5174) y con `127.0.0.1`, ya con el proxy de Vite.
 - **Seguridad de dependencias:** `npm audit` en backend y frontend, con 0 vulnerabilidades.
 - **Instalación limpia:** clonar el repositorio desde GitHub en otra carpeta y seguir el
-  README tal cual, con el escenario completo del §8 (etapa 44).
+  README tal cual, con el escenario completo del §8 (etapas 44 y 50), con npm y con
+  Docker, sin `.env`. En los dos modos, ninguna petición del navegador a otro origen ni
+  ningún preflight de CORS.
 - **Proveedores de IA reales:** con mi clave de OpenAI, dos mensajes reales con
   `gpt-6.1-terra`; el segundo («¿qué te pedí antes?») recordó el primero. Con claves
   inválidas de Claude y de OpenAI, el chat explica que la clave fue rechazada. El modelo se

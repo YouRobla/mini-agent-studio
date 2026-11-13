@@ -1551,3 +1551,25 @@ el sistema esté más presentable y pulido».
   válido sin `backend/.env`. Todo lo de la prueba se borró después.
 - **README:** guía de Docker reescrita: arquitectura con esquema, tabla de puertos, uso
   del `.env` y tabla de comandos (arrancar, aplicar el `.env`, registros, parar, borrar).
+
+---
+
+## 2026-11-13 · Etapa 50 — Capturas nítidas y verificación final de los dos modos
+
+- **Pedido mío:** confirmar que el sistema funciona en los dos modos (npm y Docker) sin
+  problemas de CORS, que el README está completo, y capturas con mejor calidad: se veían
+  borrosas.
+- **Capturas (IA):** no era cosa de GitHub. Se habían tomado a resolución 1x y en pantallas
+  de alta densidad se estiraban. Se repitieron las cinco a 2x (por ejemplo, 2880 px de
+  ancho en vez de 1440): las cuatro de la demostración en el entorno aislado y la de OpenAI
+  con una consulta real y un agente temporal que se borró. Suman unos 880 KB.
+- **Verificación final desde GitHub (commit `9b15089`), en una copia nueva y sin `.env`:**
+  - npm: `npm audit` con 0 vulnerabilidades y el escenario completo del §8; 276 peticiones
+    del navegador, ninguna a otro origen y ningún `OPTIONS`.
+  - Docker: los dos contenedores «healthy», modo simulado, el agente sobrevive al reinicio
+    del backend y la consulta responde; ninguna petición a otro origen ni `OPTIONS`.
+- **Error de la IA durante la verificación:** el primer intento corrió sobre una copia
+  vieja porque `git pull` se detuvo (había un `docker-compose.yml` copiado a mano). Se
+  borró y se clonó de nuevo desde cero.
+- **README:** el índice menciona Docker y la IA real opcional. No se crea documentación
+  nueva: está todo en el README, `AI_USAGE.md`, esta bitácora y `frontend/README.md`.

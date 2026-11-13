@@ -13,7 +13,7 @@ Prueba técnica Fullstack.
 
 | Sección | Qué encontrarás |
 | --- | --- |
-| [Instalación y ejecución](#instalación-y-ejecución) | Requisitos, pasos desde un clon limpio y variables de entorno |
+| [Instalación y ejecución](#instalación-y-ejecución) | Requisitos, pasos desde un clon limpio (con npm o con Docker), variables de entorno e IA real opcional con Claude u OpenAI |
 | [Demostración del flujo](#demostración-del-flujo) | Crear → seleccionar → consultar → ver la respuesta, con capturas |
 | [Arquitectura](#arquitectura) | Estructura del proyecto, diagrama de componentes y flujo de una consulta |
 | [Endpoints](#endpoints) | Rutas de la API, ejemplos de solicitud y respuesta, y formato de errores |
