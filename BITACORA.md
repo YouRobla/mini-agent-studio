@@ -1385,3 +1385,20 @@ el sistema esté más presentable y pulido».
   errores repetida con los arreglos: un solo bloque de error con el servidor caído, el
   mensaje de la clave en Claude y en GPT, y recuperación completa con un solo
   «Reintentar».
+
+---
+
+## 2026-11-13 · Etapa 44 — Instalación desde cero con el escenario del §8
+
+- **Pedido mío:** pasar la prueba desde cero, como lo hará el evaluador.
+- **Cómo (IA):** `git clone` desde GitHub (commit `c684095`) en una carpeta temporal y
+  los pasos del README tal cual: `nvm use` (toma 26.13.1 del `.nvmrc`), `npm install`,
+  `npm run start` y `npm run dev`. Única diferencia: puertos 3997 y 5178, porque los míos
+  estaban ocupados. Sin ningún `.env` ni variable de IA.
+- **Resultado:** `npm audit` con 0 vulnerabilidades en las dos partes; lint, build, 22
+  pruebas unitarias y 15 e2e en verde en la copia limpia. Escenario del §8 con Playwright:
+  arranca sin API de IA (etiqueta «Modo simulado»), datos incorrectos con su mensaje,
+  crear «Asistente de resúmenes» con aviso, sigue en el listado tras reiniciar el backend
+  (base en `backend/data/agents.db`), seleccionarlo en el selector y recibir la
+  respuesta, consulta vacía, agente inexistente y backend detenido con «Reintentar».
+  Consola sin errores inesperados.
