@@ -82,7 +82,7 @@ export function StudioLayout() {
         <aside className="flex min-h-full w-64 flex-col border-r border-base-300 bg-base-100 p-4">
           <div className="mb-6 flex items-center gap-3 px-2 py-2">
             <span
-              className="flex size-10 items-center justify-center rounded-box bg-neutral text-neutral-content"
+              className="flex size-10 items-center justify-center rounded-box bg-primary text-primary-content"
               aria-hidden="true"
             >
               <svg
@@ -106,7 +106,7 @@ export function StudioLayout() {
             </div>
           </div>
           <nav id="studio-navigation" aria-label="Navegación principal">
-            <ul className="menu w-full gap-2 p-0">
+            <ul className="menu w-full gap-2 p-0 [--menu-active-bg:var(--color-primary)] [--menu-active-fg:var(--color-primary-content)]">
               <li className="menu-title px-3 text-xs tracking-wider">
                 ESPACIO DE TRABAJO
               </li>
