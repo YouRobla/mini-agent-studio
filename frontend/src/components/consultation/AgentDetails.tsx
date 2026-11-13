@@ -1,13 +1,15 @@
 import { Link } from "react-router";
 import type { Agent } from "../../types/agent.ts";
+import { AgentAvatar } from "../agents/AgentAvatar.tsx";
+import { formatAgentDate } from "../agents/formatAgentDate.ts";
 
-const dateFormatter = new Intl.DateTimeFormat("es", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
+interface AgentDetailsProps {
+  agent: Agent;
+  onEdit: (agent: Agent) => void;
+  onDelete: (agent: Agent) => void;
+}
 
-export function AgentDetails({ agent }: { agent: Agent }) {
+export function AgentDetails({ agent, onEdit, onDelete }: AgentDetailsProps) {
   return (
     <section
       className="card card-border min-w-0 bg-base-100"
@@ -15,12 +17,7 @@ export function AgentDetails({ agent }: { agent: Agent }) {
     >
       <div className="card-body gap-4 p-4 sm:p-5">
         <div className="flex items-start gap-3">
-          <div
-            className="flex size-10 shrink-0 items-center justify-center rounded-field border border-base-300 bg-base-200 font-semibold"
-            aria-hidden="true"
-          >
-            {agent.name.slice(0, 1).toUpperCase()}
-          </div>
+          <AgentAvatar name={agent.name} />
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold uppercase tracking-wider text-base-content/60">
               Agente seleccionado
@@ -32,7 +29,7 @@ export function AgentDetails({ agent }: { agent: Agent }) {
               {agent.name}
             </h2>
             <p className="mt-0.5 text-xs text-base-content/60">
-              Creado el {dateFormatter.format(new Date(agent.createdAt))}
+              Creado el {formatAgentDate(agent.createdAt)}
             </p>
           </div>
         </div>
@@ -49,8 +46,28 @@ export function AgentDetails({ agent }: { agent: Agent }) {
           </p>
         </div>
 
+        <div className="flex gap-2 border-t border-base-300 pt-3">
+          <button
+            type="button"
+            className="btn btn-sm flex-1"
+            onClick={() => onEdit(agent)}
+          >
+            Editar
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-error btn-outline flex-1"
+            onClick={() => onDelete(agent)}
+          >
+            Eliminar
+          </button>
+        </div>
+
         <div className="border-t border-base-300 pt-3">
-          <Link to="/" className="btn btn-ghost btn-sm w-full justify-start px-2">
+          <Link
+            to="/"
+            className="btn btn-ghost btn-sm w-full justify-start px-2"
+          >
             ← Volver al listado de agentes
           </Link>
         </div>

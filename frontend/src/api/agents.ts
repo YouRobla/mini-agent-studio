@@ -7,6 +7,7 @@ import type {
 import type {
   CreateAgentInput,
   RunAgentInput,
+  UpdateAgentInput,
 } from "../schemas/agent.schemas.ts";
 import { request } from "./client.ts";
 
@@ -31,6 +32,22 @@ export function createAgent(input: CreateAgentInput): Promise<Agent> {
   return request<Agent>("/agents", {
     method: "POST",
     body: JSON.stringify(input),
+  });
+}
+
+export function updateAgent(
+  agentId: string,
+  input: UpdateAgentInput,
+): Promise<Agent> {
+  return request<Agent>(`/agents/${encodeURIComponent(agentId)}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteAgent(agentId: string): Promise<void> {
+  return request<void>(`/agents/${encodeURIComponent(agentId)}`, {
+    method: "DELETE",
   });
 }
 

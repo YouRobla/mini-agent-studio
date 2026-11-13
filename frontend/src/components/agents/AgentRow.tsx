@@ -1,4 +1,5 @@
 import type { Agent } from "../../types/agent.ts";
+import { AgentActionsMenu } from "./AgentActionsMenu.tsx";
 import { AgentAvatar } from "./AgentAvatar.tsx";
 import { ConsultAgentLink } from "./ConsultAgentLink.tsx";
 import { formatAgentDate } from "./formatAgentDate.ts";
@@ -6,10 +7,17 @@ import { formatAgentDate } from "./formatAgentDate.ts";
 interface AgentRowProps {
   agent: Agent;
   onInspect: (agent: Agent) => void;
+  onEdit: (agent: Agent) => void;
+  onDelete: (agent: Agent) => void;
 }
 
 /** Agente en la vista de lista compacta. */
-export function AgentRow({ agent, onInspect }: AgentRowProps) {
+export function AgentRow({
+  agent,
+  onInspect,
+  onEdit,
+  onDelete,
+}: AgentRowProps) {
   return (
     <li className="list-row items-center gap-3 px-1 py-2.5">
       <AgentAvatar name={agent.name} />
@@ -34,6 +42,7 @@ export function AgentRow({ agent, onInspect }: AgentRowProps) {
           Detalles
         </button>
         <ConsultAgentLink agent={agent} />
+        <AgentActionsMenu agent={agent} onEdit={onEdit} onDelete={onDelete} />
       </div>
     </li>
   );

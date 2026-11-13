@@ -1,21 +1,27 @@
 import { errorMessage } from "../../api/client.ts";
 import type { useAgentForm } from "../../hooks/useAgentForm.ts";
 
+export type AgentFormMode = "create" | "edit";
+
 interface AgentFormProps {
+  mode: AgentFormMode;
   form: ReturnType<typeof useAgentForm>;
   onCancel: () => void;
 }
 
-export function AgentForm({ form, onCancel }: AgentFormProps) {
-  const { register, errors, onSubmit, createAgent, showGeneralError } = form;
+export function AgentForm({ mode, form, onCancel }: AgentFormProps) {
+  const { register, errors, onSubmit, saveAgent, showGeneralError } = form;
+  const isEdit = mode === "edit";
 
   return (
     <form className="space-y-4" onSubmit={onSubmit} noValidate>
-      <h2 id="create-agent-title" className="text-xl font-semibold">
-        Nuevo agente
+      <h2 id="agent-form-title" className="text-xl font-semibold">
+        {isEdit ? "Editar agente" : "Nuevo agente"}
       </h2>
-      <p id="create-agent-description" className="text-sm text-base-content/70">
-        Define cómo quieres que se comporte tu asistente.
+      <p id="agent-form-description" className="text-sm text-base-content/70">
+        {isEdit
+          ? "Cambia el nombre o las instrucciones de tu asistente."
+          : "Define cómo quieres que se comporte tu asistente."}
       </p>
 
       <fieldset className="fieldset">
@@ -63,7 +69,7 @@ export function AgentForm({ form, onCancel }: AgentFormProps) {
 
       {showGeneralError && (
         <div role="alert" className="alert alert-error alert-soft">
-          {errorMessage(createAgent.error)}
+          {errorMessage(saveAgent.error)}
         </div>
       )}
 
@@ -72,19 +78,23 @@ export function AgentForm({ form, onCancel }: AgentFormProps) {
           type="button"
           className="btn"
           onClick={onCancel}
-          disabled={createAgent.isPending}
+          disabled={saveAgent.isPending}
         >
           Cancelar
         </button>
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={createAgent.isPending}
+          disabled={saveAgent.isPending}
         >
-          {createAgent.isPending && (
+          {saveAgent.isPending && (
             <span className="loading loading-spinner loading-sm" />
           )}
-          {createAgent.isPending ? "Guardando…" : "Guardar agente"}
+          {saveAgent.isPending
+            ? "Guardando…"
+            : isEdit
+              ? "Guardar cambios"
+              : "Guardar agente"}
         </button>
       </div>
     </form>

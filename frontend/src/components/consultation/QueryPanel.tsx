@@ -1,5 +1,10 @@
+import { useState } from "react";
+import { useNavigate } from "react-router";
 import type { Agent } from "../../types/agent.ts";
 import { useQueryForm } from "../../hooks/useQueryForm.ts";
+import { AgentFormModal } from "../agents/AgentFormModal.tsx";
+import { DeleteAgentDialog } from "../agents/DeleteAgentDialog.tsx";
+import { useToast } from "../ui/toast/useToast.ts";
 import { AgentDetails } from "./AgentDetails.tsx";
 import { AgentChat } from "./AgentChat.tsx";
 
@@ -20,11 +25,42 @@ export function QueryPanel({ agent }: { agent: Agent | undefined }) {
 
 function QueryWorkspace({ agent }: { agent: Agent }) {
   const form = useQueryForm(agent.id);
+  const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const navigate = useNavigate();
+  const toast = useToast();
 
   return (
-    <div className="grid items-start gap-6 md:grid-cols-[minmax(14rem,0.75fr)_minmax(0,1.5fr)]">
-      <AgentDetails agent={agent} />
-      <AgentChat agent={agent} form={form} />
-    </div>
+    <>
+      <div className="grid items-start gap-6 md:grid-cols-[minmax(14rem,0.75fr)_minmax(0,1.5fr)]">
+        <AgentDetails
+          agent={agent}
+          onEdit={() => setEditing(true)}
+          onDelete={() => setDeleting(true)}
+        />
+        <AgentChat agent={agent} form={form} />
+      </div>
+
+      {editing && (
+        <AgentFormModal
+          agent={agent}
+          onClose={() => setEditing(false)}
+          onSaved={(saved) =>
+            toast.success(`Agente «${saved.name}» actualizado`)
+          }
+        />
+      )}
+
+      {deleting && (
+        <DeleteAgentDialog
+          agent={agent}
+          onClose={() => setDeleting(false)}
+          onDeleted={(deleted) => {
+            toast.success(`Agente «${deleted.name}» eliminado`);
+            navigate("/consultar");
+          }}
+        />
+      )}
+    </>
   );
 }

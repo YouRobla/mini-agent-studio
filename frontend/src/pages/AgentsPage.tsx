@@ -1,10 +1,10 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { useSearchParams } from "react-router";
 import { AgentList } from "../components/agents/AgentList.tsx";
-import { CreateAgentModal } from "../components/agents/CreateAgentModal.tsx";
+import { AgentFormModal } from "../components/agents/AgentFormModal.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
-import { SuccessAlert } from "../components/ui/SuccessAlert.tsx";
-import type { Agent, AgentSort } from "../types/agent.ts";
+import { useToast } from "../components/ui/toast/useToast.ts";
+import type { AgentSort } from "../types/agent.ts";
 
 function parsePage(raw: string | null): number {
   const parsed = Number(raw);
@@ -17,9 +17,9 @@ function parseSort(raw: string | null): AgentSort {
 }
 
 export function AgentsPage() {
-  const [createdAgent, setCreatedAgent] = useState<Agent | null>(null);
+  const [creating, setCreating] = useState(false);
+  const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
-  const createDialogRef = useRef<HTMLDialogElement>(null);
 
   const page = parsePage(searchParams.get("page"));
   const sort = parseSort(searchParams.get("sort"));
@@ -80,25 +80,14 @@ export function AgentsPage() {
           title="Agentes"
           description="Organiza tus asistentes, busca por rol y pon sus instrucciones a prueba."
         />
-        <CreateAgentModal
-          dialogRef={createDialogRef}
-          onCreated={(agent) => {
-            setCreatedAgent(agent);
-            updateParams({ page: 1, sort: "recent", search: "" });
-          }}
-        />
+        <button
+          type="button"
+          className="btn btn-primary shrink-0"
+          onClick={() => setCreating(true)}
+        >
+          <span aria-hidden="true">+</span> Nuevo agente
+        </button>
       </div>
-
-      {createdAgent && (
-        <SuccessAlert
-          message={`Agente «${createdAgent.name}» creado correctamente.`}
-          action={{
-            label: "Probar agente",
-            to: `/consultar/${encodeURIComponent(createdAgent.id)}`,
-          }}
-          onDismiss={() => setCreatedAgent(null)}
-        />
-      )}
 
       <AgentList
         page={page}
@@ -108,8 +97,21 @@ export function AgentsPage() {
         onSortChange={handleSortChange}
         onSearchChange={handleSearchChange}
         onClearFilters={handleClearFilters}
-        onRequestCreate={() => createDialogRef.current?.showModal()}
+        onRequestCreate={() => setCreating(true)}
       />
+
+      {creating && (
+        <AgentFormModal
+          onClose={() => setCreating(false)}
+          onSaved={(agent) => {
+            toast.success(`Agente «${agent.name}» creado correctamente.`, {
+              label: "Probar agente",
+              to: `/consultar/${encodeURIComponent(agent.id)}`,
+            });
+            updateParams({ page: 1, sort: "recent", search: "" });
+          }}
+        />
+      )}
     </div>
   );
 }

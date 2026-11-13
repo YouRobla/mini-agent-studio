@@ -51,6 +51,9 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
     );
   }
 
+  // 204: la operación fue correcta y no hay cuerpo que leer (p. ej. DELETE).
+  if (response.status === 204) return undefined as T;
+
   const body: unknown = await response.json().catch(() => null);
 
   if (!response.ok) {

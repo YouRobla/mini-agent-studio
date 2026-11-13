@@ -2,29 +2,42 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { Agent } from "../types/agent.ts";
 import { ApiError } from "../api/client.ts";
-import { useCreateAgent } from "./useAgents.ts";
-import { createAgentSchema, type CreateAgentInput } from "../schemas/agent.schemas.ts";
+import { useCreateAgent, useUpdateAgent } from "./useAgents.ts";
+import {
+  createAgentSchema,
+  type CreateAgentInput,
+} from "../schemas/agent.schemas.ts";
 
-export function useAgentForm(onCreated: (agent: Agent) => void) {
+/**
+ * Formulario único para crear y editar. Con `agent` entra en modo editar y
+ * parte de sus valores; sin él, crea. Cada vez que se abre el formulario se
+ * monta de nuevo, así que no queda nada del uso anterior.
+ */
+export function useAgentForm(
+  agent: Agent | null,
+  onSaved: (agent: Agent) => void,
+) {
   const createAgent = useCreateAgent();
+  const updateAgent = useUpdateAgent();
+  const saveAgent = agent ? updateAgent : createAgent;
+
   const {
     register,
     handleSubmit,
-    reset,
     setError,
     formState: { errors },
   } = useForm<CreateAgentInput>({
     resolver: zodResolver(createAgentSchema),
-    defaultValues: { name: "", instructions: "" },
+    defaultValues: {
+      name: agent?.name ?? "",
+      instructions: agent?.instructions ?? "",
+    },
   });
 
   const onSubmit = handleSubmit((values) => {
-    createAgent.mutate(values, {
-      onSuccess: (agent) => {
-        reset();
-        onCreated(agent);
-      },
-      onError: (error) => {
+    const callbacks = {
+      onSuccess: (saved: Agent) => onSaved(saved),
+      onError: (error: Error) => {
         // Si el servidor rechaza un campo, el mensaje aparece junto a ese campo.
         if (error instanceof ApiError) {
           for (const detail of error.details) {
@@ -34,17 +47,18 @@ export function useAgentForm(onCreated: (agent: Agent) => void) {
           }
         }
       },
-    });
+    };
+
+    if (agent) {
+      updateAgent.mutate({ id: agent.id, input: values }, callbacks);
+    } else {
+      createAgent.mutate(values, callbacks);
+    }
   });
 
   // El error general se muestra solo si no se pudo asignar a un campo concreto.
   const hasFieldErrors = Boolean(errors.name || errors.instructions);
-  const showGeneralError = createAgent.isError && !hasFieldErrors;
+  const showGeneralError = saveAgent.isError && !hasFieldErrors;
 
-  function resetForm() {
-    reset();
-    createAgent.reset();
-  }
-
-  return { register, errors, onSubmit, createAgent, showGeneralError, resetForm };
+  return { register, errors, onSubmit, saveAgent, showGeneralError };
 }

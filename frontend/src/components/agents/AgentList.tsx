@@ -3,12 +3,15 @@ import { errorMessage } from "../../api/client.ts";
 import { DEFAULT_AGENTS_LIMIT, useAgents } from "../../hooks/useAgents.ts";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue.ts";
 import type { Agent, AgentSort } from "../../types/agent.ts";
+import { useToast } from "../ui/toast/useToast.ts";
 import { Pagination } from "../ui/Pagination.tsx";
 import { AgentCard } from "./AgentCard.tsx";
 import { AgentDetailsModal } from "./AgentDetailsModal.tsx";
+import { AgentFormModal } from "./AgentFormModal.tsx";
 import { AgentRow } from "./AgentRow.tsx";
 import { AgentsEmptyState } from "./AgentsEmptyState.tsx";
 import { AgentsSkeleton } from "./AgentsSkeleton.tsx";
+import { DeleteAgentDialog } from "./DeleteAgentDialog.tsx";
 import { AgentsToolbar, type AgentView } from "./AgentsToolbar.tsx";
 
 interface AgentListProps {
@@ -39,6 +42,9 @@ export function AgentList({
 }: AgentListProps) {
   const [view, setView] = useState<AgentView>("grid");
   const [inspectedAgent, setInspectedAgent] = useState<Agent | null>(null);
+  const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
+  const [deletingAgent, setDeletingAgent] = useState<Agent | null>(null);
+  const toast = useToast();
   const debouncedSearch = useDebouncedValue(searchInput, 250);
 
   const agents = useAgents({
@@ -152,6 +158,8 @@ export function AgentList({
                       key={agent.id}
                       agent={agent}
                       onInspect={setInspectedAgent}
+                      onEdit={setEditingAgent}
+                      onDelete={setDeletingAgent}
                     />
                   ))}
                 </div>
@@ -162,6 +170,8 @@ export function AgentList({
                       key={agent.id}
                       agent={agent}
                       onInspect={setInspectedAgent}
+                      onEdit={setEditingAgent}
+                      onDelete={setDeletingAgent}
                     />
                   ))}
                 </ul>
@@ -184,6 +194,29 @@ export function AgentList({
         agent={inspectedAgent}
         onClose={() => setInspectedAgent(null)}
       />
+
+      {editingAgent && (
+        <AgentFormModal
+          key={editingAgent.id}
+          agent={editingAgent}
+          onClose={() => setEditingAgent(null)}
+          onSaved={(saved) =>
+            toast.success(`Agente «${saved.name}» actualizado`)
+          }
+        />
+      )}
+
+      {deletingAgent && (
+        <DeleteAgentDialog
+          key={deletingAgent.id}
+          agent={deletingAgent}
+          onClose={() => setDeletingAgent(null)}
+          onDeleted={(deleted) => {
+            setDeletingAgent(null);
+            toast.success(`Agente «${deleted.name}» eliminado`);
+          }}
+        />
+      )}
     </>
   );
 }

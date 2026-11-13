@@ -33,4 +33,6 @@ export const runAgentSchema = z.object({
 });
 
 export type CreateAgentInput = z.infer<typeof createAgentSchema>;
+/** Editar reemplaza nombre e instrucciones: mismas reglas que crear. */
+export type UpdateAgentInput = CreateAgentInput;
 export type RunAgentInput = z.infer<typeof runAgentSchema>;

@@ -7,12 +7,17 @@ import {
 import { useCallback, useEffect } from "react";
 import {
   createAgent,
+  deleteAgent,
   getAgent,
   listAgents,
   runAgent,
+  updateAgent,
 } from "../api/agents.ts";
 import { ApiError } from "../api/client.ts";
-import type { RunAgentInput } from "../schemas/agent.schemas.ts";
+import type {
+  RunAgentInput,
+  UpdateAgentInput,
+} from "../schemas/agent.schemas.ts";
 import type {
   Agent,
   ListAgentsParams,
@@ -105,7 +110,7 @@ export function useAgent(agentId: string | undefined) {
     initialData: (): Agent | undefined => {
       if (!agentId) return undefined;
       const cachedLists = queryClient.getQueriesData<PaginatedAgents>({
-        queryKey: [...AGENTS_KEY, "list"],
+        queryKey: AGENTS_LISTS_KEY,
       });
       for (const [, data] of cachedLists) {
         const match = data?.items.find((agent) => agent.id === agentId);
@@ -124,6 +129,33 @@ export function useCreateAgent() {
     onSuccess: (created) => {
       queryClient.setQueryData(agentDetailQueryKey(created.id), created);
       return queryClient.invalidateQueries({ queryKey: AGENTS_KEY });
+    },
+  });
+}
+
+const AGENTS_LISTS_KEY = [...AGENTS_KEY, "list"] as const;
+
+/** Edita un agente: actualiza el detalle en caché y refresca los listados. */
+export function useUpdateAgent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: UpdateAgentInput }) =>
+      updateAgent(id, input),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(agentDetailQueryKey(updated.id), updated);
+      return queryClient.invalidateQueries({ queryKey: AGENTS_LISTS_KEY });
+    },
+  });
+}
+
+/** Elimina un agente: quita su detalle de la caché y refresca los listados. */
+export function useDeleteAgent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (agentId: string) => deleteAgent(agentId),
+    onSuccess: (_result, agentId) => {
+      queryClient.removeQueries({ queryKey: agentDetailQueryKey(agentId) });
+      return queryClient.invalidateQueries({ queryKey: AGENTS_LISTS_KEY });
     },
   });
 }
