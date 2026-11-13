@@ -7,18 +7,41 @@ un proveedor de IA simulado (modo mock).
 
 Prueba técnica Fullstack.
 
-## Requisitos
+![Vista Consultar: el agente «Asistente de resúmenes» responde a una consulta en modo simulado](docs/capturas/02-consultar.png)
 
-- **Node.js 24 o superior** (probado desde un clon limpio con 24.22.3 y 26.13.1; ver `.nvmrc`). El backend usa el
-  módulo `node:sqlite` integrado en Node, así que no hay que instalar ninguna base de datos.
-- npm (incluido con Node).
+## Contenido
+
+| Sección | Qué encontrarás |
+| --- | --- |
+| [Instalación y ejecución](#instalación-y-ejecución) | Requisitos, pasos desde un clon limpio y variables de entorno |
+| [Demostración del flujo](#demostración-del-flujo) | Crear → seleccionar → consultar → ver la respuesta, con capturas |
+| [Arquitectura](#arquitectura) | Estructura del proyecto, diagrama de componentes y flujo de una consulta |
+| [Endpoints](#endpoints) | Rutas de la API, ejemplos de solicitud y respuesta, y formato de errores |
+| [Pruebas](#pruebas) | Pruebas automatizadas del backend |
+| [Tecnologías y razones](#tecnologías-y-razones) | Qué se eligió y por qué |
+| [Limitaciones conocidas](#limitaciones-conocidas) y [mejoras](#mejoras-con-más-tiempo) | Lo que falta y dos mejoras con más tiempo |
+| [Uso de IA](#uso-de-ia) | Herramientas, prompts y verificación (`AI_USAGE.md`) |
 
 ## Instalación y ejecución
 
-Se necesitan dos terminales, una para cada parte.
+### Requisitos
 
-**Backend** (queda en `http://localhost:3000/api`; documentación interactiva en
-`http://localhost:3000/api/docs`):
+- **Node.js 24 o superior** (probado desde un clon limpio con 24.22.3 y 26.13.1; `.nvmrc`
+  fija la 26.13.1). El backend usa el módulo `node:sqlite` integrado en Node, así que no
+  hay que instalar ninguna base de datos.
+- npm (incluido con Node).
+
+### Pasos
+
+**1. Clonar el repositorio**
+
+```bash
+git clone https://github.com/YouRobla/mini-agent-studio.git
+cd mini-agent-studio
+```
+
+**2. Backend** (primera terminal). Queda en `http://localhost:3000/api`, con la
+documentación interactiva en `http://localhost:3000/api/docs`.
 
 ```bash
 cd backend
@@ -26,7 +49,8 @@ npm install
 npm run start
 ```
 
-**Frontend** (queda en `http://localhost:5173`):
+**3. Frontend** (segunda terminal, desde la raíz del repositorio). Queda en
+`http://localhost:5173`.
 
 ```bash
 cd frontend
@@ -34,9 +58,11 @@ npm install
 npm run dev
 ```
 
-Abre `http://localhost:5173` en el navegador. Si ese puerto está ocupado, Vite usa el
-siguiente (5174…) y lo indica en la terminal; la aplicación funciona igual, porque el
-navegador pide la API al propio Vite (`/api`) y Vite la reenvía al backend.
+**4. Abrir** `http://localhost:5173` en el navegador.
+
+Si el puerto 5173 está ocupado, Vite usa el siguiente (5174…) y lo indica en la terminal.
+La aplicación funciona igual, porque el navegador pide la API al propio Vite (`/api`) y
+Vite la reenvía al backend.
 
 No hace falta crear ningún archivo `.env`: todos los valores tienen un valor por defecto.
 La base de datos se crea sola en `backend/data/agents.db` en el primer arranque.
@@ -55,16 +81,23 @@ Hay un `.env.example` en cada carpeta. Ninguna variable contiene secretos.
 
 ## Demostración del flujo
 
-1. Arranca backend y frontend sin configurar nada.
+El recorrido completo, sin configurar ninguna API de IA:
+
+1. Arranca backend y frontend como se indica arriba.
 2. En la vista **Agentes**, pulsa **Nuevo agente**. Escribe el nombre "Asistente de
    resúmenes" y las instrucciones "Eres un asistente que resume textos". Pulsa
    **Guardar agente**.
-3. Aparece un aviso (toast) abajo a la derecha que desaparece solo, y el agente se muestra
-   en **Agentes guardados**.
+3. Aparece un aviso abajo a la derecha que desaparece solo, y el agente se muestra en
+   **Agentes guardados**.
+
+   ![Vista Agentes con tres agentes guardados en tarjetas](docs/capturas/01-agentes.png)
+
 4. Detén el backend (`Ctrl+C`), vuelve a ejecutar `npm run start` y recarga la página:
    el agente sigue en el listado.
-5. Pulsa **Consultar** junto al agente (o **Probar agente** en el aviso, mientras siga visible). Se abre la vista
-   **Consultar** con ese agente elegido; escribe una consulta y pulsa **Enviar consulta**.
+5. Pulsa **Consultar** junto al agente (o **Probar agente** en el aviso, mientras siga
+   visible). Se abre la vista **Consultar** con ese agente elegido; escribe una consulta y
+   pulsa **Enviar consulta**. La respuesta aparece en el chat, como en la captura del
+   principio.
 6. Para editar un agente, pulsa el icono del lápiz en su tarjeta o fila: el formulario se
    abre con sus valores; cambia lo que quieras y pulsa **Guardar cambios**. Para
    eliminarlo, pulsa el icono de la papelera y confirma en el diálogo. Ambas acciones
@@ -73,10 +106,16 @@ Hay un `.env.example` en cada carpeta. Ninguna variable contiene secretos.
 7. Para ver el manejo de errores: guarda un agente con los campos vacíos, envía una
    consulta vacía, abre `/consultar/no-existe`, o detén el backend y recarga la página.
 
+   | Datos incorrectos | Backend detenido |
+   | --- | --- |
+   | ![Formulario con «El nombre es obligatorio» y «Las instrucciones son obligatorias»](docs/capturas/03-validacion.png) | ![Aviso «No se pudieron cargar los agentes» con el botón Reintentar](docs/capturas/04-sin-conexion.png) |
+
 El botón de sol y luna de la barra superior alterna entre el tema claro y el oscuro
 (al cargar se usa el tema del sistema).
 
-## Estructura del proyecto
+## Arquitectura
+
+### Estructura del proyecto
 
 ```
 ├── backend/                         API (NestJS)
@@ -95,6 +134,7 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 │   │   ├── ai/                      Funcionalidad: proveedor de IA
 │   │   │   ├── ai-provider.ts       Contrato del proveedor de IA
 │   │   │   ├── mock-ai.provider.ts  ADAPTADOR DE IA simulado
+│   │   │   ├── ai.module.ts         Elige qué proveedor se usa (hoy, el simulado)
 │   │   │   └── ai.exceptions.ts     Error «falló el proveedor de IA»
 │   │   ├── database/                Conexión a SQLite: la abre, la comparte y la cierra
 │   │   └── common/errors/           Filtro global de errores y su formato único
@@ -115,26 +155,43 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 │       ├── types/                   Tipos del dominio
 │       ├── utils/                   Formato de fechas
 │       └── index.css                Tailwind, daisyUI y los temas studio-light / studio-dark
+├── docs/capturas/                   Capturas de este README
 ├── AI_USAGE.md                      Uso de IA durante el desarrollo
 └── BITACORA.md                      Registro del proceso y de las decisiones
 ```
 
-## Flujo de una consulta
+El detalle del frontend (cómo se comunican los componentes y dónde vive cada estado)
+está en [`frontend/README.md`](frontend/README.md).
 
+### Diagrama de componentes
+
+```mermaid
+flowchart LR
+    UI["Navegador<br/>frontend/ · React"]
+
+    subgraph BE["backend/ · NestJS"]
+        Ctrl["AgentsController<br/>rutas HTTP y validación"]
+        Svc["AgentsService<br/>lógica de negocio"]
+        Repo["AgentsRepository<br/>persistencia"]
+        Port["AiProvider<br/>contrato de IA"]
+        Mock["MockAiProvider<br/>adaptador simulado"]
+        Ctrl --> Svc
+        Svc --> Repo
+        Svc --> Port
+        Port -.->|implementado por| Mock
+    end
+
+    DB[("SQLite<br/>data/agents.db")]
+
+    UI -->|"HTTP /api"| Ctrl
+    Repo --> DB
 ```
-Navegador                         Backend (NestJS)
-─────────                         ────────────────
-ConsultBox ──POST /api/agents/:id/run──▶ AgentsController
-   ▲                                          │  valida el cuerpo con Zod
-   │                                          ▼
-   │                                     AgentsService
-   │                                          │  1. busca el agente
-   │                                          ├────────▶ AgentsRepository ──▶ SQLite
-   │                                          │  2. pide la respuesta
-   │                                          └────────▶ AiProvider (MockAiProvider)
-   │                                          │
-   └────────── respuesta o error ◀────────────┘
-```
+
+Las tres separaciones que pide la prueba se ven en el diagrama: el frontend solo habla con
+el backend por HTTP; dentro del backend, el controlador no sabe nada de SQL ni de IA; y el
+servicio depende del contrato `AiProvider`, no del proveedor simulado.
+
+### Flujo de una consulta
 
 1. El usuario escribe la consulta y pulsa **Enviar consulta**. El frontend valida que no esté
    vacía y envía `POST /api/agents/:id/run`.
@@ -143,7 +200,8 @@ ConsultBox ──POST /api/agents/:id/run──▶ AgentsController
 4. El servicio entrega el nombre, las instrucciones y la consulta al proveedor de IA.
    El servicio solo conoce el contrato `AiProvider`, no la implementación.
 5. El proveedor devuelve el texto y el frontend lo muestra. Cualquier fallo llega al
-   frontend con el mismo formato de error y se muestra como un mensaje legible.
+   frontend con el mismo formato de error (lo construye el filtro global de
+   `common/errors/`) y se muestra como un mensaje legible.
 
 ### El modo mock
 
@@ -358,3 +416,9 @@ razonamiento completo está en `BITACORA.md`.
 Otras: historial de conversaciones por agente, pruebas del
 frontend, ejecución con Docker Compose y, a más largo plazo, un editor visual de flujos
 para agentes con varios pasos.
+
+## Uso de IA
+
+Qué herramientas de IA se usaron y para qué, ejemplos de prompts, qué partes generó la IA
+y qué se cambió, y cómo se verificó el código: [`AI_USAGE.md`](AI_USAGE.md). El registro
+completo de decisiones, etapa por etapa, está en [`BITACORA.md`](BITACORA.md).
