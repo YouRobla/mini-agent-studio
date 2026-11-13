@@ -15,6 +15,10 @@ backend/data/*
 
 # Herramientas de IA locales (se restauran con `npx skills experimental_install`)
 .claude/
+.agents/
+
+# Artefactos de pruebas manuales con Playwright
+.playwright-mcp/
 
 # Enunciado de la prueba (documento de la empresa)
 *.pdf
