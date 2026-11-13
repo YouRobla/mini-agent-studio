@@ -6,7 +6,6 @@ export interface Agent {
   createdAt: string;
 }
 
-/** Criterios de ordenación disponibles para el listado de agentes. */
 export type AgentSort = 'recent' | 'oldest' | 'name';
 
 /** Parámetros normalizados para consultar agentes paginados. */
@@ -17,7 +16,6 @@ export interface ListAgentsParams {
   sort: AgentSort;
 }
 
-/** Metadatos de paginación devueltos por la API. */
 export interface PaginationMeta {
   page: number;
   limit: number;
@@ -28,7 +26,6 @@ export interface PaginationMeta {
   hasPrevPage: boolean;
 }
 
-/** Respuesta paginada del listado de agentes. */
 export interface PaginatedAgents {
   items: Agent[];
   meta: PaginationMeta;

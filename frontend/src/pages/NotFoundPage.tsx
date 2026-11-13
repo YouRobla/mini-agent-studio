@@ -1,7 +1,6 @@
 import { Link } from "react-router";
 import { paths } from "../paths.ts";
 
-/** Página 404 para rutas desconocidas, con enlace de vuelta a Agentes. */
 export function NotFoundPage() {
   return (
     <section className="card card-border mx-auto max-w-xl bg-base-100">

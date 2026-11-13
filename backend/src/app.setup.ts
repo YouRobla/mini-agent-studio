@@ -13,7 +13,8 @@ export function configureApp(app: NestExpressApplication): void {
   // No anunciar en cada respuesta con qué tecnología está hecho el servidor.
   app.disable('x-powered-by');
 
-  // El frontend corre en otro puerto (Vite), así que el navegador necesita CORS.
+  // Con el proxy de Vite el navegador no necesita CORS; esto es para quien llame
+  // al backend directamente desde otro origen (VITE_API_URL).
   app.enableCors({
     origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
   });

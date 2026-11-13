@@ -3,7 +3,6 @@ import { paths } from "../../paths.ts";
 import type { Agent } from "../../types/agent.ts";
 import { ArrowUpRightIcon } from "../ui/icons.tsx";
 
-/** Botón que abre la vista Consultar con el agente ya elegido. */
 export function ConsultAgentLink({ agent }: { agent: Agent }) {
   return (
     <Link

@@ -9,7 +9,6 @@ const NAV_ITEMS = [
   { to: paths.consult(), label: "Consultar", Icon: ChatIcon, end: false },
 ];
 
-/** Menú lateral: logo y navegación (`menu` de daisyUI) con la vista activa marcada. */
 export function Sidebar({ onNavigate }: { onNavigate: () => void }) {
   return (
     <aside className="flex min-h-full w-64 flex-col border-r border-base-300 bg-base-100 p-4">

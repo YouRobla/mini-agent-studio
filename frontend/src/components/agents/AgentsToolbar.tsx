@@ -13,7 +13,6 @@ interface AgentsToolbarProps {
   onViewChange: (view: AgentView) => void;
 }
 
-/** Búsqueda, orden y formato de visualización del listado. */
 export function AgentsToolbar({
   searchInput,
   onSearchChange,

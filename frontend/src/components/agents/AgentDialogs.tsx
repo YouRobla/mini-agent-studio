@@ -20,8 +20,8 @@ interface AgentDialogsProps {
 }
 
 /**
- * Pinta el diálogo abierto (crear, editar o eliminar) y avisa del resultado con
- * un aviso. Las dos páginas lo usan igual: guardan `dialog` y lo cambian desde
+ * Pinta el diálogo abierto (crear, editar o eliminar) y muestra un aviso con el
+ * resultado. Las dos páginas lo usan igual: guardan `dialog` y lo cambian desde
  * sus botones.
  */
 export function AgentDialogs({

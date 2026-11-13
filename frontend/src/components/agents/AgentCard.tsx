@@ -10,7 +10,6 @@ interface AgentCardProps {
   onDelete: (agent: Agent) => void;
 }
 
-/** Agente en la vista de tarjetas (`card` de daisyUI). */
 export function AgentCard({ agent, onEdit, onDelete }: AgentCardProps) {
   return (
     <article className="card card-border bg-base-100 transition-colors hover:border-base-content/30">

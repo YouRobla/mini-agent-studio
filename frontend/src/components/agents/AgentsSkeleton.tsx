@@ -3,7 +3,6 @@ import type { AgentView } from "./AgentsToolbar.tsx";
 /** Agentes por página del backend: el esqueleto ocupa lo mismo que el listado. */
 const PLACEHOLDERS = 6;
 
-/** Esqueleto de carga del listado, con la misma forma que la vista elegida. */
 export function AgentsSkeleton({ view }: { view: AgentView }) {
   return (
     <div role="status" aria-label="Cargando agentes" aria-busy="true">
