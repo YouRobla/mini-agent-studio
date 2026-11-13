@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+/** Conmutador de tema claro/oscuro (`swap` + `theme-controller` de daisyUI). */
 export function ThemeToggle() {
   const [theme, setTheme] = useState(() =>
     document.documentElement.dataset.theme === "studio-dark" ? "dark" : "light",
@@ -8,14 +9,14 @@ export function ThemeToggle() {
   function changeTheme(checked: boolean) {
     const next = checked ? "dark" : "light";
     setTheme(next);
-    // CSS theme-controller applies the theme; data-theme also preserves the
-    // unchecked theme and the initial paint before React mounts.
+    // El theme-controller de daisyUI aplica el tema por CSS; data-theme guarda
+    // también el tema claro y el que pinta index.html antes de montar React.
     document.documentElement.dataset.theme =
       next === "dark" ? "studio-dark" : "studio-light";
     try {
       localStorage.setItem("studio-theme", next);
     } catch {
-      // The control still works when storage is unavailable.
+      // Si el navegador bloquea el almacenamiento, el conmutador sigue funcionando.
     }
   }
   const label = theme === "dark" ? "Activar tema claro" : "Activar tema oscuro";

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 
+/** Estructura de la app: menú lateral (`drawer` + `menu`), barra superior y contenido. */
 export function StudioLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
 

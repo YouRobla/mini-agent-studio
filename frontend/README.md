@@ -50,8 +50,8 @@ Los avisos usan `ToastProvider` (contexto de React, montado en `AppProviders`) y
 `useToast()` con `success(mensaje, acción?)`, `error` e `info`. `ToastViewport` los dibuja
 con `toast toast-end toast-bottom` y `alert` de daisyUI. Desaparecen a los 4 s; el
 temporizador se pausa con el ratón encima o con foco dentro; hay como máximo 3 a la vez.
-Éxito e info usan `role="status"` y los errores `role="alert"`. La animación breve se
-desactiva con `prefers-reduced-motion`. La acción opcional («Probar agente») es un
+Éxito e info usan `role="status"` y los errores `role="alert"`. La animación de entrada es
+la del `toast` de daisyUI y se desactiva con `prefers-reduced-motion`. La acción opcional («Probar agente») es un
 enlace dentro del aviso; como caduca, la misma acción existe en el botón Consultar del
 listado. Los errores de una mutación no usan toast: se quedan en su modal o diálogo.
 
@@ -86,23 +86,23 @@ revisar navegación directa, móvil, teclado y persistencia del tema.
 Los dos bloques `@plugin "daisyui/theme"` viven en `src/index.css`, después del
 plugin principal. `themes: false` evita cargar los temas predefinidos.
 
-- `studio-dark`: el tema diseñado en el [theme generator de daisyUI](https://daisyui.com/theme-generator/):
-  fondos azul marino, primario verde esmeralda, secundario violeta. Solo se cambió
-  `primary-content` (texto oscuro sobre el verde) para llegar a contraste AA.
-  Tiene `prefersdark: true`.
-- `studio-light`: tema por defecto, con la misma paleta y forma sobre bases claras.
+- `studio-light`: tema por defecto. Bases blancas y grises muy claros con un leve tono
+  violeta; primario violeta.
+- `studio-dark`: con `prefersdark: true` (modo oscuro del sistema). Fondos violeta
+  noche y un primario violeta más claro.
 
-Forma común: campos y botones en píldora (`--radius-field: 2rem`), tarjetas y modales
-redondeados (`--radius-box: 1rem`), bordes de 2px, sombra sutil y textura ligera. Todo
-texto sobre su fondo cumple un contraste mínimo de 4.5:1 (WCAG AA). El foco de teclado
-y el de los campos usan el primario.
+Forma común: esquinas suaves (`--radius-box: 1rem`, campos a `0.5rem`), bordes de 1px,
+sombra sutil y sin textura. Todo texto sobre su fondo cumple un contraste mínimo de
+4.5:1 (WCAG AA); en `studio-dark` el texto sobre los colores vivos es oscuro por ese
+motivo. El foco de teclado y el de los campos usan el primario.
 
 La interfaz se apoya en componentes de daisyUI y deja Tailwind para la maquetación:
-`drawer`, `menu` y `navbar` (estructura), `card` (tarjetas), `table` (vista en lista),
+`drawer`, `menu` y `navbar` (estructura), `card` (tarjetas), `list` (vista en lista),
 `avatar` (inicial del agente), `join` (vista y paginación), `modal` (formulario y
 confirmación, desde abajo en móvil), `fieldset` (campos), `collapse` (instrucciones en
-Consultar), `chat` (conversación), `toast` y `alert` (avisos), `skeleton` y `loading`
-(carga), `tooltip`, `badge` y `kbd`.
+Consultar), `chat` (conversación), `toast` y `alert` (avisos, con su aspecto y animación
+nativos), `skeleton` y `loading` (carga), `tooltip`, `badge` y `kbd`.
+
 Para cambiar colores, edita sus tokens en CSS. Si cambias nombres, actualiza también
 `ThemeToggle.tsx` e `index.html`. La preferencia guardada sigue usando
 `light` / `dark`, por lo que las elecciones anteriores se conservan.

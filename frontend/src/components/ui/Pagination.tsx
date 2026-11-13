@@ -28,6 +28,7 @@ function buildPageRange(current: number, totalPages: number): PageItem[] {
   return pages;
 }
 
+/** Resumen «Mostrando X–Y de Z» y botones de página (`join` de daisyUI). */
 export function Pagination({
   meta,
   isUpdating = false,

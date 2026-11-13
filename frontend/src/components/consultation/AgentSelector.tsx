@@ -10,6 +10,7 @@ interface AgentSelectorProps {
   onSelect: (agentId: string) => void;
 }
 
+/** Selector del agente a consultar, con sus estados de carga, error y lista vacía. */
 export function AgentSelector({
   agents,
   agentId,

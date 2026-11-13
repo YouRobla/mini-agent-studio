@@ -4,6 +4,7 @@ interface PageHeaderProps {
   description: string;
 }
 
+/** Encabezado común de página: antetítulo, título y descripción. */
 export function PageHeader({ eyebrow, title, description }: PageHeaderProps) {
   return (
     <header>

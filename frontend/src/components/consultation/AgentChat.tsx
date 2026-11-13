@@ -66,7 +66,7 @@ export function AgentChat({ agent }: { agent: Agent }) {
             <div className="chat-header mb-1 text-xs text-base-content/70">
               Tú
             </div>
-            <div className="chat-bubble chat-bubble-secondary max-w-[85%] whitespace-pre-wrap [overflow-wrap:anywhere]">
+            <div className="chat-bubble chat-bubble-primary max-w-[85%] whitespace-pre-wrap [overflow-wrap:anywhere]">
               {runAgent.variables.query}
             </div>
           </div>

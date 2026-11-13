@@ -4,6 +4,7 @@ interface AgentsSkeletonProps {
   count?: number;
 }
 
+/** Esqueletos de carga del listado (tarjetas o filas) y del selector de agentes. */
 export function AgentsSkeleton({
   selector = false,
   view = "grid",

@@ -7,6 +7,7 @@ import {
   type RunAgentInput,
 } from "../schemas/agent.schemas.ts";
 
+/** Formulario de la consulta: valida, envía al backend y gestiona sus errores. */
 export function useQueryForm(agentId: string) {
   const runAgent = useRunAgent(agentId);
   const {

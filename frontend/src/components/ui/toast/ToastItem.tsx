@@ -11,33 +11,32 @@ const ALERT_CLASS: Record<ToastKind, string> = {
   info: "alert-info",
 };
 
-const ICON_PATH: Record<ToastKind, IconShape> = {
-  success: { circle: true, d: "m8 12 3 3 5-6" },
-  error: { circle: true, d: "M12 8v5M12 16.5v.01" },
-  info: { circle: true, d: "M12 11v5M12 7.5v.01" },
+/** Trazos de los iconos (mismo estilo que los iconos de la documentación de daisyUI). */
+const ICON_PATH: Record<ToastKind, string> = {
+  success: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+  error: "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z",
+  info: "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
 };
-
-interface IconShape {
-  circle: boolean;
-  d: string;
-}
 
 interface ToastItemProps {
   toast: ToastItemData;
   onDismiss: (id: number) => void;
-  onRemove: (id: number) => void;
 }
 
-export function ToastItem({ toast, onDismiss, onRemove }: ToastItemProps) {
-  const { id, kind, message, action, closing } = toast;
+/**
+ * Un aviso: `alert` de daisyUI con icono, mensaje, acción opcional y cierre.
+ * Desaparece solo a los 4 s; el tiempo se pausa con el ratón encima o con el
+ * foco dentro, para que dé tiempo a leerlo o a pulsar la acción.
+ */
+export function ToastItem({ toast, onDismiss }: ToastItemProps) {
+  const { id, kind, message, action } = toast;
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const paused = hovered || focused;
   const remaining = useRef(DURATION_MS);
 
-  // El temporizador se detiene con hover o foco y retoma el tiempo restante.
   useEffect(() => {
-    if (paused || closing) return;
+    if (paused) return;
     const startedAt = Date.now();
     const timer = window.setTimeout(() => onDismiss(id), remaining.current);
     return () => {
@@ -47,15 +46,12 @@ export function ToastItem({ toast, onDismiss, onRemove }: ToastItemProps) {
         remaining.current - (Date.now() - startedAt),
       );
     };
-  }, [paused, closing, id, onDismiss]);
-
-  const icon = ICON_PATH[kind];
+  }, [paused, id, onDismiss]);
 
   return (
     <div
       role={kind === "error" ? "alert" : "status"}
-      aria-live={kind === "error" ? "assertive" : "polite"}
-      className={`alert ${ALERT_CLASS[kind]} ${closing ? "toast-leave" : "toast-enter"} items-start gap-2 shadow-lg`}
+      className={`alert ${ALERT_CLASS[kind]}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setFocused(true)}
@@ -64,54 +60,40 @@ export function ToastItem({ toast, onDismiss, onRemove }: ToastItemProps) {
           setFocused(false);
         }
       }}
-      onAnimationEnd={() => {
-        if (closing) onRemove(id);
-      }}
     >
       <svg
-        className="mt-0.5 size-5 shrink-0"
-        viewBox="0 0 24 24"
+        className="size-6 shrink-0 stroke-current"
         fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        viewBox="0 0 24 24"
         aria-hidden="true"
       >
-        {icon.circle && <circle cx="12" cy="12" r="9" />}
-        <path d={icon.d} />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d={ICON_PATH[kind]}
+        />
       </svg>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium [overflow-wrap:anywhere]">
-          {message}
-        </p>
+      <span>{message}</span>
+      <div className="flex gap-1">
         {action && (
           <Link
             to={action.to}
-            className="btn btn-xs mt-2"
+            className="btn btn-sm"
             onClick={() => onDismiss(id)}
           >
             {action.label}
           </Link>
         )}
-      </div>
-      <button
-        type="button"
-        className="btn btn-xs btn-square"
-        aria-label="Cerrar aviso"
-        onClick={() => onDismiss(id)}
-      >
-        <svg
-          className="size-4"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          aria-hidden="true"
+        <button
+          type="button"
+          className="btn btn-sm btn-ghost btn-square"
+          aria-label="Cerrar aviso"
+          onClick={() => onDismiss(id)}
         >
-          <path d="m6 6 12 12M6 18 18 6" />
-        </svg>
-      </button>
+          ✕
+        </button>
+      </div>
     </div>
   );
 }

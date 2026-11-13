@@ -4,24 +4,16 @@ import { ToastItem } from "./ToastItem.tsx";
 interface ToastViewportProps {
   toasts: ToastItemData[];
   onDismiss: (id: number) => void;
-  onRemove: (id: number) => void;
 }
 
-/** Esquina inferior derecha donde se apilan los avisos. */
-export function ToastViewport({
-  toasts,
-  onDismiss,
-  onRemove,
-}: ToastViewportProps) {
+/** Esquina inferior derecha donde se apilan los avisos (`toast` de daisyUI). */
+export function ToastViewport({ toasts, onDismiss }: ToastViewportProps) {
+  if (toasts.length === 0) return null;
+
   return (
-    <div className="toast toast-end toast-bottom max-w-[calc(100vw-1rem)] sm:max-w-md">
+    <div className="toast toast-end toast-bottom z-50">
       {toasts.map((toast) => (
-        <ToastItem
-          key={toast.id}
-          toast={toast}
-          onDismiss={onDismiss}
-          onRemove={onRemove}
-        />
+        <ToastItem key={toast.id} toast={toast} onDismiss={onDismiss} />
       ))}
     </div>
   );

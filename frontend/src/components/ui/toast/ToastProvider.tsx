@@ -11,42 +11,23 @@ import type {
 /** Máximo de avisos a la vez: al llegar uno nuevo sale el más antiguo. */
 const MAX_VISIBLE = 3;
 
-function prefersReducedMotion(): boolean {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
+/**
+ * Guarda la lista de avisos y expone `useToast()` a toda la aplicación.
+ * La animación de entrada es la del componente `toast` de daisyUI.
+ */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItemData[]>([]);
   const nextId = useRef(1);
 
   const show = useCallback(
     (kind: ToastKind, message: string, action?: ToastAction) => {
-      const toast: ToastItemData = {
-        id: nextId.current++,
-        kind,
-        message,
-        action,
-        closing: false,
-      };
+      const toast = { id: nextId.current++, kind, message, action };
       setToasts((current) => [...current, toast].slice(-MAX_VISIBLE));
     },
     [],
   );
 
-  /** Inicia la animación de salida; el aviso se quita al terminarla. */
   const dismiss = useCallback((id: number) => {
-    if (prefersReducedMotion()) {
-      setToasts((current) => current.filter((toast) => toast.id !== id));
-      return;
-    }
-    setToasts((current) =>
-      current.map((toast) =>
-        toast.id === id ? { ...toast, closing: true } : toast,
-      ),
-    );
-  }, []);
-
-  const remove = useCallback((id: number) => {
     setToasts((current) => current.filter((toast) => toast.id !== id));
   }, []);
 
@@ -62,7 +43,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext value={api}>
       {children}
-      <ToastViewport toasts={toasts} onDismiss={dismiss} onRemove={remove} />
+      <ToastViewport toasts={toasts} onDismiss={dismiss} />
     </ToastContext>
   );
 }

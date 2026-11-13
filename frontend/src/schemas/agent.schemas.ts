@@ -5,9 +5,9 @@ import { z } from "zod";
  * antes de enviar; la validación que cuenta es siempre la del servidor.
  */
 
-export const NAME_MAX_LENGTH = 100;
-export const INSTRUCTIONS_MAX_LENGTH = 5000;
-export const QUERY_MAX_LENGTH = 5000;
+const NAME_MAX_LENGTH = 100;
+const INSTRUCTIONS_MAX_LENGTH = 5000;
+const QUERY_MAX_LENGTH = 5000;
 
 function requiredText(requiredMessage: string, maxLength: number) {
   return z

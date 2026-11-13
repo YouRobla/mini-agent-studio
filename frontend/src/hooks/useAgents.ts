@@ -24,7 +24,9 @@ import type {
   PaginatedAgents,
 } from "../types/agent.ts";
 
-export const AGENTS_KEY = ["agents"] as const;
+/** Claves de caché de TanStack Query para los agentes. */
+const AGENTS_KEY = ["agents"] as const;
+const AGENTS_LISTS_KEY = [...AGENTS_KEY, "list"] as const;
 export const DEFAULT_AGENTS_LIMIT = 6;
 
 function normalizeParams(
@@ -38,11 +40,11 @@ function normalizeParams(
   };
 }
 
-export function agentsListQueryKey(params: ListAgentsParams) {
-  return [...AGENTS_KEY, "list", params] as const;
+function agentsListQueryKey(params: ListAgentsParams) {
+  return [...AGENTS_LISTS_KEY, params] as const;
 }
 
-export function agentDetailQueryKey(agentId: string) {
+function agentDetailQueryKey(agentId: string) {
   return [...AGENTS_KEY, "detail", agentId] as const;
 }
 
@@ -132,8 +134,6 @@ export function useCreateAgent() {
     },
   });
 }
-
-const AGENTS_LISTS_KEY = [...AGENTS_KEY, "list"] as const;
 
 /** Edita un agente: actualiza el detalle en caché y refresca los listados. */
 export function useUpdateAgent() {

@@ -474,3 +474,28 @@ de cada cambio con mis palabras)_
   escritorio.
 - **Revisión:** build y lint en verde; capturas de tarjetas, tabla, modal y Consultar en
   claro y oscuro, y tabla en móvil (390 px, sin desbordamiento); consola sin errores.
+
+---
+
+## 2026-11-12 · Etapa 17 — Vuelta al tema violeta, lista original y auditoría (cierre de la UI)
+
+- **Decisión mía:** el tema del generador (verde, píldoras, bordes de 2px) no me gustó
+  aplicado a toda la app. Vuelvo al violeta de la etapa 15, con el modo oscuro en violeta
+  noche, y me quedo con los componentes nativos de daisyUI de la etapa 16.
+- **Lista:** la tabla de la etapa 16 no me convenció. Vuelve la lista con filas de la etapa
+  13 (`list` de daisyUI): nombre e instrucciones debajo, fecha a la derecha y acciones.
+- **Scroll horizontal en la tabla:** la causa era doble. En escritorio, el tooltip
+  invisible de los iconos de la última columna desbordaba 7px dentro de un contenedor
+  con `overflow-x-auto`; en móvil, el botón «Consultar» con texto no cabía (365px en
+  324px). Solución: sin contenedor de scroll y «Consultar» solo con el icono en móvil.
+  Comprobado sin scroll horizontal en 1880, 1440, 768 y 390px, en tarjetas y lista.
+- **Avisos y tooltips nativos:** se quitan las animaciones propias de los toasts (queda la
+  de daisyUI) y la separación propia de los tooltips. El aviso usa la estructura de
+  `alert` de la documentación de daisyUI. Se conserva la pausa al pasar el ratón.
+- **Auditoría del frontend:** sin archivos ni exportaciones sin uso; 8 exportaciones que
+  solo se usaban dentro de su archivo pasan a internas; las claves de caché de TanStack
+  Query quedan juntas y antes de usarse; comentarios de `ThemeToggle` en español; cada
+  archivo con una línea que explica su propósito.
+- **Revisión:** build y lint en verde; recorrido completo en una instancia aislada con base
+  temporal (crear con toast, editar, eliminar con confirmación, Consultar, error de red);
+  capturas en claro y oscuro; consola sin errores.

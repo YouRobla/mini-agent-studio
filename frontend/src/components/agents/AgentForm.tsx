@@ -1,7 +1,7 @@
 import { errorMessage } from "../../api/client.ts";
 import type { useAgentForm } from "../../hooks/useAgentForm.ts";
 
-export type AgentFormMode = "create" | "edit";
+type AgentFormMode = "create" | "edit";
 
 interface AgentFormProps {
   mode: AgentFormMode;
@@ -9,6 +9,7 @@ interface AgentFormProps {
   onCancel: () => void;
 }
 
+/** Campos de nombre e instrucciones, con errores por campo; sirve para crear y editar. */
 export function AgentForm({ mode, form, onCancel }: AgentFormProps) {
   const { register, errors, onSubmit, saveAgent, showGeneralError } = form;
   const isEdit = mode === "edit";

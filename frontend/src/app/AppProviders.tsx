@@ -3,6 +3,7 @@ import { useState, type ReactNode } from "react";
 import { BrowserRouter } from "react-router";
 import { ToastProvider } from "../components/ui/toast/ToastProvider.tsx";
 
+/** Proveedores globales: caché de TanStack Query, enrutador y avisos (toasts). */
 export function AppProviders({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
     () =>

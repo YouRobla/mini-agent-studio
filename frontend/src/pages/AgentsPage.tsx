@@ -16,6 +16,10 @@ function parseSort(raw: string | null): AgentSort {
   return "recent";
 }
 
+/**
+ * Vista Agentes: crear y listar. Página, orden y búsqueda viven en la URL
+ * (`?page=&sort=&search=`) para poder recargar o compartir el estado.
+ */
 export function AgentsPage() {
   const [creating, setCreating] = useState(false);
   const toast = useToast();

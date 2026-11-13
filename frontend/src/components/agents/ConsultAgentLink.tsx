@@ -5,11 +5,12 @@ import type { Agent } from "../../types/agent.ts";
 export function ConsultAgentLink({ agent }: { agent: Agent }) {
   return (
     <Link
-      className="btn btn-sm"
+      className="btn btn-sm max-sm:btn-square"
       to={`/consultar/${encodeURIComponent(agent.id)}`}
       aria-label={`Consultar con ${agent.name}`}
     >
-      Consultar
+      {/* En móvil solo se ve la flecha; el aria-label nombra la acción. */}
+      <span className="max-sm:hidden">Consultar</span>
       <svg
         className="size-3.5"
         viewBox="0 0 24 24"

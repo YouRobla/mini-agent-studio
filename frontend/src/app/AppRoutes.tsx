@@ -4,6 +4,7 @@ import { AgentsPage } from "../pages/AgentsPage.tsx";
 import { ConsultPage } from "../pages/ConsultPage.tsx";
 import { NotFoundPage } from "../pages/NotFoundPage.tsx";
 
+/** Rutas: `/` Agentes, `/consultar/:agentId?` Consultar y 404, dentro del panel. */
 export function AppRoutes() {
   return (
     <Routes>
