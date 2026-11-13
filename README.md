@@ -165,27 +165,10 @@ está en [`frontend/README.md`](frontend/README.md).
 
 ### Diagrama de componentes
 
-```mermaid
-flowchart LR
-    UI["Navegador<br/>frontend/ · React"]
+![Diagrama de componentes: frontend en React, backend en NestJS con controlador, servicio, repositorio y proveedor de IA, y SQLite](docs/arquitectura.drawio.svg)
 
-    subgraph BE["backend/ · NestJS"]
-        Ctrl["AgentsController<br/>rutas HTTP y validación"]
-        Svc["AgentsService<br/>lógica de negocio"]
-        Repo["AgentsRepository<br/>persistencia"]
-        Port["AiProvider<br/>contrato de IA"]
-        Mock["MockAiProvider<br/>adaptador simulado"]
-        Ctrl --> Svc
-        Svc --> Repo
-        Svc --> Port
-        Port -.->|implementado por| Mock
-    end
-
-    DB[("SQLite<br/>data/agents.db")]
-
-    UI -->|"HTTP /api"| Ctrl
-    Repo --> DB
-```
+El diagrama es un archivo de [draw.io](https://www.drawio.com/) (`docs/arquitectura.drawio.svg`):
+GitHub lo muestra como imagen y draw.io (o su extensión de VS Code) lo abre para editarlo.
 
 Las tres separaciones que pide la prueba se ven en el diagrama: el frontend solo habla con
 el backend por HTTP; dentro del backend, el controlador no sabe nada de SQL ni de IA; y el
