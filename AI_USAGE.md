@@ -21,6 +21,39 @@
 | Skills `nestjs-best-practices`, `daisyui`, `tanstack-query-best-practices` y `vercel-composition-patterns` | — | Guías de referencia; se leyó su contenido antes de instalarlas |
 | CLI `npx skills` | — | Búsqueda y evaluación de skills |
 
+## Mi rol en el proyecto
+
+> Resumen mío, dictado y ordenado; la IA solo ajustó la redacción.
+
+Trabajé como arquitecto y director del proceso: pensé, analicé, decidí la estructura y
+delegué el trabajo en agentes de IA por etapas. La IA me ayudó a organizar mis ideas, pero
+las propuestas, la limpieza y la organización final fueron mías: escogí el IDE, escribí
+los prompts, organicé los componentes, revisé mis proyectos anteriores como referencia y
+verifiqué cada resultado.
+
+**Orquestación con Orca.** Usé Orca, un IDE pensado para dirigir varias IAs a la vez, con
+su skill de orquestación y su propia CLI. Desde ahí delegué tareas a subagentes y
+workers, y también abrí agentes directamente cuando quise llevar yo una parte.
+
+**Un modelo para pensar y otros para ejecutar.** Para el trabajo pesado de pensamiento
+(requisitos, stack y estructura) usé Claude Fable 5.2, por su capacidad crítica y
+analítica. Con eso analizado, documenté las etapas según lo que pide el PDF y empecé a
+delegar. Para tareas de ejecución ya definidas usé agentes como Claude Sonnet, que no
+necesitan esa capacidad crítica porque el análisis ya estaba hecho; Codex y Antigravity,
+según la tarea. Después hice las correcciones de la interfaz revisando cada pantalla.
+
+**Backend.** Propuse NestJS desde el principio. Su inyección de dependencias deja la
+lógica en servicios, separada de los controladores, y el proveedor de IA detrás de una
+interfaz, preparado para conectar un LLM real con una API key (el extra del PDF). Más
+adelante pedí documentar la API con Swagger, que en NestJS 12 sale casi automáticamente de
+los esquemas de Zod. Zod da las mismas reglas y tipos en el frontend y en el backend, para
+que los dos lados manejen la misma estructura de datos y haya coherencia (hoy están
+copiados en cada lado; compartirlos es una de las mejoras pendientes).
+
+**Simplicidad.** Reestructuré los componentes del frontend y del backend con un principio
+de simplicidad: la idea no era hacer un proyecto más, sino que sea práctico y que alguien
+que lo abre por primera vez lo entienda.
+
 ## Cómo trabajé con la IA
 
 No pedí "hazme la aplicación". El trabajo fue por etapas, y no se pasó a la siguiente sin
@@ -89,9 +122,9 @@ principio, con una sola pantalla, y lo incorporé cuando pasé a dos vistas.
 
 ### Lo que hice yo
 
-- **Dirigí, no escribí a mano:** el código lo generaron los agentes. Mi trabajo fue decidir
-  qué construir, escribir los encargos, revisar cada resultado en el navegador y pedir
-  correcciones hasta que me convenciera.
+- **Dirigí y delegué:** el código lo generaron los agentes. Mi trabajo fue decidir qué
+  construir, escribir los encargos, revisar cada resultado en el navegador y pedir
+  correcciones hasta que me convenciera (ver «Mi rol en el proyecto»).
 - **Abrí yo mismo dos agentes** fuera de Claude Code para la etapa 11. A Codex le pedí
   ordenar el frontend tomando como referencia la estructura de mi proyecto anterior
   (SistemaCalendarioDesplegable), un modal para crear agentes y el `theme-controller`

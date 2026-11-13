@@ -1136,3 +1136,13 @@ el sistema esté más presentable y pulido».
   entre opciones que propuso la IA, lo digo así (por ejemplo, Consultar con panel a la
   izquierda, filas con nombre e instrucciones, nombre del repositorio, Mermaid).
 - Verificado: todas las «decisión mía» de las etapas 1–34 tienen detrás un prompt mío.
+
+### Mi resumen del proceso
+
+- Escribí (dictado) un resumen de mi rol: arquitecto y director, Orca para orquestar,
+  Claude Fable 5.2 para pensar y agentes como Sonnet para ejecutar, NestJS, Swagger, Zod
+  y simplicidad. Está en `AI_USAGE.md`, sección «Mi rol en el proyecto».
+- **Ajustes de precisión al integrarlo (IA, aceptados por mí):** Swagger llegó en la etapa
+  29, así que no fue el motivo inicial para elegir NestJS (lo fue la separación en
+  servicios y la inyección de dependencias); y los esquemas de Zod tienen las mismas
+  reglas en los dos lados pero están copiados, no compartidos.
