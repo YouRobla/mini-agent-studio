@@ -1228,4 +1228,6 @@ el sistema esté más presentable y pulido».
   ya elige el proveedor en `ai.module.ts` y devuelve `provider` en cada respuesta; el badge
   es un texto fijo. Con un LLM real sí hará falta que el backend diga cuál está activo.
 - **Revisión:** build y lint en verde; capturas en escritorio y móvil.
-- **Pendiente:** las capturas de `docs/capturas/` todavía muestran el badge en la barra.
+- **Revertido (malentendido de la IA):** no me refería al badge, sino al texto
+  «[Modo simulado]» que aparece dentro de la respuesta del chat. El badge vuelve a la
+  barra superior, como estaba; el texto del mock se analiza en la etapa siguiente.

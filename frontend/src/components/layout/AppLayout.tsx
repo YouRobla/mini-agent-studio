@@ -58,6 +58,12 @@ export function AppLayout() {
             >
               Mini Agent Studio
             </Link>
+            <span
+              className="badge badge-outline badge-sm shrink-0 sm:badge-md"
+              title="Las respuestas las genera un proveedor de IA simulado"
+            >
+              Modo simulado
+            </span>
             <ThemeToggle />
           </header>
           <main
