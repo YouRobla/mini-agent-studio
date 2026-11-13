@@ -1596,3 +1596,24 @@ el sistema esté más presentable y pulido».
   `openai · gpt-6.1-terra` y una consulta real con `--env-file`. Prueba borrada después.
 - **README:** requisito de Compose 2.24 retirado; comando con `--env-file` en la sección de
   Docker y en la tabla de comandos.
+
+---
+
+## 2026-11-13 · Etapa 52 — Vuelta a `env_file`: la etapa 51 fue un error
+
+- **Pregunta mía:** ¿era buena práctica el cambio de la etapa 51, que ya no usa
+  `backend/.env` directamente? Pedí revisar la documentación actual antes de seguir.
+- **Documentación de Docker (leída por la IA):** `env_file` es la forma documentada de
+  pasar las variables de un archivo al contenedor, y `required: false` existe desde
+  Compose 2.24.0 (enero de 2024). La sustitución `${VAR}` con `--env-file` sirve para
+  rellenar valores del propio compose: obliga a escribir `--env-file backend/.env` cada vez,
+  y una variable de la terminal pasa por encima del archivo sin avisar.
+- **Conclusión:** la etapa 51 cambió lo estándar por compatibilidad con versiones de casi
+  tres años atrás. Fue un error de la IA presentarlo como corrección.
+- **Decisión mía:** volver a `env_file` con `required: false` (la configuración ya probada
+  en las etapas 49 y 50) y dejar «Compose 2.24 o superior» en los requisitos del README.
+- **Revisión:** `docker compose config` sin `backend/.env` (sin variables de IA, modo
+  simulado) y con él (`openai`, clave oculta en la salida).
+- **Matiz de la documentación:** para datos sensibles recomienda Compose secrets. Para una
+  app local de prueba, `env_file` en un archivo ignorado por Git es lo habitual; queda
+  como posible mejora.
