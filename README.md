@@ -61,10 +61,11 @@ Hay un `.env.example` en cada carpeta. Ninguna variable contiene secretos.
    el agente sigue en el listado.
 5. Pulsa **Consultar** junto al agente (o **Probar agente** en el aviso, mientras siga visible). Se abre la vista
    **Consultar** con ese agente elegido; escribe una consulta y pulsa **Enviar consulta**.
-6. Para editar un agente, abre su menú **⋯** y elige **Editar**: el formulario se abre con
-   sus valores; cambia lo que quieras y pulsa **Guardar cambios**. Para eliminarlo, elige
-   **Eliminar** en el mismo menú y confirma en el diálogo. Ambas acciones también están
-   en la ficha de la vista **Consultar**; si eliminas desde ahí, vuelves a `/consultar`.
+6. Para editar un agente, pulsa el icono del lápiz en su tarjeta o fila: el formulario se
+   abre con sus valores; cambia lo que quieras y pulsa **Guardar cambios**. Para
+   eliminarlo, pulsa el icono de la papelera y confirma en el diálogo. Ambas acciones
+   también están en la ficha de la vista **Consultar**; si eliminas desde ahí, vuelves a
+   `/consultar`.
 7. Para ver el manejo de errores: guarda un agente con los campos vacíos, envía una
    consulta vacía, abre `/consultar/no-existe`, o detén el backend y recarga la página.
 
@@ -95,9 +96,9 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 │       ├── app/                     AppProviders y AppRoutes (React Router)
 │       ├── pages/                   AgentsPage, ConsultPage, NotFoundPage
 │       ├── components/layout/       Panel: menú lateral, barra superior, botón de tema
-│       ├── components/agents/       Formulario crear/editar, confirmar borrado, menú de acciones, listado, tarjeta, fila, detalle
+│       ├── components/agents/       Formulario crear/editar, confirmar borrado, acciones rápidas, listado, tarjeta, fila
 │       ├── components/consultation/ Selector, ficha del agente, chat y formulario
-│       ├── components/ui/           Piezas compartidas: encabezado, paginación, ConfirmDialog y toast/
+│       ├── components/ui/           Piezas compartidas: encabezado, paginación, iconos, ConfirmDialog y toast/
 │       ├── api/                     Cliente HTTP: único lugar que conoce el backend
 │       ├── hooks/                   TanStack Query y lógica de formularios
 │       ├── types/                   Tipos de dominio Agent y RunResult

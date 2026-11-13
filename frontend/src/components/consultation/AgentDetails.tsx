@@ -1,7 +1,7 @@
-import { Link } from "react-router";
 import type { Agent } from "../../types/agent.ts";
 import { AgentAvatar } from "../agents/AgentAvatar.tsx";
 import { formatAgentDate } from "../agents/formatAgentDate.ts";
+import { EditIcon, TrashIcon } from "../ui/icons.tsx";
 
 interface AgentDetailsProps {
   agent: Agent;
@@ -52,24 +52,17 @@ export function AgentDetails({ agent, onEdit, onDelete }: AgentDetailsProps) {
             className="btn btn-sm flex-1"
             onClick={() => onEdit(agent)}
           >
+            <EditIcon />
             Editar
           </button>
           <button
             type="button"
-            className="btn btn-sm btn-error btn-outline flex-1"
+            className="btn btn-sm btn-ghost flex-1 hover:text-error focus-visible:text-error"
             onClick={() => onDelete(agent)}
           >
+            <TrashIcon />
             Eliminar
           </button>
-        </div>
-
-        <div className="border-t border-base-300 pt-3">
-          <Link
-            to="/"
-            className="btn btn-ghost btn-sm w-full justify-start px-2"
-          >
-            ← Volver al listado de agentes
-          </Link>
         </div>
       </div>
     </section>

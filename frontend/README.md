@@ -11,7 +11,7 @@ El código se separa por responsabilidades, agrupado por dominio
 - `app/AppProviders.tsx`: proveedor de TanStack Query y BrowserRouter.
 - `App.tsx`: composición de la aplicación; `app/AppRoutes.tsx`: rutas anidadas con layout y 404.
 - `pages/`: composición de pantallas y navegación.
-- `components/agents/`: formulario de crear/editar, confirmación de borrado, menú de acciones, listado (tarjeta, fila, barra de herramientas, estados vacíos) y detalle de agentes.
+- `components/agents/`: formulario de crear/editar, confirmación de borrado, acciones rápidas (editar y eliminar) y listado (tarjeta, fila, barra de herramientas, estados vacíos).
 - `components/consultation/`: selección, formulario y resultado de consultas.
 - `components/layout/`: navegación y estructura de la aplicación.
 - `components/ui/`: elementos compartidos, independientes del dominio (`ConfirmDialog`, `toast/`).
@@ -32,7 +32,7 @@ No se necesitan stores, buses de eventos ni una capa adicional de servicios.
 ## Interfaz
 
 El listado ocupa el ancho disponible. «Nuevo agente» abre `AgentFormModal` en modo
-crear; el menú «⋯» de cada tarjeta o fila (y los botones de la ficha en Consultar) lo
+crear; el icono de lápiz de cada tarjeta o fila (y el botón Editar de la ficha en Consultar) lo
 abre en modo editar con los valores del agente. Es un solo formulario (`useAgentForm`):
 el modo decide el título, el texto del botón y los valores iniciales. Usa `<dialog>` con
 `showModal()` y las clases de daisyUI; el navegador gestiona el foco y la modalidad.

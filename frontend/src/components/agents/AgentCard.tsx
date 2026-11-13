@@ -1,23 +1,17 @@
 import type { Agent } from "../../types/agent.ts";
-import { AgentActionsMenu } from "./AgentActionsMenu.tsx";
 import { AgentAvatar } from "./AgentAvatar.tsx";
+import { AgentQuickActions } from "./AgentQuickActions.tsx";
 import { ConsultAgentLink } from "./ConsultAgentLink.tsx";
 import { formatAgentDate } from "./formatAgentDate.ts";
 
 interface AgentCardProps {
   agent: Agent;
-  onInspect: (agent: Agent) => void;
   onEdit: (agent: Agent) => void;
   onDelete: (agent: Agent) => void;
 }
 
-/** Agente en la vista de tarjetas. */
-export function AgentCard({
-  agent,
-  onInspect,
-  onEdit,
-  onDelete,
-}: AgentCardProps) {
+/** Agente en la vista de tarjetas: identidad arriba, instrucciones, acción principal abajo. */
+export function AgentCard({ agent, onEdit, onDelete }: AgentCardProps) {
   return (
     <article className="card card-border bg-base-100 transition-colors hover:border-base-content/30">
       <div className="card-body gap-2 p-3.5">
@@ -33,37 +27,17 @@ export function AgentCard({
               </p>
             </div>
           </div>
-
-          <div className="flex shrink-0 items-center gap-0.5">
-            <div className="tooltip tooltip-left" data-tip="Ver instrucciones">
-              <button
-                type="button"
-                className="btn btn-ghost btn-xs btn-square"
-                aria-label={`Ver instrucciones de ${agent.name}`}
-                onClick={() => onInspect(agent)}
-              >
-                <svg
-                  className="size-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  aria-hidden="true"
-                >
-                  <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
-                  <circle cx="12" cy="12" r="2.5" />
-                </svg>
-              </button>
-            </div>
-            <AgentActionsMenu
-              agent={agent}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-          </div>
+          <AgentQuickActions
+            agent={agent}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
         </div>
 
-        <p className="line-clamp-2 min-h-10 text-sm leading-5 text-base-content/75 [overflow-wrap:anywhere]">
+        <p
+          className="line-clamp-2 min-h-10 text-sm leading-5 text-base-content/75 [overflow-wrap:anywhere]"
+          title={agent.instructions}
+        >
           {agent.instructions}
         </p>
 

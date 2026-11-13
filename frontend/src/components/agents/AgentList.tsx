@@ -6,7 +6,6 @@ import type { Agent, AgentSort } from "../../types/agent.ts";
 import { useToast } from "../ui/toast/useToast.ts";
 import { Pagination } from "../ui/Pagination.tsx";
 import { AgentCard } from "./AgentCard.tsx";
-import { AgentDetailsModal } from "./AgentDetailsModal.tsx";
 import { AgentFormModal } from "./AgentFormModal.tsx";
 import { AgentRow } from "./AgentRow.tsx";
 import { AgentsEmptyState } from "./AgentsEmptyState.tsx";
@@ -41,7 +40,6 @@ export function AgentList({
   onRequestCreate,
 }: AgentListProps) {
   const [view, setView] = useState<AgentView>("grid");
-  const [inspectedAgent, setInspectedAgent] = useState<Agent | null>(null);
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
   const [deletingAgent, setDeletingAgent] = useState<Agent | null>(null);
   const toast = useToast();
@@ -157,7 +155,6 @@ export function AgentList({
                     <AgentCard
                       key={agent.id}
                       agent={agent}
-                      onInspect={setInspectedAgent}
                       onEdit={setEditingAgent}
                       onDelete={setDeletingAgent}
                     />
@@ -169,7 +166,6 @@ export function AgentList({
                     <AgentRow
                       key={agent.id}
                       agent={agent}
-                      onInspect={setInspectedAgent}
                       onEdit={setEditingAgent}
                       onDelete={setDeletingAgent}
                     />
@@ -189,11 +185,6 @@ export function AgentList({
           )}
         </div>
       </section>
-
-      <AgentDetailsModal
-        agent={inspectedAgent}
-        onClose={() => setInspectedAgent(null)}
-      />
 
       {editingAgent && (
         <AgentFormModal

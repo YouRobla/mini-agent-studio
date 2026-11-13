@@ -1,48 +1,40 @@
 import type { Agent } from "../../types/agent.ts";
-import { AgentActionsMenu } from "./AgentActionsMenu.tsx";
 import { AgentAvatar } from "./AgentAvatar.tsx";
+import { AgentQuickActions } from "./AgentQuickActions.tsx";
 import { ConsultAgentLink } from "./ConsultAgentLink.tsx";
 import { formatAgentDate } from "./formatAgentDate.ts";
 
 interface AgentRowProps {
   agent: Agent;
-  onInspect: (agent: Agent) => void;
   onEdit: (agent: Agent) => void;
   onDelete: (agent: Agent) => void;
 }
 
-/** Agente en la vista de lista compacta. */
-export function AgentRow({
-  agent,
-  onInspect,
-  onEdit,
-  onDelete,
-}: AgentRowProps) {
+/**
+ * Agente en la vista de lista: nombre e instrucciones a la izquierda (lo que
+ * se lee primero), fecha discreta y acciones al final de la fila.
+ */
+export function AgentRow({ agent, onEdit, onDelete }: AgentRowProps) {
   return (
-    <li className="list-row items-center gap-3 px-1 py-2.5">
+    <li className="list-row items-center gap-3 px-1 py-3">
       <AgentAvatar name={agent.name} />
       <div className="list-col-grow min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="truncate text-sm font-semibold">{agent.name}</p>
-          <span className="hidden text-xs text-base-content/55 sm:inline">
-            · {formatAgentDate(agent.createdAt)}
-          </span>
-        </div>
-        <p className="truncate text-xs text-base-content/70">
+        <p className="truncate text-sm font-semibold" title={agent.name}>
+          {agent.name}
+        </p>
+        <p
+          className="truncate text-sm text-base-content/70"
+          title={agent.instructions}
+        >
           {agent.instructions}
         </p>
       </div>
-      <div className="flex shrink-0 items-center gap-1.5">
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm"
-          onClick={() => onInspect(agent)}
-          aria-label={`Ver instrucciones de ${agent.name}`}
-        >
-          Detalles
-        </button>
+      <span className="hidden shrink-0 text-xs text-base-content/60 sm:inline">
+        {formatAgentDate(agent.createdAt)}
+      </span>
+      <div className="flex shrink-0 items-center gap-1">
         <ConsultAgentLink agent={agent} />
-        <AgentActionsMenu agent={agent} onEdit={onEdit} onDelete={onDelete} />
+        <AgentQuickActions agent={agent} onEdit={onEdit} onDelete={onDelete} />
       </div>
     </li>
   );

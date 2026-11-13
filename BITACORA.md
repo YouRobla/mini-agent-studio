@@ -374,3 +374,26 @@ de cada cambio con mis palabras)_
   y error de red dentro del diálogo de borrado. Consola sin errores.
 - **Riesgo descartado:** el menú usa posicionamiento por ancla de CSS; comprobé que
   Firefox 159 lo soporta.
+
+---
+
+## 2026-11-12 · Etapa 13 — Limpieza de la interfaz del listado (decisión mía)
+
+- **Decisión mía:** quitar lo que sobraba y ordenar mejor.
+  - Fuera el modal «Ver instrucciones» (botón del ojo y botón «Detalles»): la tarjeta y la
+    fila ya muestran las instrucciones, y la ficha de Consultar las muestra completas.
+  - Fuera el enlace «← Volver al listado» de la ficha de Consultar: el selector de agente
+    y el menú lateral ya cubren esa navegación.
+  - Fila de la vista en lista reordenada: nombre e instrucciones a la izquierda, fecha
+    discreta, y al final Consultar más las acciones.
+  - Editar y eliminar como iconos (lápiz y papelera) siempre visibles, en lugar del menú
+    «⋯»: con solo dos acciones, el menú añadía un clic y las escondía.
+- **Aclaración:** el selector de orden («Más recientes…») se mantiene; cuando dije «el
+  orden» me refería a ordenar mejor la fila.
+- **Principios aplicados (propuestos por la IA, aprobados por mí):** acciones frecuentes
+  visibles; iconos con tooltip y `aria-label`; la acción destructiva se tiñe de rojo solo
+  al pasar el ratón o con foco, para no competir con Consultar; sin elementos redundantes.
+- **Iconos:** daisyUI no incluye iconos (es solo CSS), así que son SVG en línea en
+  `components/ui/icons.tsx`, sin librerías nuevas.
+- **Revisión:** build y lint en verde; capturas de tarjetas, lista (escritorio y móvil a
+  390 px sin desbordamiento) y ficha de Consultar; consola sin errores.
