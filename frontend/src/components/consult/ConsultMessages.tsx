@@ -1,7 +1,16 @@
-import { useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import type { ConversationMessage } from "../../hooks/useConversation.ts";
 import { AgentAvatar } from "../agents/AgentAvatar.tsx";
 import { ChatIcon } from "../ui/icons.tsx";
+
+/*
+ * El Markdown (react-markdown + remark-gfm) pesa unos 50 KB comprimidos: se
+ * descarga aparte, con la primera respuesta del agente, y no retrasa la carga
+ * inicial de la aplicación.
+ */
+const Markdown = lazy(() =>
+  import("../ui/Markdown.tsx").then((module) => ({ default: module.Markdown })),
+);
 
 interface ConsultMessagesProps {
   agentName: string;
@@ -88,7 +97,7 @@ function UserBubble({ text }: { text: string }) {
   );
 }
 
-/** Respuesta del agente; sin `text` muestra que la está generando. */
+/** Respuesta del agente en Markdown; sin `text` muestra que la está generando. */
 function AgentBubble({
   agentName,
   text,
@@ -106,8 +115,13 @@ function AgentBubble({
       <div className="chat-header mb-1 text-xs text-base-content/70">
         Agente
       </div>
-      <div className="chat-bubble max-w-[85%] leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">
-        {text ?? (
+      <div className="chat-bubble max-w-[85%] leading-relaxed [overflow-wrap:anywhere]">
+        {text !== undefined ? (
+          // Mientras llega el código del Markdown, el texto se ve tal cual.
+          <Suspense fallback={<p className="whitespace-pre-wrap">{text}</p>}>
+            <Markdown text={text} />
+          </Suspense>
+        ) : (
           <>
             <span
               className="loading loading-dots loading-sm"

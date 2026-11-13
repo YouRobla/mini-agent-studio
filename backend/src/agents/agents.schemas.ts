@@ -185,7 +185,7 @@ export const runResultSchema = z
     response: z.string().meta({
       description: 'Respuesta generada por el proveedor de IA',
       example:
-        'Soy «Asistente de resúmenes» y sigo estas instrucciones: «Eres un asistente que resume textos».\nTu consulta fue: «Resume este párrafo».',
+        'Soy «Asistente de resúmenes» y sigo estas instrucciones: «Eres un asistente que resume textos».\n\nTu consulta fue: «Resume este párrafo».',
     }),
     provider: z.string().meta({
       description: 'Proveedor que generó la respuesta',

@@ -30,6 +30,6 @@ export class MockAiProvider implements AiProvider {
     return [
       `Soy «${request.agentName}» y sigo estas instrucciones: «${request.instructions}».`,
       `${label} fue: «${request.query}».`,
-    ].join('\n');
+    ].join('\n\n'); // dos párrafos en Markdown
   }
 }
