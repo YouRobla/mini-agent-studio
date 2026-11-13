@@ -2,7 +2,7 @@ import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { Agent } from './agent.types.js';
+import { Agent, AgentSort, ListAgentsParams } from './agent.types.js';
 
 /** Fila tal como está guardada en la tabla `agents`. */
 interface AgentRow {
@@ -10,6 +10,20 @@ interface AgentRow {
   name: string;
   instructions: string;
   created_at: string;
+}
+
+interface CountRow {
+  count: number;
+}
+
+const SORT_ORDER_SQL: Record<AgentSort, string> = {
+  recent: 'created_at DESC, rowid DESC',
+  oldest: 'created_at ASC, rowid ASC',
+  name: 'name COLLATE NOCASE ASC, created_at DESC, rowid DESC',
+};
+
+function escapeLikePattern(value: string): string {
+  return value.replace(/[\\%_]/g, '\\$&');
 }
 
 /**
@@ -67,13 +81,45 @@ export class AgentsRepository implements OnModuleDestroy {
       .run(agent.id, agent.name, agent.instructions, agent.createdAt);
   }
 
-  findAll(): Agent[] {
+  findPaginated(params: ListAgentsParams): {
+    items: Agent[];
+    total: number;
+    totalAll: number;
+  } {
+    const totalAllRow = this.db
+      .prepare('SELECT COUNT(*) AS count FROM agents')
+      .get() as unknown as CountRow;
+    const totalAll = totalAllRow.count;
+
+    const searchTerm = params.search.trim();
+    const hasSearch = searchTerm.length > 0;
+    const likeParam = `%${escapeLikePattern(searchTerm)}%`;
+    const whereClause = hasSearch
+      ? "WHERE LOWER(name) LIKE LOWER(?) ESCAPE '\\' OR LOWER(instructions) LIKE LOWER(?) ESCAPE '\\'"
+      : '';
+    const filterArgs = hasSearch ? [likeParam, likeParam] : [];
+
+    const total = hasSearch
+      ? (
+          this.db
+            .prepare(`SELECT COUNT(*) AS count FROM agents ${whereClause}`)
+            .get(...filterArgs) as unknown as CountRow
+        ).count
+      : totalAll;
+
+    const offset = (params.page - 1) * params.limit;
+    const orderBy = SORT_ORDER_SQL[params.sort];
     const rows = this.db
       .prepare(
-        'SELECT id, name, instructions, created_at FROM agents ORDER BY created_at DESC, rowid DESC',
+        `SELECT id, name, instructions, created_at FROM agents ${whereClause} ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
       )
-      .all() as unknown as AgentRow[];
-    return rows.map(toAgent);
+      .all(...filterArgs, params.limit, offset) as unknown as AgentRow[];
+
+    return {
+      items: rows.map(toAgent),
+      total,
+      totalAll,
+    };
   }
 
   findById(id: string): Agent | undefined {

@@ -1,7 +1,23 @@
-import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
-import type { Agent, RunResult } from './agent.types.js';
-import { createAgentSchema, runAgentSchema } from './agents.schemas.js';
-import type { CreateAgentInput, RunAgentInput } from './agents.schemas.js';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
+import type { Agent, PaginatedAgents, RunResult } from './agent.types.js';
+import {
+  createAgentSchema,
+  listAgentsQuerySchema,
+  runAgentSchema,
+} from './agents.schemas.js';
+import type {
+  CreateAgentInput,
+  ListAgentsQuery,
+  RunAgentInput,
+} from './agents.schemas.js';
 import { AgentsService } from './agents.service.js';
 
 /** Rutas HTTP de los agentes. Solo traduce entre HTTP y el servicio. */
@@ -15,8 +31,15 @@ export class AgentsController {
   }
 
   @Get()
-  findAll(): Agent[] {
-    return this.agentsService.findAll();
+  findAll(
+    @Query({ schema: listAgentsQuerySchema }) query: ListAgentsQuery,
+  ): PaginatedAgents {
+    return this.agentsService.findAll(query);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string): Agent {
+    return this.agentsService.findById(id);
   }
 
   // 200 y no 201: ejecutar una consulta no crea ningún recurso.

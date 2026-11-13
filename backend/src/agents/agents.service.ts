@@ -6,9 +6,13 @@ import {
   AgentNotFoundException,
   AiProviderException,
 } from '../common/exceptions.js';
-import { Agent, RunResult } from './agent.types.js';
+import { Agent, PaginatedAgents, RunResult } from './agent.types.js';
 import { AgentsRepository } from './agents.repository.js';
-import { CreateAgentInput, RunAgentInput } from './agents.schemas.js';
+import {
+  CreateAgentInput,
+  ListAgentsQuery,
+  RunAgentInput,
+} from './agents.schemas.js';
 
 /** Lógica de negocio de los agentes. No conoce HTTP ni SQL. */
 @Injectable()
@@ -31,8 +35,31 @@ export class AgentsService {
     return agent;
   }
 
-  findAll(): Agent[] {
-    return this.agentsRepository.findAll();
+  findAll(query: ListAgentsQuery): PaginatedAgents {
+    const { items, total, totalAll } =
+      this.agentsRepository.findPaginated(query);
+    const totalPages = total === 0 ? 0 : Math.ceil(total / query.limit);
+
+    return {
+      items,
+      meta: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        totalAll,
+        totalPages,
+        hasNextPage: query.page < totalPages,
+        hasPrevPage: query.page > 1 && totalPages > 0,
+      },
+    };
+  }
+
+  findById(id: string): Agent {
+    const agent = this.agentsRepository.findById(id);
+    if (!agent) {
+      throw new AgentNotFoundException(id);
+    }
+    return agent;
   }
 
   /** Ejecuta una consulta: une las instrucciones del agente con la consulta. */
