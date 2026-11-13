@@ -17,7 +17,7 @@ export function setupSwagger(app: INestApplication): void {
     .setDescription(
       [
         'API para crear, listar, editar, eliminar y consultar agentes de IA.',
-        'Funciona en modo simulado: no necesita API key.',
+        'Por defecto funciona en modo simulado, sin API key. Con `AI_PROVIDER=anthropic` en `backend/.env` responde Claude; `GET /api/ai/status` dice cuál está activo.',
         '',
         '**Cómo probar el flujo completo desde esta página**',
         '',

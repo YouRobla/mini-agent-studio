@@ -27,6 +27,8 @@ export interface AiRequest {
 export interface AiProvider {
   /** Nombre que se devuelve en la respuesta, por ejemplo "mock". */
   readonly name: string;
+  /** Modelo que responde, por ejemplo "claude-haiku-5-5"; `null` en el simulado. */
+  readonly model: string | null;
   generate(request: AiRequest): Promise<string>;
 }
 

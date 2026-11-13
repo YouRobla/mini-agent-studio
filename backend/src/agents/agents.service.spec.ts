@@ -8,6 +8,7 @@ import { AgentsService } from './agents.service.js';
 
 const mockAiProvider: AiProvider = {
   name: 'mock',
+  model: null,
   generate: async ({ agentName, query }) => `[mock] ${agentName}: ${query}`,
 };
 

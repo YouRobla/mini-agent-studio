@@ -42,6 +42,13 @@ export interface RunRequest {
   history: ChatMessage[];
 }
 
+/** Proveedor de IA activo en el backend (`GET /api/ai/status`). */
+export interface AiStatus {
+  provider: string;
+  /** `null` en el modo simulado. */
+  model: string | null;
+}
+
 /** Resultado de ejecutar una consulta sobre un agente. */
 export interface RunResult {
   agentId: string;

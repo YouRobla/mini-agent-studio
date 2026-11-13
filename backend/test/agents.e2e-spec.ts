@@ -4,6 +4,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AI_PROVIDER } from '../src/ai/ai-provider.js';
 import type { AiProvider } from '../src/ai/ai-provider.js';
+import { MockAiProvider } from '../src/ai/mock-ai.provider.js';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
 import { DATABASE, openDatabase } from '../src/database/database.provider.js';
@@ -13,12 +14,15 @@ describe('Agents API (e2e)', () => {
   let app: NestExpressApplication;
 
   beforeAll(async () => {
-    // Base de datos en memoria: las pruebas no tocan backend/data/.
+    // Base de datos en memoria: las pruebas no tocan backend/data/. Y siempre el
+    // proveedor simulado, aunque la terminal tenga AI_PROVIDER definido.
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     })
       .overrideProvider(DATABASE)
       .useValue(openDatabase(':memory:'))
+      .overrideProvider(AI_PROVIDER)
+      .useValue(new MockAiProvider())
       .compile();
 
     app = moduleRef.createNestApplication<NestExpressApplication>();
@@ -219,6 +223,13 @@ describe('Agents API (e2e)', () => {
     });
   });
 
+  it('GET /api/ai/status indica el proveedor de IA activo', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/api/ai/status')
+      .expect(200);
+    expect(res.body).toEqual({ provider: 'mock', model: null });
+  });
+
   it('GET /api/docs-json documenta las rutas con los esquemas de validación', async () => {
     const res = await request(app.getHttpServer())
       .get('/api/docs-json')
@@ -228,6 +239,7 @@ describe('Agents API (e2e)', () => {
       '/api/agents',
       '/api/agents/{id}',
       '/api/agents/{id}/run',
+      '/api/ai/status',
     ]);
     // El límite del nombre sale del esquema Zod, no está escrito dos veces.
     expect(
@@ -325,6 +337,7 @@ describe('Agents API (e2e) con el proveedor de IA caído', () => {
   // Se sustituye el proveedor real por uno que siempre falla.
   const failingProvider: AiProvider = {
     name: 'roto',
+    model: null,
     generate: () => Promise.reject(new Error('sin conexión')),
   };
 

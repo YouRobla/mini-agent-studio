@@ -1,5 +1,6 @@
 import type {
   Agent,
+  AiStatus,
   ListAgentsParams,
   PaginatedAgents,
   RunRequest,
@@ -57,4 +58,9 @@ export function runAgent(
     method: "POST",
     body: JSON.stringify(input),
   });
+}
+
+/** Proveedor de IA que usa el backend: lo elige su .env al arrancar. */
+export function getAiStatus(): Promise<AiStatus> {
+  return request<AiStatus>("/ai/status");
 }

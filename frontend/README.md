@@ -48,6 +48,7 @@ src/
 │   ├── useAgents.ts          Datos del servidor (TanStack Query): lecturas y escrituras
 │   ├── useAgentsListParams.ts  Página, orden y búsqueda guardados en la URL
 │   ├── useConversation.ts      Conversación de cada agente, en memoria
+│   ├── useAiStatus.ts          Proveedor de IA activo, para la etiqueta de la barra
 │   └── useDebouncedValue.ts    Retrasa la búsqueda 250 ms
 │
 ├── api/

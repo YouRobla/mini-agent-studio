@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common';
+import { AiController } from './ai.controller.js';
+import { createAiProvider } from './ai-provider.factory.js';
 import { AI_PROVIDER } from './ai-provider.js';
-import { MockAiProvider } from './mock-ai.provider.js';
 
 /**
- * Decide qué implementación se entrega cuando alguien pide AI_PROVIDER.
- * Conectar un LLM real es cambiar `useClass` aquí; nada más se toca.
+ * Entrega el proveedor de IA a quien pide AI_PROVIDER. Lo construye la fábrica
+ * al arrancar, según el .env; añadir un proveedor es añadir un caso a la fábrica.
  */
 @Module({
-  providers: [{ provide: AI_PROVIDER, useClass: MockAiProvider }],
+  controllers: [AiController],
+  providers: [{ provide: AI_PROVIDER, useFactory: () => createAiProvider() }],
   exports: [AI_PROVIDER],
 })
 export class AiModule {}

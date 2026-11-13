@@ -1281,3 +1281,41 @@ el sistema esté más presentable y pulido».
   (2 nuevas: conversación con historial e historial inválido o demasiado largo). En el
   navegador: tres turnos con historial de 0, 2 y 4 mensajes, conversación conservada al
   ir a Agentes y volver, «Limpiar chat», consola sin errores.
+
+---
+
+## 2026-11-13 · Etapa 41 — Claude real con una fábrica de proveedores (etapa B)
+
+- **Pedido mío:** conectar un LLM real (Claude Haiku 5.5) sin romper la arquitectura, y
+  que se pueda cambiar de proveedor. Pregunté si convenía una fábrica.
+- **Decisión (propuesta de la IA, aprobada por mí):** fábrica con el proveedor de
+  NestJS `useFactory`. `createAiProvider` elige al arrancar según `AI_PROVIDER` (`mock`
+  por defecto). Patrones: Strategy (cada proveedor detrás de `AiProvider`), Adapter (cada
+  clase traduce al formato de su SDK) y Factory (la elección). El revisor Sonnet ya lo
+  había adelantado en la etapa 3: «`AI_PROVIDER` solo si se hace el LLM real».
+- **Fallo encontrado (IA):** el backend nunca leía `backend/.env` (no había `dotenv` ni
+  `--env-file`), aunque el README decía que se podía configurar ahí. Se añade
+  `process.loadEnvFile` de Node en `main.ts`, sin dependencias; la terminal tiene
+  prioridad. Las pruebas no lo usan, así que no dependen del `.env` de cada equipo.
+- **Cambios (IA):**
+  - `@anthropic-ai/sdk` 1.8.0 (publicada el 10-nov-2026), `npm audit` con 0
+    vulnerabilidades. npm avisó de un script de instalación sin aprobar, `@scarf/scarf`:
+    lo trae Swagger (`swagger-ui-dist`) y solo envía estadísticas; se deja sin aprobar.
+  - `AnthropicAiProvider`: instrucciones como mensaje de sistema, historial y consulta
+    como la conversación, esfuerzo `low` (es un chat), `max_tokens` 16 000. Un rechazo
+    del modelo y una respuesta sin texto se tratan como fallo del proveedor (502).
+  - `AiProvider` gana `model`; `GET /api/ai/status` → `{ provider, model }`, documentado
+    en Swagger. La etiqueta de la barra lo lee: «Modo simulado» o
+    «Claude · claude-haiku-5-5».
+  - Si `AI_PROVIDER=anthropic` y falta la clave, el servidor no arranca y dice qué falta.
+  - Pruebas: la fábrica (mock por defecto, Haiku por defecto, sin clave, proveedor
+    desconocido) y el adaptador con un cliente falso, sin llamadas reales. Las e2e fijan
+    el mock aunque la terminal tenga `AI_PROVIDER`.
+- **Revisión:** lint y build en verde; 16 pruebas unitarias y 15 e2e. En un servidor
+  aparte: sin clave no arranca y lo explica; con `.env` el estado dice `anthropic` y
+  `claude-haiku-5-5` (el `.env` se lee); con una clave falsa, Claude responde 401 y el
+  usuario recibe el 502 legible mientras el log guarda el motivo. En el navegador, la
+  etiqueta con el mock real y simulando la respuesta de Claude.
+- **Sin probar:** una respuesta real de Claude; necesita mi clave de API.
+- **Error de la IA durante la prueba:** un `pkill` cortó el comando antes de borrar el
+  `.env` de prueba (solo tenía una clave falsa); se comprobó y se borró a mano.

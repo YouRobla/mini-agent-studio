@@ -74,10 +74,30 @@ La base de datos se crea sola en `backend/data/agents.db` en el primer arranque.
 | `PORT` | backend | `3000` | Puerto de la API |
 | `CORS_ORIGIN` | backend | `http://localhost:5173` | Origen permitido si el navegador llama al backend directamente (`VITE_API_URL`) |
 | `DATABASE_PATH` | backend | `backend/data/agents.db` | Ruta del archivo SQLite |
+| `AI_PROVIDER` | backend | `mock` | Proveedor de IA: `mock` (simulado) o `anthropic` (Claude) |
+| `ANTHROPIC_API_KEY` | backend | — | Clave de la API de Claude; obligatoria con `AI_PROVIDER=anthropic` |
+| `AI_MODEL` | backend | `claude-haiku-5-5` | Modelo del proveedor real |
 | `API_PROXY_TARGET` | frontend | `http://localhost:3000` | Dónde reenvía `/api` el proxy de Vite. Cámbialo si cambias `PORT` |
 | `VITE_API_URL` | frontend | `/api` | Dirección de la API en el navegador; por defecto pasa por el proxy |
 
-Hay un `.env.example` en cada carpeta. Ninguna variable contiene secretos.
+Hay un `.env.example` en cada carpeta, sin valores secretos. El backend lee `backend/.env`
+al arrancar (con `process.loadEnvFile` de Node, sin dependencias); las variables ya
+definidas en la terminal tienen prioridad.
+
+### Respuestas reales con Claude (opcional)
+
+Sin configurar nada, las respuestas son simuladas. Para que responda Claude:
+
+1. Crea `backend/.env` con:
+   ```
+   AI_PROVIDER=anthropic
+   ANTHROPIC_API_KEY=tu-clave
+   ```
+2. Reinicia el backend. La barra superior pasará de «Modo simulado» a
+   «Claude · claude-haiku-5-5», y `GET /api/ai/status` lo confirma.
+
+Si falta la clave, el backend no arranca y dice qué variable falta. `backend/.env` está
+en `.gitignore`: la clave nunca se sube al repositorio ni llega al navegador.
 
 ## Demostración del flujo
 
@@ -133,8 +153,11 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 │   │   │   └── agents.service.spec.ts Pruebas unitarias del servicio
 │   │   ├── ai/                      Funcionalidad: proveedor de IA
 │   │   │   ├── ai-provider.ts       Contrato del proveedor de IA
-│   │   │   ├── mock-ai.provider.ts  ADAPTADOR DE IA simulado
-│   │   │   ├── ai.module.ts         Elige qué proveedor se usa (hoy, el simulado)
+│   │   │   ├── mock-ai.provider.ts  ADAPTADOR DE IA simulado (por defecto)
+│   │   │   ├── anthropic-ai.provider.ts ADAPTADOR DE IA real: Claude
+│   │   │   ├── ai-provider.factory.ts Fábrica: elige el proveedor según AI_PROVIDER
+│   │   │   ├── ai.module.ts         Entrega el proveedor que construye la fábrica
+│   │   │   ├── ai.controller.ts     GET /api/ai/status: qué proveedor responde
 │   │   │   └── ai.exceptions.ts     Error «falló el proveedor de IA»
 │   │   ├── database/                Conexión a SQLite: la abre, la comparte y la cierra
 │   │   └── common/errors/           Filtro global de errores y su formato único
@@ -197,8 +220,21 @@ sigo estas instrucciones: «…». Tu consulta fue: «…».` No repite que es s
 inteligencia. Añade una espera de medio segundo para que
 el estado de carga sea visible.
 
-Conectar un LLM real consiste en crear otra clase que cumpla `AiProvider` y registrarla
-en `ai.module.ts`. El controlador, el servicio y el frontend no cambian.
+### Proveedores de IA: la fábrica
+
+`ai-provider.factory.ts` elige el proveedor una sola vez, al arrancar, según
+`AI_PROVIDER`. Cada proveedor es un **adaptador** que cumple el contrato `AiProvider` y
+traduce al formato de su servicio; el controlador, el servicio y el frontend solo
+conocen el contrato, así que cambiar de proveedor es cambiar el `.env`, no el código.
+
+| `AI_PROVIDER` | Adaptador | Necesita |
+| --- | --- | --- |
+| `mock` (por defecto) | `MockAiProvider` | Nada |
+| `anthropic` | `AnthropicAiProvider`: instrucciones como mensaje de sistema, historial y consulta como la conversación, esfuerzo `low` (es un chat) | `ANTHROPIC_API_KEY` |
+
+Añadir otro proveedor es una clase más y un caso más en la fábrica. Un fallo del proveedor
+(clave inválida, límite de peticiones, rechazo del modelo) se registra en el log y llega
+al usuario como `502` con un mensaje legible.
 
 ## Endpoints
 
@@ -220,6 +256,7 @@ validan las peticiones, así que no puede quedar desactualizado respecto al cód
 | `PUT` | `/api/agents/:id` | Reemplaza nombre e instrucciones | `200` con el agente, `400` si no es válido, `404` si no existe |
 | `DELETE` | `/api/agents/:id` | Elimina un agente | `204` sin cuerpo, `404` si no existe |
 | `POST` | `/api/agents/:id/run` | Ejecuta una consulta sobre un agente | `200` con la respuesta |
+| `GET` | `/api/ai/status` | Proveedor de IA activo | `200` con `{ provider, model }` |
 
 Parámetros opcionales de `GET /api/agents`:
 
@@ -384,6 +421,7 @@ Las pruebas usan una base SQLite en memoria y no tocan `backend/data/`.
 | Zod en el backend | NestJS 12 lo valida de forma nativa (`StandardSchemaValidationPipe`), sin clases DTO |
 | Swagger (`@nestjs/swagger` 12) | Documenta y permite probar los endpoints desde el navegador; genera los esquemas a partir de Zod, sin escribir las reglas dos veces |
 | SQLite (`node:sqlite`) | Persistencia real con escritura segura, sin instalar dependencias ni un servidor |
+| SDK oficial de Claude (`@anthropic-ai/sdk`) | Proveedor real opcional (Claude Haiku 5.5, el más barato): conversación con historial, errores tipados y sin depender de un intermediario |
 | Vitest + Supertest | Vienen con el proyecto de NestJS 12; prueban el servicio y la API sin levantar el servidor |
 
 Decisiones tomadas a propósito para no añadir complejidad: sin ORM (una tabla y unas
@@ -397,6 +435,8 @@ razonamiento completo está en `BITACORA.md`.
 - Las reglas de validación están duplicadas en frontend y backend.
 - La conversación vive en la memoria del navegador: se pierde al recargar la página.
 - El modo mock no genera respuestas reales: devuelve el agente, sus instrucciones y la consulta.
+  Las respuestas reales necesitan una clave de API de Claude.
+- La respuesta llega completa, no se va mostrando mientras se genera (sin streaming).
 - Las pruebas cubren el backend; el frontend no tiene pruebas automatizadas.
 - El selector de la vista Consultar carga como máximo 100 agentes. Un agente fuera de esa
   lista se puede consultar igualmente desde el listado, porque se busca por su id.
@@ -405,13 +445,14 @@ razonamiento completo está en `BITACORA.md`.
 
 ## Mejoras con más tiempo
 
-1. **Proveedor LLM real**, seleccionable por variable de entorno y con el mock como
-   respaldo cuando no hay API key. La interfaz `AiProvider` ya lo permite.
+1. **Respuestas en streaming:** mostrar el texto mientras Claude lo genera, con eventos
+   del servidor (SSE) desde el backend.
 2. **Una sola fuente de reglas para frontend y backend:** generar los tipos del frontend
    a partir del documento OpenAPI (`/api/docs-json`), que ya sale de los esquemas Zod del
    backend, o moverlos a un paquete común.
 
-Otras: guardar las conversaciones en la base de datos, pruebas del
+Otras: guardar las conversaciones en la base de datos, un proveedor local (por ejemplo
+Ollama) como otro adaptador, extraer texto de imágenes para usarlo como consulta, pruebas del
 frontend, ejecución con Docker Compose y, a más largo plazo, un editor visual de flujos
 para agentes con varios pasos.
 

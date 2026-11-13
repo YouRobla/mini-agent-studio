@@ -17,6 +17,7 @@ const SIMULATED_DELAY_MS = 500;
 @Injectable()
 export class MockAiProvider implements AiProvider {
   readonly name = 'mock';
+  readonly model = null;
 
   async generate(request: AiRequest): Promise<string> {
     await sleep(SIMULATED_DELAY_MS);

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, Outlet } from "react-router";
 import { Toaster } from "sonner";
+import { useAiStatus } from "../../hooks/useAiStatus.ts";
 import { paths } from "../../paths.ts";
 import { MenuIcon } from "../ui/icons.tsx";
 import { Sidebar } from "./Sidebar.tsx";
@@ -14,6 +15,7 @@ import { ThemeToggle } from "./ThemeToggle.tsx";
  */
 export function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const ai = useAiStatus();
 
   return (
     <>
@@ -58,12 +60,14 @@ export function AppLayout() {
             >
               Mini Agent Studio
             </Link>
-            <span
-              className="badge badge-outline badge-sm shrink-0 sm:badge-md"
-              title="Las respuestas las genera un proveedor de IA simulado"
-            >
-              Modo simulado
-            </span>
+            {ai.label && (
+              <span
+                className="badge badge-outline badge-sm shrink-0 sm:badge-md"
+                title={ai.title}
+              >
+                {ai.label}
+              </span>
+            )}
             <ThemeToggle />
           </header>
           <main
