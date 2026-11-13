@@ -11,8 +11,8 @@ const SIMULATED_DELAY_MS = 500;
 /**
  * Proveedor simulado: funciona sin API key, sin costo y sin red.
  * Es determinista (misma entrada, misma salida) y no finge inteligencia:
- * muestra el mensaje que se enviaría a un modelo real, construido con las
- * instrucciones del agente y la consulta del usuario.
+ * responde con el nombre del agente, sus instrucciones y la consulta (§3.C).
+ * No repite que es simulado: ya lo indican el campo `provider` y la interfaz.
  */
 @Injectable()
 export class MockAiProvider implements AiProvider {
@@ -22,13 +22,8 @@ export class MockAiProvider implements AiProvider {
     await sleep(SIMULATED_DELAY_MS);
 
     return [
-      `[Modo simulado] Soy "${request.agentName}".`,
-      '',
-      'Esto es lo que se enviaría al modelo de IA:',
-      `• Instrucciones (mensaje de sistema): "${request.instructions}"`,
-      `• Consulta (mensaje del usuario): "${request.query}"`,
-      '',
-      'Con un proveedor real, aquí verías la respuesta generada siguiendo esas instrucciones.',
+      `Soy «${request.agentName}» y sigo estas instrucciones: «${request.instructions}».`,
+      `Tu consulta fue: «${request.query}».`,
     ].join('\n');
   }
 }

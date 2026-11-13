@@ -189,8 +189,10 @@ servicio depende del contrato `AiProvider`, no del proveedor simulado.
 ### El modo mock
 
 `MockAiProvider` no llama a ningún servicio externo. Construye la respuesta con las
-instrucciones del agente y la consulta, mostrando el mensaje que se enviaría a un modelo
-real. Es determinista y no finge inteligencia. Añade una espera de medio segundo para que
+instrucciones del agente y la consulta, por ejemplo: `Soy «Asistente de resúmenes» y
+sigo estas instrucciones: «…». Tu consulta fue: «…».` No repite que es simulado: ya lo indican el campo
+`provider: "mock"` y la etiqueta «Modo simulado» de la interfaz. Es determinista y no finge
+inteligencia. Añade una espera de medio segundo para que
 el estado de carga sea visible.
 
 Conectar un LLM real consiste en crear otra clase que cumpla `AiProvider` y registrarla
@@ -313,7 +315,7 @@ curl -X POST http://localhost:3000/api/agents/1c4c8e63-2f0e-4c24-aad6-57b31dfdc2
 ```json
 {
   "agentId": "1c4c8e63-2f0e-4c24-aad6-57b31dfdc208",
-  "response": "[Modo simulado] Soy \"Asistente de resúmenes\".\n\nEsto es lo que se enviaría al modelo de IA:\n• Instrucciones (mensaje de sistema): \"Eres un asistente que resume textos\"\n• Consulta (mensaje del usuario): \"Resume este párrafo\"\n\nCon un proveedor real, aquí verías la respuesta generada siguiendo esas instrucciones.",
+  "response": "Soy «Asistente de resúmenes» y sigo estas instrucciones: «Eres un asistente que resume textos».\nTu consulta fue: «Resume este párrafo».",
   "provider": "mock"
 }
 ```
@@ -381,7 +383,7 @@ razonamiento completo está en `BITACORA.md`.
 
 - Las reglas de validación están duplicadas en frontend y backend.
 - No se guarda el historial de consultas; la respuesta se pierde al recargar la página.
-- El modo mock no genera respuestas reales: muestra lo que se enviaría al modelo.
+- El modo mock no genera respuestas reales: devuelve el agente, sus instrucciones y la consulta.
 - Las pruebas cubren el backend; el frontend no tiene pruebas automatizadas.
 - El selector de la vista Consultar carga como máximo 100 agentes. Un agente fuera de esa
   lista se puede consultar igualmente desde el listado, porque se busca por su id.

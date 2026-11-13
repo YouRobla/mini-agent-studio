@@ -150,7 +150,8 @@ export const runResultSchema = z
       .meta({ example: '1c4c8e63-2f0e-4c24-aad6-57b31dfdc208' }),
     response: z.string().meta({
       description: 'Respuesta generada por el proveedor de IA',
-      example: '[Modo simulado] Soy "Asistente de resúmenes". ...',
+      example:
+        'Soy «Asistente de resúmenes» y sigo estas instrucciones: «Eres un asistente que resume textos».\nTu consulta fue: «Resume este párrafo».',
     }),
     provider: z.string().meta({
       description: 'Proveedor que generó la respuesta',

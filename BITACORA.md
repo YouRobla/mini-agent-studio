@@ -1231,3 +1231,20 @@ el sistema esté más presentable y pulido».
 - **Revertido (malentendido de la IA):** no me refería al badge, sino al texto
   «[Modo simulado]» que aparece dentro de la respuesta del chat. El badge vuelve a la
   barra superior, como estaba; el texto del mock se analiza en la etapa siguiente.
+
+---
+
+## 2026-11-13 · Etapa 39 — Respuesta del mock sin «[Modo simulado]»
+
+- **Pedido mío:** el texto «[Modo simulado]» y la explicación de lo que «se enviaría al
+  modelo» dentro de cada respuesta sobraban: que es simulado ya se ve arriba.
+- **Análisis (IA):** ya lo indican tres cosas (la etiqueta de la barra, «Proveedor: mock»
+  bajo la burbuja y el campo `provider` de la API). Pero el mock no puede quedar vacío: el
+  §3.C pide que use el contexto del agente y la consulta, y la prueba e2e lo comprueba.
+- **Decisión mía:** opción B, entre tres (dejarlo, B, o devolver solo la consulta, que
+  incumplía el §3.C).
+- **Cambio (IA):** el mock responde en dos líneas: `Soy «nombre» y sigo estas
+  instrucciones: «…».` y `Tu consulta fue: «…».` Actualizados el ejemplo de Swagger, el
+  README (sección del mock, ejemplo de respuesta y limitaciones) y `AI_USAGE.md`.
+- **Revisión:** lint y build en verde; 10 pruebas unitarias y 12 e2e sin cambios (siguen
+  comprobando el nombre, las instrucciones y la consulta).

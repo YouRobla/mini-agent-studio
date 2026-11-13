@@ -249,7 +249,7 @@ principio, con una sola pantalla, y lo incorporé cuando pasé a dos vistas.
 | El worker de Codex dejó el botón "Cerrar" del aviso de éxito casi ilegible (texto oscuro sobre verde) | Revisión visual en el navegador antes de confirmar | Se le devolvió la corrección; pasó a un botón con contraste 13.85:1 |
 | El revisor (Sonnet) sugirió sustituir NestJS por Express | Revisión del plan | Descartado: mantuve NestJS y lo justifico en el README |
 | La IA propuso convertir los esquemas Zod a mano (`z.toJSONSchema`) para Swagger | Le pedí verificarlo en la documentación; leyó el código de `@nestjs/swagger` 12 y generó el documento | No hacía falta: Swagger 12 lee los esquemas de `@Body({ schema })` directamente. Se usó esa vía |
-| Reglas por palabras clave para simular inteligencia en el mock | Discusión de diseño | Descartado: darían respuestas falsas; el mock muestra lo que se enviaría al modelo |
+| Reglas por palabras clave para simular inteligencia en el mock | Discusión de diseño | Descartado: darían respuestas falsas; el mock responde con el agente, sus instrucciones y la consulta |
 | La IA puso `useCallback` en todas las funciones de `AgentsPage` | Pregunté qué hacía cada uno; ningún hijo usaba `React.memo` | Se quitaron: no aportaban nada |
 | La IA metió un contexto (`AgentActionsProvider`) siguiendo una skill pensada para librerías de componentes | Seguir un clic en «Editar» obligaba a abrir 7 archivos | Se sustituyó por estado en la página y props |
 | La IA propuso revertir `window.location.search` en `useAgentsListParams` por «innecesario» | Pregunté en qué caso servía; la propia bitácora tenía el fallo reproducido | Lo mantuve: sin él, limpiar la búsqueda y ordenar seguido devolvía la búsqueda |
