@@ -4,8 +4,9 @@
 }
 
 /*
- * Temas propios (formato del theme generator de daisyUI): violeta como color
- * primario, esquinas suaves y sin textura. studio-dark usa fondos violeta noche.
+ * Temas propios (formato del theme generator de daisyUI). studio-light se usa
+ * por defecto y studio-dark cuando el sistema está en modo oscuro; el
+ * theme-controller de la barra superior cambia al otro.
  */
 @plugin "daisyui/theme" {
   name: "studio-light";
@@ -77,32 +78,12 @@
   --noise: 0;
 }
 
-@layer base {
-  /* Foco de teclado con el color primario: visible (contraste ≥ 3:1) y coherente con el tema. */
-  :focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+/* Accesibilidad: sin animaciones si el sistema pide movimiento reducido. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
-
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
-}
-
-/*
- * Campos con foco: daisyUI pinta borde y anillo con el color del texto (negro en
- * el tema claro). Se usa el primario, más suave y coherente. Los campos con
- * error conservan su color para no perder el aviso.
- */
-:is(.input, .textarea, .select):not(
-    .input-error,
-    .textarea-error,
-    .select-error
-  ):is(:focus, :focus-within) {
-  --input-color: var(--color-primary);
 }

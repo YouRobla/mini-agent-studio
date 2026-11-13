@@ -6,21 +6,6 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script>
-      (() => {
-        let theme;
-        try {
-          theme = localStorage.getItem("studio-theme");
-        } catch {}
-        if (theme !== "light" && theme !== "dark") {
-          theme = window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? "dark"
-            : "light";
-        }
-        document.documentElement.dataset.theme =
-          theme === "dark" ? "studio-dark" : "studio-light";
-      })();
-    </script>
     <meta
       name="description"
       content="Crea agentes con instrucciones propias y prueba sus respuestas en un espacio de trabajo sencillo."
