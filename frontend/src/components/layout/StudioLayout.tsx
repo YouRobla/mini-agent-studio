@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router";
+import { AppLogo } from "./AppLogo.tsx";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 
 /** Estructura de la app: menú lateral (`drawer` + `menu`), barra superior y contenido. */
@@ -85,18 +86,7 @@ export function StudioLayout() {
               className="flex size-10 items-center justify-center rounded-box bg-primary text-primary-content"
               aria-hidden="true"
             >
-              <svg
-                className="size-6"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <rect x="4" y="6" width="16" height="14" rx="4" />
-                <path d="M12 3v3M8 16h8" />
-                <circle cx="8.5" cy="11" r=".8" />
-                <circle cx="15.5" cy="11" r=".8" />
-              </svg>
+              <AppLogo className="size-6" />
             </span>
             <div>
               <p className="font-semibold">Tu estudio</p>

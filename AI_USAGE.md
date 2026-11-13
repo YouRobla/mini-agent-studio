@@ -9,6 +9,7 @@
 | --- | --- |
 | Claude Code (modelo Claude Fable 5.2) | Análisis de requisitos, propuesta de arquitectura, generación del código, pruebas manuales y documentación |
 | Subagente Claude Sonnet | Revisión independiente del plan contra el enunciado, antes de escribir código |
+| Antigravity con Gemini 4 Hydrogen (worker en Orca) | Icono de la aplicación y favicon: exploró conceptos con su generador de imágenes y entregó el SVG final dibujado a mano |
 | Codex (worker en Orca, coordinado desde Claude Code) | Mejora de la interfaz: panel con navegación, dos vistas con React Router, skeletons y temas claro/oscuro |
 | Skills `nestjs-best-practices` y `daisyui` | Guías de referencia para NestJS y para los componentes de daisyUI 5 |
 | CLI `npx skills` | Búsqueda y evaluación de skills; se revisó su contenido antes de instalarlas |

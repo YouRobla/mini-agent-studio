@@ -502,3 +502,23 @@ de cada cambio con mis palabras)_
 - **Ajuste final:** vuelve el resaltado al pasar el ratón por las tarjetas (el borde se
   oscurece), que se había perdido en la etapa 16, y la fila de la lista usa el mismo
   criterio (fondo gris claro al pasar el ratón).
+
+---
+
+## 2026-11-12 · Etapa 18 — Menú en violeta, icono de la aplicación y favicon
+
+- **Menú lateral (decisión mía):** el elemento activo y el recuadro del logo pasan al
+  violeta primario, como los botones. Se usan las variables de daisyUI
+  `--menu-active-bg` y `--menu-active-fg`.
+- **Icono y favicon:** lo delegué a un worker de Antigravity en Orca con el modelo más
+  reciente disponible, `gemini-4-hydrogen-xhigh` (lista obtenida con `agy models`),
+  porque Antigravity tiene generación de imágenes integrada.
+  - Encargo: icono legible a 16 px, sin texto, con los colores del tema; exploración con
+    imágenes generadas fuera del repositorio, pero resultado final en SVG dibujado a mano.
+  - Resultado: estrella de IA de cuatro puntas dentro de una órbita con un nodo agente.
+    `favicon.svg` (467 bytes), `favicon-32x32.png` y `apple-touch-icon.png` (180×180)
+    generados con `rsvg-convert`; `AppLogo.tsx` con el mismo glifo en `currentColor`
+    para el menú lateral.
+- **Mi revisión:** imagen del favicon a 16, 32 y 180 px sobre fondo claro y oscuro;
+  los tres iconos se sirven con su tipo correcto y están enlazados en `index.html`;
+  logo del menú en los dos temas; build y lint en verde.
