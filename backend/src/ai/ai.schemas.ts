@@ -4,7 +4,8 @@ import { z } from 'zod';
 export const aiStatusSchema = z
   .object({
     provider: z.string().meta({
-      description: 'Proveedor que responde las consultas: mock, anthropic…',
+      description:
+        'Proveedor que responde las consultas: mock, anthropic u openai',
       example: 'mock',
     }),
     model: z.string().nullable().meta({

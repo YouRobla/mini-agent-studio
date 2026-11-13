@@ -1,5 +1,5 @@
 import type Anthropic from '@anthropic-ai/sdk';
-import type { AiProvider, AiRequest } from './ai-provider.js';
+import type { AiProvider, AiRequest } from '../ai-provider.js';
 
 /** Tope de la respuesta. Con Haiku, 16 000 tokens de salida cuestan menos de un céntimo. */
 const MAX_TOKENS = 16000;

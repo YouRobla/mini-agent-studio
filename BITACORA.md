@@ -1319,3 +1319,30 @@ el sistema esté más presentable y pulido».
 - **Sin probar:** una respuesta real de Claude; necesita mi clave de API.
 - **Error de la IA durante la prueba:** un `pkill` cortó el comando antes de borrar el
   `.env` de prueba (solo tenía una clave falsa); se comprobó y se borró a mano.
+
+---
+
+## 2026-11-13 · Etapa 42 — Adaptador de OpenAI y adaptadores en su carpeta (etapa C)
+
+- **Pedido mío:** completar la etapa C y saber si el backend estaba bien organizado o se
+  podía ordenar como el frontend; y cómo se elige el proveedor en el `.env`.
+- **Análisis (IA):** el backend está bien: carpetas por funcionalidad con capas dentro y
+  ningún archivo pasa de 200 líneas. Solo `ai/` crecía mezclando lo común con los
+  adaptadores; los adaptadores pasan a `ai/providers/`. No se cambia nada más.
+- **Versión elegida (IA):** el SDK `openai` publica casi a diario; la 7.56.0 tenía menos
+  de un día. Se instala la 7.55.0 (3 días, la misma antigüedad que tenía el SDK de
+  Claude): una versión tan nueva no ha tenido tiempo de que se detecte un problema.
+  `npm audit` con 0 vulnerabilidades.
+- **Cambios (IA):**
+  - `OpenAiProvider` con la Responses API, la que recomienda el README del SDK:
+    instrucciones en `instructions`, historial y consulta en `input`. Sin esfuerzo de
+    razonamiento: `AI_MODEL` puede ser un modelo sin razonamiento y lo haría fallar.
+  - Modelo por defecto `gpt-5.5`, el de la documentación del SDK; se cambia con
+    `AI_MODEL`.
+  - Un caso más en la fábrica: `AI_PROVIDER=openai` + `OPENAI_API_KEY`. El servicio, el
+    controlador y el frontend no cambian (la etiqueta ya mostraba «OpenAI · modelo»).
+- **Revisión:** lint y tipos en verde; 19 pruebas unitarias y 15 e2e. En un servidor
+  aparte, con variables en línea (sin `.env`): sin clave no arranca y lo explica; con
+  clave el estado dice `openai` y `gpt-5.5`; con una clave falsa, OpenAI responde 401 y el
+  usuario recibe el 502 legible.
+- **Sin probar:** una respuesta real de OpenAI; necesita una clave.

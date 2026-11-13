@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { AiProvider, AiRequest } from './ai-provider.js';
+import { AiProvider, AiRequest } from '../ai-provider.js';
 
 /**
  * Espera artificial. El mock respondería al instante y el estado de carga

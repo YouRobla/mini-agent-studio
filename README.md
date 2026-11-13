@@ -74,9 +74,10 @@ La base de datos se crea sola en `backend/data/agents.db` en el primer arranque.
 | `PORT` | backend | `3000` | Puerto de la API |
 | `CORS_ORIGIN` | backend | `http://localhost:5173` | Origen permitido si el navegador llama al backend directamente (`VITE_API_URL`) |
 | `DATABASE_PATH` | backend | `backend/data/agents.db` | Ruta del archivo SQLite |
-| `AI_PROVIDER` | backend | `mock` | Proveedor de IA: `mock` (simulado) o `anthropic` (Claude) |
+| `AI_PROVIDER` | backend | `mock` | Proveedor de IA: `mock` (simulado), `anthropic` (Claude) u `openai` |
 | `ANTHROPIC_API_KEY` | backend | — | Clave de la API de Claude; obligatoria con `AI_PROVIDER=anthropic` |
-| `AI_MODEL` | backend | `claude-haiku-5-5` | Modelo del proveedor real |
+| `OPENAI_API_KEY` | backend | — | Clave de la API de OpenAI; obligatoria con `AI_PROVIDER=openai` |
+| `AI_MODEL` | backend | `claude-haiku-5-5` / `gpt-5.5` | Modelo del proveedor real (por defecto, según el proveedor) |
 | `API_PROXY_TARGET` | frontend | `http://localhost:3000` | Dónde reenvía `/api` el proxy de Vite. Cámbialo si cambias `PORT` |
 | `VITE_API_URL` | frontend | `/api` | Dirección de la API en el navegador; por defecto pasa por el proxy |
 
@@ -84,7 +85,7 @@ Hay un `.env.example` en cada carpeta, sin valores secretos. El backend lee `bac
 al arrancar (con `process.loadEnvFile` de Node, sin dependencias); las variables ya
 definidas en la terminal tienen prioridad.
 
-### Respuestas reales con Claude (opcional)
+### Respuestas reales con Claude u OpenAI (opcional)
 
 Sin configurar nada, las respuestas son simuladas. Para que responda Claude:
 
@@ -96,7 +97,8 @@ Sin configurar nada, las respuestas son simuladas. Para que responda Claude:
 2. Reinicia el backend. La barra superior pasará de «Modo simulado» a
    «Claude · claude-haiku-5-5», y `GET /api/ai/status` lo confirma.
 
-Si falta la clave, el backend no arranca y dice qué variable falta. `backend/.env` está
+Para OpenAI es igual, con `AI_PROVIDER=openai` y `OPENAI_API_KEY`. Si falta la clave, el
+backend no arranca y dice qué variable falta. `backend/.env` está
 en `.gitignore`: la clave nunca se sube al repositorio ni llega al navegador.
 
 ## Demostración del flujo
@@ -153,8 +155,10 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 │   │   │   └── agents.service.spec.ts Pruebas unitarias del servicio
 │   │   ├── ai/                      Funcionalidad: proveedor de IA
 │   │   │   ├── ai-provider.ts       Contrato del proveedor de IA
-│   │   │   ├── mock-ai.provider.ts  ADAPTADOR DE IA simulado (por defecto)
-│   │   │   ├── anthropic-ai.provider.ts ADAPTADOR DE IA real: Claude
+│   │   │   ├── providers/           ADAPTADORES DE IA, uno por proveedor
+│   │   │   │   ├── mock-ai.provider.ts      Simulado (por defecto)
+│   │   │   │   ├── anthropic-ai.provider.ts Claude
+│   │   │   │   └── openai-ai.provider.ts    OpenAI
 │   │   │   ├── ai-provider.factory.ts Fábrica: elige el proveedor según AI_PROVIDER
 │   │   │   ├── ai.module.ts         Entrega el proveedor que construye la fábrica
 │   │   │   ├── ai.controller.ts     GET /api/ai/status: qué proveedor responde
@@ -231,6 +235,7 @@ conocen el contrato, así que cambiar de proveedor es cambiar el `.env`, no el c
 | --- | --- | --- |
 | `mock` (por defecto) | `MockAiProvider` | Nada |
 | `anthropic` | `AnthropicAiProvider`: instrucciones como mensaje de sistema, historial y consulta como la conversación, esfuerzo `low` (es un chat) | `ANTHROPIC_API_KEY` |
+| `openai` | `OpenAiProvider` (Responses API): instrucciones en `instructions`, historial y consulta en `input` | `OPENAI_API_KEY` |
 
 Añadir otro proveedor es una clase más y un caso más en la fábrica. Un fallo del proveedor
 (clave inválida, límite de peticiones, rechazo del modelo) se registra en el log y llega
@@ -422,6 +427,7 @@ Las pruebas usan una base SQLite en memoria y no tocan `backend/data/`.
 | Swagger (`@nestjs/swagger` 12) | Documenta y permite probar los endpoints desde el navegador; genera los esquemas a partir de Zod, sin escribir las reglas dos veces |
 | SQLite (`node:sqlite`) | Persistencia real con escritura segura, sin instalar dependencias ni un servidor |
 | SDK oficial de Claude (`@anthropic-ai/sdk`) | Proveedor real opcional (Claude Haiku 5.5, el más barato): conversación con historial, errores tipados y sin depender de un intermediario |
+| SDK oficial de OpenAI (`openai`) | Segundo proveedor real, para demostrar que la fábrica cambia de proveedor sin tocar el resto del código |
 | Vitest + Supertest | Vienen con el proyecto de NestJS 12; prueban el servicio y la API sin levantar el servidor |
 
 Decisiones tomadas a propósito para no añadir complejidad: sin ORM (una tabla y unas

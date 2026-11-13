@@ -4,7 +4,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AI_PROVIDER } from '../src/ai/ai-provider.js';
 import type { AiProvider } from '../src/ai/ai-provider.js';
-import { MockAiProvider } from '../src/ai/mock-ai.provider.js';
+import { MockAiProvider } from '../src/ai/providers/mock-ai.provider.js';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
 import { DATABASE, openDatabase } from '../src/database/database.provider.js';
