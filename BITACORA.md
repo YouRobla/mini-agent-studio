@@ -16,8 +16,11 @@ Formato de cada entrada: fecha · etapa · prompt (resumido) · resultado · qu�
   criterios de aceptación. No escribas código ni elijas stack todavía."
 - **Resultado:** documento "Análisis de Requisitos y Definición de Alcance v1.0"
   (11 requisitos funcionales, 20 casos de aceptación, 10 decisiones pendientes).
-- **Validado por mí:** _(pendiente: contrastar cada RF con el PDF)_
-- **Corregido o descartado:** _(pendiente)_
+- **Validado por mí:** lo leí y aprobé pasar a la siguiente etapa con mis palabras: «Sí,
+  apruebo como primera etapa; documenta y ten en cuenta que esta decisión la tomé yo, por
+  qué opté por esta arquitectura y qué descarté». Pedí además una revisión independiente
+  con otro modelo (etapa 3).
+- **Corregido o descartado:** nada en esta etapa; las correcciones llegan en las etapas 3 a 7.
 
 ## 2026-11-12 · Etapa 2 — Cómo funciona el agente, Docker y referencias
 
@@ -26,8 +29,11 @@ Formato de cada entrada: fecha · etapa · prompt (resumido) · resultado · qu�
   dinámico debe ser y qué proyectos similares sirven de inspiración?"
 - **Resultado:** el agente es nombre + instrucciones, de un solo turno; el mock no necesita
   librerías; Docker se recomienda como vía secundaria, no única.
-- **Validado por mí:** _(pendiente)_
-- **Corregido o descartado:** _(pendiente)_
+- **Validado por mí:** acepté Docker como segunda opción: «Docker como segunda opción,
+  considerándolo, pero como un segundo tipo; ahora tenemos que definir el alcance, el stack
+  y las librerías».
+- **Corregido o descartado:** mi idea inicial era usar Docker como vía principal; la
+  cambié a secundaria.
 
 ---
 
@@ -42,7 +48,7 @@ Formato de cada entrada: fecha · etapa · prompt (resumido) · resultado · qu�
 
 | Fecha | Sugerencia | Qué hice y por qué |
 | --- | --- | --- |
-| | | |
+| 2026-11-12 | Ver cada etapa | Se registran dentro de cada etapa y se resumen en `AI_USAGE.md` |
 
 ---
 
@@ -50,8 +56,10 @@ Formato de cada entrada: fecha · etapa · prompt (resumido) · resultado · qu�
 
 ### Decisión de arquitectura (tomada por mí)
 
-La IA presentó opciones y una recomendación; **la decisión de aprobarla fue mía**.
-_(Revisar y reescribir los motivos con mis propias palabras antes de pasarlos a AI_USAGE.md.)_
+La IA presentó opciones y una recomendación; **la decisión de aprobarla fue mía**. Mi
+criterio, con mis palabras: «primero cumplir y luego ir por más, porque no solo es ver que
+lo resuelva, sino mi experiencia, conocimiento y criterio para resolver de la mejor manera
+y más práctica este tipo de ejercicios».
 
 **Elegido:** un repositorio con dos carpetas independientes, `backend/` (NestJS) y
 `frontend/` (React + TypeScript + Vite); persistencia en archivo JSON detrás de un
@@ -67,10 +75,10 @@ repositorio; proveedor de IA como interfaz + `MockProvider` inyectado; tres endp
 
 | Opción descartada | Motivo |
 | --- | --- |
-| Monorepo con paquete compartido (workspaces) | Complejidad de build e instalación para compartir ~10 líneas de esquemas |
-| Zod compartido entre frontend y backend | En Nest lo idiomático es `class-validator`; lo exigido es validar en servidor. Queda como "mejora futura" en el README |
-| SQLite | Dependencia extra y riesgo de instalación; el JSON cumple §3.A |
-| Librería de estado / caché de datos en frontend | Son tres llamadas; `useState` + `fetch` bastan |
+| Monorepo con paquete compartido (workspaces) | Idea mía; descartada por la complejidad de build e instalación para compartir ~10 líneas de esquemas |
+| Zod compartido entre frontend y backend | En Nest lo idiomático es `class-validator`; lo exigido es validar en servidor. Queda como "mejora futura" en el README. _(La premisa era falsa: la corregí en la etapa 4, Nest 12 soporta Zod)_ |
+| SQLite | Dependencia extra y riesgo de instalación; el JSON cumple §3.A. _(Cambiado en la etapa 7 a pregunta mía: Node trae SQLite integrado)_ |
+| Librería de estado / caché de datos en frontend | Son tres llamadas; `useState` + `fetch` bastan. _(Cambiado en la etapa 6: elegí TanStack Query)_ |
 | LangChain o frameworks de agentes | El agente es de un solo turno; el mock es una función |
 | Docker como única vía de ejecución | El evaluador puede no tener Docker; queda como segunda vía |
 
@@ -91,7 +99,7 @@ repositorio; proveedor de IA como interfaz + `MockProvider` inyectado; tres endp
 | Definir comandos exactos de arranque y resolver CORS pronto | Se resuelve en la primera conexión frontend-backend | Aceptada |
 | Persistencia robusta: ruta fija, archivo inexistente o vacío, escritura segura | Se incluye en fase 1 | Aceptada |
 | Mostrar error también cuando el backend está caído | Ya estaba en el análisis (CA-11); se confirma | Aceptada |
-| NestJS es mucho andamiaje; Express bastaría | Se mantiene NestJS por decisión mía; se justifica en el README | Descartada _(confirmar)_ |
+| NestJS es mucho andamiaje; Express bastaría | Se mantiene NestJS por decisión mía; se justifica en el README | Descartada |
 
 ### Herramientas de IA usadas hasta ahora (para AI_USAGE.md §5)
 
@@ -100,7 +108,7 @@ repositorio; proveedor de IA como interfaz + `MockProvider` inyectado; tres endp
 | Claude Code (Claude Fable 5.2) | Análisis de requisitos, propuesta de arquitectura, bitácora |
 | Subagente Claude Sonnet | Revisión independiente del plan contra el PDF |
 | Claude Docs | Documento "Análisis de Requisitos y Definición de Alcance v1.0" |
-| Orca | Entorno de trabajo / orquestación de agentes _(completar cómo lo usé)_ |
+| Orca | IDE de varios agentes: Claude Code coordinó desde ahí a los workers de Codex, Claude Sonnet y Antigravity, y yo usé Codex y Antigravity directamente en sus paneles (detalle en la etapa 35) |
 | CLI `npx skills` (skills.sh) | Búsqueda de skills para el stack |
 
 ### Skills evaluadas
@@ -159,8 +167,8 @@ TanStack Query, Zustand, shadcn o WebSockets. Mi intuición era que no; la IA co
 | --- | --- | --- |
 | Editor visual de nodos (Rete.js, React Flow) | Descartado | Sirve para flujos de pasos conectados; el agente de la prueba es nombre + instrucciones, sin pasos ni herramientas. Sería decoración sin datos. Candidata a "mejora futura" en el README |
 | Gráficos estadísticos | Descartado para el MVP | No se guardan consultas; no hay dato que mostrar |
-| React Router | Descartado | Una sola pantalla |
-| TanStack Query | Descartado | Tres llamadas; `fetch` + `useState` con estados de carga y error explícitos |
+| React Router | Descartado | Una sola pantalla. _(Cambiado en la etapa 10: dos vistas)_ |
+| TanStack Query | Descartado | Tres llamadas; `fetch` + `useState` con estados de carga y error explícitos. _(Cambiado en la etapa 6, decisión mía)_ |
 | Zustand | Descartado | El estado (lista, agente seleccionado, respuesta) cabe en un componente |
 | shadcn/ui | Descartado | Ya se eligió daisyUI; no mezclar dos sistemas de UI |
 | WebSockets / streaming | Descartado | El PDF pide una petición y una respuesta (§3.B); HTTP normal basta |
@@ -192,7 +200,7 @@ Tailwind CSS 4 + daisyUI 5 · NestJS 12 + Zod (pipe nativo) · archivo JSON · p
 
 | Decisión | Motivo |
 | --- | --- |
-| CORS en el backend + `VITE_API_URL` con valor por defecto, **sin proxy de Vite** | Corrección mía: el proxy era innecesario para este alcance |
+| CORS en el backend + `VITE_API_URL` con valor por defecto, **sin proxy de Vite** | Corrección mía: el proxy era innecesario para este alcance. _(Revertido en la etapa 27: con el 5173 ocupado, CORS bloqueaba la app)_ |
 | Arquitectura: módulos por funcionalidad con controlador → servicio → repositorio | Estándar de Nest; hace visible la separación que pide §3.C y §6. Se descartan hexagonal, Clean Architecture y CQRS |
 | Errores centralizados con un filtro de excepciones global y excepciones propias | Formato único de error; el servidor no se cae (§3.C) |
 | Respuestas correctas sin envoltorio `{ data }` | Ningún requisito lo pide; evita un interceptor |
@@ -275,8 +283,11 @@ Tailwind CSS 4 + daisyUI 5 · NestJS 12 + Zod (pipe nativo) · archivo JSON · p
   porque había una sola pantalla. Ahora hay dos vistas (Agentes y Consultar), así que el
   enrutador tiene un uso real. La selección del agente pasa a vivir en la URL
   (`/consultar/:agentId`), y el único estado compartido nuevo es el tema.
-- **Herramienta:** Orca, con un worker de Codex lanzado por Claude Code como coordinador.
-  Codex lee la skill de daisyUI desde `.agents/skills/daisyui`.
+- **Herramienta:** Orca, con un worker de Codex (modelo `gpt-6.1-sol`) lanzado por Claude
+  Code (Claude Opus 5.5) como coordinador. Codex lee la skill de daisyUI desde
+  `.agents/skills/daisyui`. Mi pedido: «delega a un agente de Codex, usando la skill de
+  daisyUI, un panel con dos vistas, menú de navegación y skeletons, y que use el theme
+  generator para generar dos temas».
 - **Encargo:** especificación cerrada con alcance (solo `frontend/`), restricciones (sin
   dependencias extra salvo `react-router`, sin CDN, textos en español, conservar todo el
   manejo de errores), y evidencia obligatoria (build, lint, `npm audit`, rutas en 200,
@@ -290,7 +301,7 @@ Tailwind CSS 4 + daisyUI 5 · NestJS 12 + Zod (pipe nativo) · archivo JSON · p
   `studio-dark` en OKLCH, con todos los pares de texto por encima de 4.5:1 (calculado
   por el worker). Única dependencia nueva: `react-router` 8.5.1.
 - **Evidencia del worker:** build y lint sin errores, `npm audit` 0, rutas en 200, pruebas
-  con Playwright (validaciones, crear, consultar, agente inexistente, 404, móvil de 320 a
+  con Playwright MCP (validaciones, crear, consultar, agente inexistente, 404, móvil de 320 a
   1440 px sin desbordamiento, backend caído y reintento, tema persistente, consola limpia).
 - **Mi revisión en el navegador:** cambio de tema y persistencia al recargar, "Consultar"
   desde el listado con el agente elegido en la URL, consulta con respuesta, creación con
@@ -302,13 +313,47 @@ Tailwind CSS 4 + daisyUI 5 · NestJS 12 + Zod (pipe nativo) · archivo JSON · p
 
 ---
 
-## 2026-11-12 · Etapa 11 — Mejoras propias de UX y ampliación del listado (trabajo mío)
+## 2026-11-12 · Etapa 11 — Mejoras de UX y listado paginado (dirigidas por mí con Codex y Antigravity)
 
-Cambios hechos por mí, después de la entrega del worker de Codex, aplicando principios de
-UX/UI para que la aplicación sea más presentable. _(completar: herramientas usadas y motivo
-de cada cambio con mis palabras)_
+Tras la entrega del worker, seguí por mi cuenta, fuera de Claude Code: abrí yo mismo dos
+agentes en Orca y les di las instrucciones directamente. Las decisiones y los prompts son
+míos; el código lo escribieron ellos. Después le pedí a Claude Code que lo revisara.
 
-**Frontend**
+**Con Codex (`gpt-6-astra`, sesión interactiva mía, 20:07–21:30):**
+
+- «Necesito que me ayudes a pulir, organizar y mejorar la presentación y la
+  componentización de mi proyecto de React. Quiero imitar la arquitectura de frontend de
+  [mi proyecto SistemaCalendarioDesplegable], no a esa escala, pero sí hay cosas que me
+  gustaría ordenar. […] La primera opción del selector debería ser no seleccionable, solo
+  mostrable. […] Con la skill de daisyUI, sería mejor usar una notificación para mostrar
+  cuándo se hizo correctamente.»
+- «Considero que mejor que un toast sea un alert […]. Aplicar un modal para el formulario
+  de creación de un agente […] y el theme controller: verifica si podemos aplicar algo de
+  manera nativa, como dice la documentación de daisyUI, para ver si está de más crear un
+  contexto.»
+- Le pasé mi tema `coffee` del theme generator para el modo noche y le pedí su opuesto
+  para el día.
+- Consultar: probé tres distribuciones. La última se la pedí así: «que se muestre claro
+  qué agente se selecciona, que las instrucciones se vean claras desde el inicio y que en
+  el chat una persona ya pueda consultar, como indica el PDF de la prueba». Codex leyó el
+  PDF antes de cambiarla.
+- Codex comprobó cada cambio con Playwright MCP, con la API simulada (no contra el backend
+  real); la comprobación con el backend real la hizo después Claude Code.
+
+**Con Antigravity CLI (Gemini 4 Argon High, sesión mía, 21:37–21:46):**
+
+- «Necesito que me ayudes a pulir mejor la vista: puedes usar paginación y componentes de
+  daisyUI, organizar mejor los agentes y en la API agregar paginado para gestionar mejor,
+  y cargarlos con nuestro stack de TanStack Query; que no haga scroll y mejora la
+  experiencia y el flujo de usuario.»
+- Hizo el paginado del backend, sus pruebas y la paginación del frontend (detalle abajo),
+  con lint, build y pruebas en verde, y lo comprobó con Playwright MCP.
+
+Mi motivo, con mis palabras: «hice cambios y mejoras de UX por mi cuenta, aplicando
+principios de UX/UI para el performance; sé que no se califica, pero es una base para que
+el sistema esté más presentable y pulido».
+
+**Frontend** (Codex, salvo la paginación, la búsqueda y la vista en lista, que son de Antigravity)
 
 - Reorganización por responsabilidades: `app/` (proveedores y rutas), `pages/`,
   `components/agents/`, `components/consultation/`, `components/layout/`, `components/ui/`,
@@ -321,7 +366,7 @@ de cada cambio con mis palabras)_
 - Tema con el `theme-controller` de daisyUI (sin contexto de React) y temas propios
   `coffee-light` y `coffee`.
 
-**Backend**
+**Backend** (Antigravity)
 
 - `GET /api/agents` pasa a devolver `{ items, meta }` con paginación (`page`, `limit`),
   búsqueda (`search`, con los comodines de LIKE escapados) y orden (`recent`, `oldest`,
@@ -330,7 +375,7 @@ de cada cambio con mis palabras)_
 - Primeras pruebas automatizadas: 5 unitarias del servicio y 1 e2e de la API con
   Supertest (Vitest).
 
-**Revisión (Claude Code)**
+**Revisión (Claude Code, Claude Opus 5.5)**
 
 - Build, lint, pruebas (6/6) y `npm audit` (0) en verde.
 - Escenario del evaluador recorrido con Playwright: validación del formulario vacío,
@@ -360,7 +405,10 @@ de cada cambio con mis palabras)_
   dividió `AgentList`. Tomé de mi proyecto anterior (SistemaCalendarioDesplegable) la idea
   del aviso abajo a la derecha con pausa al pasar el ratón; aquí se implementa con un
   contexto de React en lugar de eventos globales de `window`.
-- **Herramienta:** Orca, con un worker de Claude Sonnet coordinado desde Claude Code.
+- **Herramienta:** Orca, con un worker de Claude Sonnet 5.5 coordinado desde Claude Code.
+  Mi pedido: «el documento pide poder editar y eliminar; tenemos que hacer esos flujos.
+  Delégalo a un agente de Orca con Sonnet, pero primero define el alcance y los
+  componentes».
   Encargo cerrado: contrato (`PUT` con el esquema de creación, `DELETE` con 204), dónde
   aparecen las acciones, que los errores de mutación se queden en su modal, restricciones
   (sin dependencias, sin commits) y evidencia obligatoria.
@@ -523,7 +571,8 @@ de cada cambio con mis palabras)_
   los tres iconos se sirven con su tipo correcto y están enlazados en `index.html`;
   logo del menú en los dos temas; build y lint en verde.
 - **Decisión mía sobre el lápiz:** al pasar el ratón, el icono de editar queda en blanco
-  sobre el amarillo. La IA avisó de que ese par da 1.78:1 (un icono necesita 3:1) y
+  sobre el amarillo. El cambio se lo pedí directamente a Codex en mi sesión interactiva
+  («al hacer hover, que el icono se haga blanco como el de la papelera»). La IA avisó de que ese par da 1.78:1 (un icono necesita 3:1) y
   decidí mantenerlo así por estética.
 
 ---
@@ -1028,4 +1077,62 @@ de cada cambio con mis palabras)_
 - **Hallazgo:** la barra lateral de GitHub sigue mostrando a `claude` como contribuidor,
   aunque `main` ya no tiene ninguna línea `Co-Authored-By` y la API de contribuidores solo
   devuelve a YouRobla. GitHub guardó esa lista del primer push, y los commits antiguos
-  siguen accesibles por su hash. Pendiente de decidir cómo quitarlo.
+  siguen accesibles por su hash. GitHub no permite quitar a nadie de esa lista desde la
+  interfaz (comprobado), así que, por decisión mía, se borró el repositorio y se volvió a
+  crear con el mismo nombre y el historial limpio (49 commits). Comprobado después: solo
+  YouRobla en «Contributors» y el commit antiguo ya no existe.
+
+---
+
+## 2026-11-13 · Etapa 35 — Auditoría de herramientas y autoría
+
+- **Pedido mío:** la bitácora estaba desfasada. Pedí revisar de verdad todo lo usado
+  (Orca, workers de Codex y Antigravity, orquestación, Playwright…) y verificar mis
+  prompts y mis decisiones.
+- **Cómo se verificó (IA):** con las fuentes reales, no de memoria: las 7 sesiones de
+  Claude Code, las 2 de Codex, las 3 de Antigravity y la base de orquestación de Orca.
+- **Hallazgo principal:** la etapa 11 figuraba como «trabajo mío» sin herramientas. La
+  dirigí yo, pero la escribieron Codex y Antigravity en sesiones que abrí directamente.
+  Corregido en esa etapa, con mis prompts.
+
+### Quién hizo qué (hora local)
+
+| Hora | Herramienta y modelo | Dirigida por | Etapas |
+| --- | --- | --- | --- |
+| 12 · 17:17–19:02 | Claude Code · Claude Fable 5.2 | Yo | 1–9 |
+| 12 · ~18:00 | Subagente Claude Sonnet (solo lectura) | Claude, a pedido mío | 3 |
+| 12 · 19:03–19:16 | Codex `gpt-6.1-sol`, worker de Orca | Claude como coordinador | 10 |
+| 12 · 20:07–21:30 y 23:09 | Codex `gpt-6-astra`, sesión interactiva | Yo, directamente | 11 y 18 (lápiz) |
+| 12 · 21:37–21:46 | Antigravity CLI · Gemini 4 Argon (High) | Yo, directamente | 11 |
+| 12 · 21:49–23:31 | Claude Code · Claude Opus 5.5 | Yo | 11 (revisión) a 19 |
+| 12 · 22:01–22:10 | Claude Sonnet 5.5, worker de Orca | Claude como coordinador | 12 |
+| 12 · 23:06–23:10 | Antigravity · `gemini-4-hydrogen-xhigh`, worker de Orca | Claude como coordinador | 18 |
+| 12 · 23:31–23:49 | Claude Code · Claude Fable 5.2 | Yo | 20 |
+| 12–13 · 23:51–01:40 | Claude Code · Claude Opus 5.5 | Yo | 21–28 |
+| 13 · 01:42–08:54 | Claude Code · Claude Fable 5.2 | Yo | 29–31 |
+| 13 · 08:54–09:47 y 10:08– | Claude Code · Claude Opus 5.5 | Yo | 32–35 |
+
+### Orca y la orquestación
+
+- Una sola orquestación (`run_a38ef66366ed`) con Claude Code como coordinador y cuatro
+  tareas, todas completadas: UI/UX (Codex), contraste del aviso (Codex), editar y
+  eliminar (Claude Sonnet) e icono (Antigravity). Cada worker recibió un encargo cerrado
+  (alcance, restricciones, evidencia obligatoria, sin commits) y cerró con `worker_done`.
+- Además, usé Codex y Antigravity directamente en sus paneles de Orca (etapa 11).
+
+### Playwright, de tres formas
+
+| Forma | Quién | Nota |
+| --- | --- | --- |
+| Playwright MCP | Codex y Antigravity | De ahí sale la carpeta `.playwright-mcp/` del `.gitignore`. Codex probaba con la API simulada (`page.route`) |
+| Scripts de Playwright (Node y Python) | Claude Code | En instancias aisladas, con backend y base temporales |
+| Claude in Chrome (extensión) | Claude Code | Revisiones de las etapas 10–17 y 32–33 |
+
+### Cómo registro lo que hice yo, con mis palabras
+
+- Mis prompts son mis palabras: en las etapas cito los más importantes, con la ortografía
+  corregida y el sentido intacto.
+- «Decisión mía» significa que la idea o la elección salió de un prompt mío. Si elegí
+  entre opciones que propuso la IA, lo digo así (por ejemplo, Consultar con panel a la
+  izquierda, filas con nombre e instrucciones, nombre del repositorio, Mermaid).
+- Verificado: todas las «decisión mía» de las etapas 1–34 tienen detrás un prompt mío.

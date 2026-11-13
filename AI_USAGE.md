@@ -1,20 +1,25 @@
 # Uso de IA durante el desarrollo
 
-> **Borrador generado a partir de `BITACORA.md`.** Debo revisarlo y ajustarlo con mis
-> palabras antes de entregar, sobre todo las secciones marcadas con _(completar)_.
+> Redactado a partir de mis prompts (citados con la ortografía corregida) y de
+> `BITACORA.md`, verificado contra las sesiones reales de cada herramienta (etapa 35).
 
 ## Herramientas utilizadas
 
-| Herramienta | Para qué |
-| --- | --- |
-| Claude Code (modelo Claude Fable 5.2) | Análisis de requisitos, propuesta de arquitectura, generación del código, pruebas manuales y documentación |
-| Subagente Claude Sonnet | Revisión independiente del plan contra el enunciado, antes de escribir código |
-| Antigravity con Gemini 4 Hydrogen (worker en Orca) | Icono de la aplicación y favicon: exploró conceptos con su generador de imágenes y entregó el SVG final dibujado a mano |
-| Codex (worker en Orca, coordinado desde Claude Code) | Mejora de la interfaz: panel con navegación, dos vistas con React Router, skeletons y temas claro/oscuro |
-| Skills `nestjs-best-practices` y `daisyui` | Guías de referencia para NestJS y para los componentes de daisyUI 5 |
-| Skills `tanstack-query-best-practices` y `vercel-composition-patterns` | Reglas para la capa de datos (claves de caché, `placeholderData`, invalidación) y para componer componentes sin props booleanas ni UI acoplada al estado |
-| CLI `npx skills` | Búsqueda y evaluación de skills; se revisó su contenido antes de instalarlas |
-| Orca | _(completar: cómo lo usé)_ |
+| Herramienta | Modelo | Para qué |
+| --- | --- | --- |
+| Claude Code | Claude Fable 5.2 y Claude Opus 5.5 | Análisis de requisitos, arquitectura, backend y frontend base, revisiones, reorganizaciones, pruebas y documentación. Coordinador de los workers en Orca |
+| Subagente de Claude Code | Claude Sonnet | Revisión independiente del plan contra el PDF, antes de escribir código |
+| Orca | — | IDE de varios agentes. Claude Code repartió ahí 4 tareas a workers y yo usé Codex y Antigravity directamente en sus paneles |
+| Codex, worker en Orca | `gpt-6.1-sol` | Panel con dos vistas, React Router, skeletons y temas; corrección de contraste |
+| Codex, sesión mía | `gpt-6-astra` | Dirigido por mí: reorganización de carpetas, modal de creación, `theme-controller`, temas y la vista Consultar |
+| Antigravity CLI, sesión mía | Gemini 4 Argon (High) | Dirigido por mí: paginado del backend con sus pruebas y paginación del frontend |
+| Claude Sonnet, worker en Orca | Claude Sonnet 5.5 | Editar y eliminar agentes, y avisos tipo toast |
+| Antigravity, worker en Orca | `gemini-4-hydrogen-xhigh` | Icono y favicon: exploró conceptos con su generador de imágenes y entregó el SVG final dibujado a mano |
+| Playwright MCP | — | Comprobaciones en el navegador de Codex y Antigravity |
+| Claude in Chrome y scripts de Playwright | — | Comprobaciones de Claude Code en el navegador, en instancias aisladas |
+| Claude Docs | — | Documento de análisis de requisitos y alcance |
+| Skills `nestjs-best-practices`, `daisyui`, `tanstack-query-best-practices` y `vercel-composition-patterns` | — | Guías de referencia; se leyó su contenido antes de instalarlas |
+| CLI `npx skills` | — | Búsqueda y evaluación de skills |
 
 ## Cómo trabajé con la IA
 
@@ -51,7 +56,13 @@ lo que se podía y no se podía tocar, y la evidencia obligatoria para darla por
 > que la tarea NO está terminada. Entrega: build, lint, `npm audit`, rutas en 200, archivos
 > modificados y los pares de contraste de los dos temas.
 
-**4. Decisión de persistencia con criterio:**
+**4. Dirigiendo yo a Codex, sin Claude de por medio:**
+
+> Necesito que me ayudes a pulir, organizar y mejorar la presentación y la
+> componentización de mi proyecto de React. Quiero imitar la arquitectura de frontend de
+> mi otro proyecto, no a esa escala, pero sí hay cosas que me gustaría ordenar.
+
+**5. Decisión de persistencia con criterio:**
 
 > De manera crítica y objetiva, ¿cuál escogerías para el alcance principal que pide el
 > documento, teniendo en cuenta los extras?
@@ -73,9 +84,24 @@ decisiones de diseño las tomé yo, y en varias corregí lo que la IA proponía:
 | Presentación de la interfaz | Una sola pantalla con tres tarjetas, sin React Router | Pedí un panel con dos vistas, navegación, skeletons y tema claro/oscuro; con dos vistas, React Router ya tiene un uso real |
 
 Ideas mías que descarté tras analizarlas con la IA: monorepo con Zod compartido, editor
-visual de nodos, tipos de agente preseleccionables, Zustand y React Router.
+visual de nodos, tipos de agente preseleccionables y Zustand. React Router lo descarté al
+principio, con una sola pantalla, y lo incorporé cuando pasé a dos vistas.
 
-_(completar: cambios que hice a mano en el código después de revisarlo)_
+### Lo que hice yo
+
+- **Dirigí, no escribí a mano:** el código lo generaron los agentes. Mi trabajo fue decidir
+  qué construir, escribir los encargos, revisar cada resultado en el navegador y pedir
+  correcciones hasta que me convenciera.
+- **Abrí yo mismo dos agentes** fuera de Claude Code para la etapa 11. A Codex le pedí
+  ordenar el frontend tomando como referencia la estructura de mi proyecto anterior
+  (SistemaCalendarioDesplegable), un modal para crear agentes y el `theme-controller`
+  nativo de daisyUI; a Antigravity, el paginado de la API y del listado.
+- **Decisiones de interfaz mías:** quitar el modal «Ver instrucciones» y el enlace «Volver»
+  porque repetían información, los colores al pasar el ratón, mi tema del theme generator
+  (que después descarté porque no me gustó aplicado a toda la app) y el aviso abajo a la
+  derecha con pausa al pasar el ratón, idea de mi proyecto anterior.
+- **Cuando sentí que el frontend se había complicado**, pedí un análisis sincero de
+  sobreingeniería y lo reorganizamos hasta que entendí cada pieza.
 
 ## Cómo comprobé que funciona
 
@@ -85,10 +111,21 @@ _(completar: cambios que hice a mano en el código después de revisarlo)_
 - **Flujo completo en el navegador:** formulario vacío (errores por campo), crear agente,
   selección automática, consulta vacía, consulta válida con respuesta, backend detenido
   (mensaje de conexión y botón de reintento) y recuperación sin recargar.
-- **CORS:** petición `OPTIONS` desde el origen del frontend.
+- **CORS:** petición `OPTIONS` desde el origen del frontend; más tarde, el flujo completo
+  con Vite en otro puerto (5174) y con `127.0.0.1`, ya con el proxy de Vite.
 - **Seguridad de dependencias:** `npm audit` en backend y frontend, con 0 vulnerabilidades.
 - **Instalación limpia:** clonar el repositorio en otra carpeta y seguir el README.
-- _(completar: lo que revisé yo leyendo el código)_
+- **Lo que revisé leyendo el código**, y pregunté hasta entenderlo:
+  - Por qué había `useCallback` en todas las funciones de `AgentsPage`: no hacía falta y
+    se quitó.
+  - Qué hacía `window.location.search` en `useAgentsListParams`: la IA propuso revertirlo;
+    se comprobó que corregía un fallo real y lo mantuve.
+  - Por qué `onSubmit` estaba envuelto en una función (regla de refs del lint).
+  - Qué cambia con `queryOptions` en TanStack Query y por qué la invalidación por prefijo
+    refresca a la vez el listado y el selector.
+  - Cómo funciona CORS y el proxy de Vite, antes de aprobar el cambio.
+  - En el backend, la comparación con mi proyecto Express (`Sistema-de-Notas-Backend`),
+    para entender por qué NestJS organiza por funcionalidad.
 
 ## Errores y recomendaciones de la IA corregidos o descartados
 
