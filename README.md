@@ -193,14 +193,15 @@ está en [`frontend/README.md`](frontend/README.md).
 
 ### Diagrama de componentes
 
-![Diagrama de componentes: frontend en React, backend en NestJS con controlador, servicio, repositorio y proveedor de IA, y SQLite](docs/arquitectura.drawio.svg)
+![Diagrama de componentes: frontend en React; backend en NestJS con controlador, servicio, repositorio y SQLite; el servicio usa la interfaz AiProvider, que implementan el simulado, Claude y OpenAI](docs/arquitectura.drawio.svg)
 
 El diagrama es un archivo de [draw.io](https://www.drawio.com/) (`docs/arquitectura.drawio.svg`):
 GitHub lo muestra como imagen y draw.io (o su extensión de VS Code) lo abre para editarlo.
 
 Las tres separaciones que pide la prueba se ven en el diagrama: el frontend solo habla con
 el backend por HTTP; dentro del backend, el controlador no sabe nada de SQL ni de IA; y el
-servicio depende del contrato `AiProvider`, no del proveedor simulado.
+servicio depende del contrato `AiProvider`, no de un proveedor concreto: la fábrica elige
+al arrancar el simulado, Claude u OpenAI según `AI_PROVIDER`.
 
 ### Flujo de una consulta
 
@@ -410,11 +411,21 @@ Los espacios al inicio y al final se recortan. Todos los errores tienen el mismo
 
 ```bash
 cd backend
-npm test          # pruebas unitarias del servicio (paginación, búsqueda, orden, detalle, editar, eliminar)
-npm run test:e2e  # pruebas de la API completa con Supertest (flujo crear → consultar, errores, listado, PUT, DELETE y documentación)
+npm test          # 22 pruebas unitarias
+npm run test:e2e  # 15 pruebas de la API completa con Supertest
 ```
 
-Las pruebas usan una base SQLite en memoria y no tocan `backend/data/`.
+| Qué se prueba | Dónde |
+| --- | --- |
+| Servicio: paginación, búsqueda sin tildes, orden, detalle, editar y eliminar | `agents.service.spec.ts` |
+| Fábrica de proveedores: simulado por defecto, modelo por defecto o `AI_MODEL`, error claro sin clave, proveedor desconocido | `ai-provider.factory.spec.ts` |
+| Adaptadores de Claude y OpenAI: qué envían (instrucciones, historial y consulta) y cómo tratan un rechazo o una respuesta vacía | `providers/*.spec.ts` |
+| Errores del proveedor: clave inválida, demasiadas consultas y el resto | `ai.exceptions.spec.ts` |
+| API completa: flujo del §8 (crear → consultar), conversación con historial, validación, `404`, `/api/ai/status`, documentación, `PUT`, `DELETE` y proveedor caído (`502` sin detalles internos) | `test/agents.e2e-spec.ts` |
+
+Las pruebas usan una base SQLite en memoria y no tocan `backend/data/`. Ninguna llama a una
+API de IA real: los adaptadores se prueban con un cliente falso y las e2e usan siempre el
+proveedor simulado.
 
 ## Tecnologías y razones
 
