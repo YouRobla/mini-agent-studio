@@ -1580,3 +1580,19 @@ el sistema esté más presentable y pulido».
     2024); con una versión anterior el compose fallaría. Se añade a los requisitos.
   - Sin probar: Windows y macOS. Docker evita las diferencias de sistema; con npm no hay
     rutas ni comandos propios de Linux en los scripts.
+
+---
+
+## 2026-11-13 · Etapa 51 — Compose compatible con cualquier versión
+
+- **Pedido mío:** corregir, no solo documentar, que el `.env` opcional exigía Compose 2.24.
+- **Cambio (IA):** fuera `env_file` con `required: false`. Las variables de IA se declaran
+  con sustitución (`AI_PROVIDER: ${AI_PROVIDER:-mock}`, claves vacías por defecto), que
+  existe en todas las versiones de Compose. `docker compose up --build` arranca en modo
+  simulado sin ningún archivo; `docker compose --env-file backend/.env up --build` usa la
+  IA real.
+- **Revisión:** `docker compose config` sin y con `--env-file` (claves ocultas en la
+  salida); arrancado de verdad las dos formas: «healthy» y `mock` sin `.env`; «healthy»,
+  `openai · gpt-6.1-terra` y una consulta real con `--env-file`. Prueba borrada después.
+- **README:** requisito de Compose 2.24 retirado; comando con `--env-file` en la sección de
+  Docker y en la tabla de comandos.

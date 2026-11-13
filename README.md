@@ -30,8 +30,8 @@ Prueba técnica Fullstack.
   fija la 26.13.1). El backend usa el módulo `node:sqlite` integrado en Node, así que no
   hay que instalar ninguna base de datos.
 - npm (incluido con Node).
-- Solo para la vía con Docker (opcional): Docker con **Compose 2.24 o superior**, que es la
-  versión que admite el `.env` opcional (`required: false`). Probado con Compose 5.6.
+- Solo para la vía con Docker (opcional): Docker con Compose (`docker compose`). Probado con
+  Compose 5.6; el archivo no usa nada que exija una versión reciente.
 
 ### Pasos
 
@@ -107,14 +107,20 @@ Navegador ──► :8080 [ frontend: nginx ] ── /api ──► [ backend: N
 - **Salud:** el compose comprueba los dos servicios, y el frontend espera a que el
   backend responda antes de arrancar.
 
-**IA real con Docker:** `backend/.env` es opcional. Si existe, Compose pasa sus variables
-(`AI_PROVIDER` y la clave) al contenedor al arrancarlo; si no, modo simulado. La clave no
-se copia dentro de la imagen.
+**IA real con Docker:** sin hacer nada, modo simulado. Para usar Claude u OpenAI, pasa tu
+`backend/.env` al arrancar:
+
+```bash
+docker compose --env-file backend/.env up --build
+```
+
+Compose toma de ese archivo `AI_PROVIDER`, la clave y `AI_MODEL` y se los da al contenedor
+del backend. La clave no se copia dentro de la imagen.
 
 | Quiero… | Comando |
 | --- | --- |
 | Arrancar (y reconstruir si cambió el código) | `docker compose up --build` |
-| Aplicar un cambio en `backend/.env` | `docker compose up -d` (recrea el backend con las variables nuevas, sin reconstruir) |
+| Usar la IA real de `backend/.env`, o aplicar un cambio en él | `docker compose --env-file backend/.env up -d` (recrea el backend con las variables, sin reconstruir) |
 | Ver los registros del backend | `docker compose logs -f backend` |
 | Parar sin perder los agentes | `docker compose down` |
 | Parar y borrar los agentes | `docker compose down -v` |
