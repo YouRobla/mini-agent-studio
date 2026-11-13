@@ -121,7 +121,13 @@ Sin configurar nada, las respuestas son simuladas. Para que responda Claude:
    «Claude · claude-haiku-5-5», y `GET /api/ai/status` lo confirma.
 
 Para OpenAI es igual, con `AI_PROVIDER=openai` y `OPENAI_API_KEY`. Si falta la clave, el
-backend no arranca y dice qué variable falta. `backend/.env` está
+backend no arranca y dice qué variable falta.
+
+Probado con la API real de OpenAI (`gpt-6.1-terra`): las respuestas llegan en Markdown y
+el chat las muestra con formato (tablas, listas, negritas y bloques de código), y el
+agente recuerda lo hablado en la conversación.
+
+![Respuesta real de OpenAI con una tabla, una lista con negritas y un bloque de código, mostrada con formato en el chat](docs/capturas/05-openai.png) `backend/.env` está
 en `.gitignore`: la clave nunca se sube al repositorio ni llega al navegador.
 
 ## Demostración del flujo
@@ -387,7 +393,7 @@ curl -X POST http://localhost:3000/api/agents/1c4c8e63-2f0e-4c24-aad6-57b31dfdc2
 ```json
 {
   "agentId": "1c4c8e63-2f0e-4c24-aad6-57b31dfdc208",
-  "response": "Soy «Asistente de resúmenes» y sigo estas instrucciones: «Eres un asistente que resume textos».\nTu consulta fue: «Resume este párrafo».",
+  "response": "Soy «Asistente de resúmenes» y sigo estas instrucciones: «Eres un asistente que resume textos».\n\nTu consulta fue: «Resume este párrafo».",
   "provider": "mock"
 }
 ```
@@ -469,6 +475,7 @@ proveedor simulado.
 | SQLite (`node:sqlite`) | Persistencia real con escritura segura, sin instalar dependencias ni un servidor |
 | SDK oficial de Claude (`@anthropic-ai/sdk`) | Proveedor real opcional (Claude Haiku 5.5, el más barato): conversación con historial, errores tipados y sin depender de un intermediario |
 | SDK oficial de OpenAI (`openai`) | Segundo proveedor real, para demostrar que la fábrica cambia de proveedor sin tocar el resto del código |
+| `react-markdown` + `remark-gfm` | Los modelos responden en Markdown: lo convierte en componentes de React sin ejecutar HTML (más seguro que inyectar HTML) y añade tablas. Se carga aparte, con la primera respuesta |
 | Docker Compose (opcional) | Ejecutar todo con un comando sin instalar Node; nginx sirve el frontend compilado. Es una segunda vía: el evaluador puede no tener Docker |
 | Vitest + Supertest | Vienen con el proyecto de NestJS 12; prueban el servicio y la API sin levantar el servidor |
 

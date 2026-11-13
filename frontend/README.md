@@ -42,7 +42,7 @@ src/
 │   │   ├── ConsultMessages.tsx  La conversación: mensajes, espera y error
 │   │   └── ConsultForm.tsx      Campo de texto y botón de envío
 │   └── ui/               Piezas sin dominio (no saben qué es un agente)
-│       └── Modal, ConfirmDialog, ErrorAlert, Pagination, PageHeader, icons, toast
+│       └── Modal, ConfirmDialog, ErrorAlert, Markdown, Pagination, PageHeader, icons, toast
 │
 ├── hooks/
 │   ├── useAgents.ts          Datos del servidor (TanStack Query): lecturas y escrituras
@@ -296,6 +296,13 @@ backend está apagado), se trata como «sin conexión»:
   de varios turnos: cada consulta viaja con el historial (`useConversation`, como mucho
   los últimos 20 mensajes), así el agente recuerda lo hablado. La conversación de cada
   agente se conserva al cambiar de vista y se pierde al recargar. `Ctrl + Enter` envía.
+- **Respuestas en Markdown** (`ui/Markdown.tsx`): los modelos responden en Markdown, y
+  `react-markdown` lo convierte en elementos de React sin ejecutar HTML (una etiqueta
+  `<script>` se muestra como texto). `remark-gfm` añade tablas. Los estilos son clases de
+  Tailwind que heredan el color de la burbuja, así que funcionan en los dos temas. Se
+  carga con `React.lazy` al llegar la primera respuesta: pesa unos 50 KB comprimidos y no
+  retrasa la carga inicial; mientras llega, el texto se ve tal cual. Tus mensajes siguen
+  como texto plano.
 
 ## 7. Editar los temas
 

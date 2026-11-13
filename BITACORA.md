@@ -1452,3 +1452,31 @@ el sistema esté más presentable y pulido».
   (contenedores, volumen, imágenes y red) se borró después.
 - **README:** sección «Con Docker (opcional)», el árbol con los Dockerfile, la tabla de
   tecnologías y la limitación del frontend compilado.
+
+---
+
+## 2026-11-13 · Etapa 47 — Respuestas en Markdown y captura con OpenAI real
+
+- **Pedido mío:** la IA responde en Markdown (se veían los `**`) y quería darle formato
+  sin añadir mucha complejidad; y una captura de una prueba real con OpenAI en el README.
+- **Opciones (IA):** `react-markdown` (convierte el Markdown en componentes de React y no
+  ejecuta HTML), `marked` (genera HTML que hay que inyectar con
+  `dangerouslySetInnerHTML` y limpiar con DOMPurify: más piezas y más riesgo) y
+  `@tailwindcss/typography` (sus colores no siguen el tema de daisyUI).
+- **Decisión mía:** `react-markdown` 10.1.0 y `remark-gfm` 4.0.1 para las tablas. Versiones
+  estables, `npm audit` con 0 vulnerabilidades y sin scripts de instalación.
+- **Cambios (IA):**
+  - `ui/Markdown.tsx`: estilos con clases de Tailwind que heredan el color de la burbuja;
+    tablas con desplazamiento propio; enlaces en otra pestaña con `rel="noreferrer"`.
+  - Solo en las respuestas del agente; mis mensajes siguen como texto plano.
+  - El paquete pasaba de 541 a 707 KB y saltaba el aviso de Vite: el Markdown se carga con
+    `React.lazy` al llegar la primera respuesta (165 KB, 49 KB comprimido, aparte) y el
+    paquete inicial vuelve a 543 KB, sin subir el umbral del aviso.
+  - El mock separa sus dos líneas con una línea en blanco: en Markdown, un salto simple
+    no es un párrafo nuevo. Ejemplos de Swagger y del README al día.
+- **Revisión:** build y lint en verde en las dos partes; 22 pruebas unitarias y 15 e2e.
+  Seguridad: una respuesta simulada con `<script>` e `<img onerror>` se muestra como
+  texto, sin crear los elementos ni ejecutar nada. OpenAI real (`gpt-6.1-terra`): tabla,
+  lista con negritas y bloque de código con formato, en 7,5 s, en claro y en oscuro.
+  Captura nueva `docs/capturas/05-openai.png` en el README, tomada con un agente temporal
+  que se borró después.
