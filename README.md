@@ -9,7 +9,7 @@ Prueba técnica Fullstack.
 
 ## Requisitos
 
-- **Node.js 24 o superior** (probado con 26.13.1; ver `.nvmrc`). El backend usa el
+- **Node.js 24 o superior** (probado desde un clon limpio con 24.22.3 y 26.13.1; ver `.nvmrc`). El backend usa el
   módulo `node:sqlite` integrado en Node, así que no hay que instalar ninguna base de datos.
 - npm (incluido con Node).
 
