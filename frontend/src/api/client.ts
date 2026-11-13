@@ -1,6 +1,12 @@
-/** Único lugar del frontend que conoce la dirección del backend. */
-const API_URL: string =
-  import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
+/**
+ * Dirección de la API. Por defecto `/api` en el mismo origen que la página: en
+ * desarrollo el proxy de Vite (`vite.config.ts`) lo reenvía al backend, así que
+ * no hay CORS. `VITE_API_URL` permite apuntar directamente al backend.
+ */
+const API_URL: string = import.meta.env.VITE_API_URL || "/api";
+
+const CONNECTION_ERROR =
+  "No se pudo conectar con el servidor. Comprueba que el backend esté en marcha e inténtalo de nuevo.";
 
 interface ApiErrorDetail {
   field: string;
@@ -40,15 +46,15 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     response = await fetch(`${API_URL}${path}`, {
       ...init,
-      headers: { "Content-Type": "application/json", ...init?.headers },
+      // Solo las peticiones con cuerpo (POST, PUT) envían JSON y lo declaran.
+      headers: {
+        ...(init?.body ? { "Content-Type": "application/json" } : {}),
+        ...init?.headers,
+      },
     });
   } catch {
-    // fetch solo falla así cuando no hay respuesta: backend caído o sin red.
-    throw new ApiError(
-      0,
-      "NETWORK_ERROR",
-      "No se pudo conectar con el servidor. Comprueba que el backend esté en marcha e inténtalo de nuevo.",
-    );
+    // fetch solo falla así cuando no hay respuesta: servidor caído o sin red.
+    throw new ApiError(0, "NETWORK_ERROR", CONNECTION_ERROR);
   }
 
   // 204: la operación fue correcta y no hay cuerpo que leer (p. ej. DELETE).
@@ -58,11 +64,17 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     const error = body as Partial<ApiErrorBody> | null;
+    // El backend siempre responde sus errores con este formato. Si no llega, no
+    // respondió él: por ejemplo, el proxy de Vite devuelve 502 sin cuerpo cuando
+    // el backend está apagado.
+    if (typeof error?.message !== "string") {
+      throw new ApiError(response.status, "NETWORK_ERROR", CONNECTION_ERROR);
+    }
     throw new ApiError(
       response.status,
-      error?.error ?? "UNKNOWN_ERROR",
-      error?.message ?? "Ocurrió un error inesperado. Inténtalo de nuevo.",
-      error?.details,
+      error.error ?? "UNKNOWN_ERROR",
+      error.message,
+      error.details,
     );
   }
 

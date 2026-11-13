@@ -25,7 +25,6 @@ export function ConsultMessages({
   return (
     <div
       aria-live="polite"
-      aria-atomic="true"
       aria-label="Mensajes de la consulta"
       tabIndex={0}
       className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5"
