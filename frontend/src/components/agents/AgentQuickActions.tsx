@@ -7,10 +7,16 @@ interface AgentQuickActionsProps {
   onDelete: (agent: Agent) => void;
 }
 
+/** Tooltip un poco más separado del icono que el de daisyUI por defecto. */
+const TOOLTIP =
+  "tooltip [--tt-off:calc(100%_+_0.75rem)] [--tt-tail:calc(100%_+_var(--tt-overlap)_+_0.5rem)]";
+
 /**
  * Editar y eliminar como botones de icono siempre visibles. El tooltip
- * explica el icono; eliminar solo se tiñe de rojo al pasar el ratón o al
- * enfocarlo, para no competir con la acción principal (Consultar).
+ * explica el icono. En reposo son neutros para no competir con Consultar; al
+ * pasar el ratón o enfocarlos se rellenan con su color (amarillo editar, rojo
+ * eliminar). Se rellena el fondo y no solo el icono porque un icono amarillo
+ * sobre fondo claro no se distingue (contraste 1.6:1).
  */
 export function AgentQuickActions({
   agent,
@@ -19,20 +25,20 @@ export function AgentQuickActions({
 }: AgentQuickActionsProps) {
   return (
     <div className="flex shrink-0 items-center">
-      <div className="tooltip" data-tip="Editar">
+      <div className={TOOLTIP} data-tip="Editar">
         <button
           type="button"
-          className="btn btn-ghost btn-xs btn-square"
+          className="btn btn-ghost btn-xs btn-square hover:bg-warning hover:text-warning-content focus-visible:bg-warning focus-visible:text-warning-content"
           aria-label={`Editar ${agent.name}`}
           onClick={() => onEdit(agent)}
         >
           <EditIcon />
         </button>
       </div>
-      <div className="tooltip" data-tip="Eliminar">
+      <div className={TOOLTIP} data-tip="Eliminar">
         <button
           type="button"
-          className="btn btn-ghost btn-xs btn-square hover:text-error focus-visible:text-error"
+          className="btn btn-ghost btn-xs btn-square hover:bg-error hover:text-error-content focus-visible:bg-error focus-visible:text-error-content"
           aria-label={`Eliminar ${agent.name}`}
           onClick={() => onDelete(agent)}
         >

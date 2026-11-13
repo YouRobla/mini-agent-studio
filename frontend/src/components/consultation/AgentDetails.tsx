@@ -49,7 +49,7 @@ export function AgentDetails({ agent, onEdit, onDelete }: AgentDetailsProps) {
         <div className="flex gap-2 border-t border-base-300 pt-3">
           <button
             type="button"
-            className="btn btn-sm flex-1"
+            className="btn btn-sm flex-1 hover:bg-warning hover:text-warning-content focus-visible:bg-warning focus-visible:text-warning-content"
             onClick={() => onEdit(agent)}
           >
             <EditIcon />
@@ -57,7 +57,7 @@ export function AgentDetails({ agent, onEdit, onDelete }: AgentDetailsProps) {
           </button>
           <button
             type="button"
-            className="btn btn-sm btn-ghost flex-1 hover:text-error focus-visible:text-error"
+            className="btn btn-sm btn-ghost flex-1 hover:bg-error hover:text-error-content focus-visible:bg-error focus-visible:text-error-content"
             onClick={() => onDelete(agent)}
           >
             <TrashIcon />
