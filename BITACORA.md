@@ -1346,3 +1346,42 @@ el sistema esté más presentable y pulido».
   clave el estado dice `openai` y `gpt-5.5`; con una clave falsa, OpenAI responde 401 y el
   usuario recibe el 502 legible.
 - **Sin probar:** una respuesta real de OpenAI; necesita una clave.
+
+---
+
+## 2026-11-13 · Etapa 43 — Errores con Claude y GPT, servidor caído, icono de robot y capturas
+
+- **Pedido mío:** ver cómo se ve el frontend si Claude o GPT están mal configurados y
+  cuando el servidor se detiene (me pareció que los mensajes se repetían); un icono más
+  orientado a agentes de chat; y capturas y README al día.
+- **Pruebas (IA, en un entorno aislado: backend en 3998, Vite en 5177, base temporal):**
+  - Claude y GPT con una clave inválida: la etiqueta muestra el proveedor, no se añaden
+    burbujas falsas y el texto se conserva, pero el mensaje decía «Inténtalo de nuevo»,
+    y con una clave mala reintentar nunca sirve.
+  - Servidor caído y página recargada en Consultar: **dos bloques de error iguales**
+    (lista y agente), cada uno con su «Reintentar», y debajo «Elige un agente para
+    empezar», que era falso porque el agente estaba en la URL. Era lo que yo había visto.
+  - Un primer resultado de la prueba (OpenAI «sin error») era un fallo de la propia
+    prueba: miraba antes de que llegara la respuesta. Se corrigió esperando la respuesta
+    de red.
+- **Arreglos (IA, aprobados por mí):**
+  - Backend: `aiProviderErrorFor` traduce el código HTTP que traen los errores de los
+    SDK: 401/403 → `AI_PROVIDER_AUTH_ERROR` («rechazó la clave de API, revisa
+    backend/.env»), 429 → `AI_PROVIDER_RATE_LIMIT`, y el resto, el genérico. Documentado
+    en Swagger y en el README.
+  - Frontend: si la lista de agentes tampoco cargó, Consultar no repite el error del
+    agente; «Elige un agente» solo aparece si no hay agente en la URL o no existe; y un
+    solo «Reintentar» (`useRetryAll`) vuelve a pedir todo lo que hay en pantalla, también
+    la etiqueta de la barra, que antes no volvía.
+- **Icono (decisión mía):** la estrella en órbita no comunicaba nada. Lo delegué por Orca a
+  un worker de Antigravity con `gemini-4-hydrogen-xhigh`, con un encargo cerrado. Exploró
+  tres conceptos y eligió un globo de chat con cara de robot y antena: SVG dibujado a
+  mano de 764 bytes, PNG de 32 y 180 px y `AppLogo` en `currentColor`. Solo tocó los
+  cuatro archivos permitidos. Revisión mía: el favicon a 16 px se reconoce y el logo se
+  ve bien en los dos temas.
+- **Capturas:** las cuatro de `docs/capturas/` rehechas en el entorno aislado, con el
+  icono nuevo y una conversación de dos turnos en Consultar.
+- **Revisión:** lint y build en verde; 22 pruebas unitarias y 15 e2e. La prueba de
+  errores repetida con los arreglos: un solo bloque de error con el servidor caído, el
+  mensaje de la clave en Claude y en GPT, y recuperación completa con un solo
+  «Reintentar».

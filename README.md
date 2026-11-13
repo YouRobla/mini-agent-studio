@@ -7,7 +7,7 @@ un proveedor de IA simulado (modo mock).
 
 Prueba técnica Fullstack.
 
-![Vista Consultar: el agente «Asistente de resúmenes» responde a una consulta en modo simulado](docs/capturas/02-consultar.png)
+![Vista Consultar: conversación de dos turnos con el agente «Asistente de resúmenes» en modo simulado; la segunda respuesta indica «Tu consulta #2»](docs/capturas/02-consultar.png)
 
 ## Contenido
 
@@ -119,7 +119,8 @@ El recorrido completo, sin configurar ninguna API de IA:
 5. Pulsa **Consultar** junto al agente (o **Probar agente** en el aviso, mientras siga
    visible). Se abre la vista **Consultar** con ese agente elegido; escribe una consulta y
    pulsa **Enviar consulta**. La respuesta aparece en el chat, como en la captura del
-   principio.
+   principio. Puedes seguir preguntando: cada consulta viaja con lo hablado antes, así que
+   el agente recuerda la conversación (el modo simulado lo muestra numerando el turno).
 6. Para editar un agente, pulsa el icono del lápiz en su tarjeta o fila: el formulario se
    abre con sus valores; cambia lo que quieras y pulsa **Guardar cambios**. Para
    eliminarlo, pulsa el icono de la papelera y confirma en el diálogo. Ambas acciones
@@ -382,6 +383,7 @@ La respuesta del mock indica el turno: `Tu consulta #2 fue: «Ahora hazlo más c
 | `name` | Obligatorio, máximo 100 caracteres (al crear y al editar) |
 | `instructions` | Obligatorio, máximo 5000 caracteres |
 | `query` | Obligatorio, máximo 5000 caracteres |
+| `history` | Opcional; como mucho 20 mensajes, alternando `user` y `assistant` y empezando por `user` |
 
 Los espacios al inicio y al final se recortan. Todos los errores tienen el mismo formato:
 
@@ -399,7 +401,9 @@ Los espacios al inicio y al final se recortan. Todos los errores tienen el mismo
 | `400` | `VALIDATION_ERROR` | Faltan campos, superan el máximo o un parámetro de consulta no es válido (`details` indica cuáles) |
 | `400` | `BAD_REQUEST` | El cuerpo no es JSON válido |
 | `404` | `AGENT_NOT_FOUND` | El agente no existe |
-| `502` | `AI_PROVIDER_ERROR` | El proveedor de IA falló |
+| `502` | `AI_PROVIDER_AUTH_ERROR` | El proveedor de IA rechazó la clave de API (revisar `backend/.env`); reintentar no sirve |
+| `502` | `AI_PROVIDER_RATE_LIMIT` | El proveedor de IA recibe demasiadas consultas; esperar y reintentar |
+| `502` | `AI_PROVIDER_ERROR` | Cualquier otro fallo del proveedor de IA |
 | `500` | `INTERNAL_ERROR` | Cualquier otro fallo; el servidor sigue en marcha |
 
 ## Pruebas

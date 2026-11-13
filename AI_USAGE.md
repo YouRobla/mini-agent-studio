@@ -14,7 +14,7 @@
 | Codex, sesión mía | `gpt-6-astra` | Dirigido por mí: reorganización de carpetas, modal de creación, `theme-controller`, temas y la vista Consultar |
 | Antigravity CLI, sesión mía | Gemini 4 Argon (High) | Dirigido por mí: paginado del backend con sus pruebas y paginación del frontend |
 | Claude Sonnet, worker en Orca | Claude Sonnet 5.5 | Editar y eliminar agentes, y avisos tipo toast |
-| Antigravity, worker en Orca | `gemini-4-hydrogen-xhigh` | Icono y favicon: exploró conceptos con su generador de imágenes y entregó el SVG final dibujado a mano |
+| Antigravity, worker en Orca | `gemini-4-hydrogen-xhigh` | Icono y favicon, dos veces: la estrella en órbita y después el robot de chat. Exploró conceptos con su generador de imágenes y entregó el SVG final dibujado a mano |
 | Playwright MCP | — | Comprobaciones en el navegador de Codex y Antigravity |
 | Claude in Chrome y scripts de Playwright | — | Comprobaciones de Claude Code en el navegador, en instancias aisladas |
 | Claude Docs | — | Documento de análisis de requisitos y alcance |
@@ -152,7 +152,7 @@ La IA generó el código del backend y del frontend siguiendo el diseño acordad
 | Panel con dos vistas, React Router, temas | Worker Codex (`gpt-6.1-sol`) | El panel, el theme generator; devolví el contraste del botón «Cerrar» |
 | Carpetas por responsabilidad, modal, `theme-controller`, Consultar | Codex (`gpt-6-astra`), dirigido por mí | La estructura de mi proyecto anterior, el modal, el tema nativo y la distribución de Consultar |
 | Consolidaciones, proxy de Vite, Sonner, `queryOptions`, errores | Claude Code (Opus 5.5) | Cada cambio tras pedir un análisis y aprobarlo; mantuve `window.location.search` cuando la IA quiso revertirlo |
-| Icono y favicon | Worker Antigravity (`gemini-4-hydrogen-xhigh`) | Delegarlo al modelo con generación de imágenes; el lápiz blanco por estética |
+| Icono y favicon | Worker Antigravity (`gemini-4-hydrogen-xhigh`) | Delegarlo al modelo con generación de imágenes; cambiar la estrella por un robot de chat porque no comunicaba nada; el lápiz blanco por estética |
 decisiones de diseño las tomé yo, y en varias corregí lo que la IA proponía:
 
 | Tema | Propuesta de la IA | Mi decisión |
