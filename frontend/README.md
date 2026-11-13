@@ -86,15 +86,16 @@ revisar navegación directa, móvil, teclado y persistencia del tema.
 Los dos bloques `@plugin "daisyui/theme"` viven en `src/index.css`, después del
 plugin principal. `themes: false` evita cargar los temas predefinidos.
 
-- `coffee`: paleta nocturna personalizada suministrada desde el generador,
-  con `prefersdark: true` para el modo oscuro del sistema.
-- `coffee-light`: pareja diurna propia, con bases claras y acentos de las mismas
-  familias, ajustados para superficies claras; es el tema por defecto.
+- `studio-light`: tema por defecto. Bases blancas y gris muy claro con un leve tono
+  violeta, primario violeta.
+- `studio-dark`: pareja oscura con `prefersdark: true` (modo oscuro del sistema). Bases
+  oscuras del mismo tono y un primario violeta más claro.
 
-Ambos mantienen los mismos radios, tamaños, profundidad y textura. Todo texto sobre
-su fondo cumple un contraste mínimo de 4.5:1 (WCAG AA); en `coffee`, el texto sobre
-los colores vivos (botón primario, avisos) es oscuro por ese motivo. El nombre
-`coffee-light` es propio del proyecto, no un tema predefinido de daisyUI.
+Los dos comparten forma: esquinas redondeadas (`--radius-box: 1rem`, campos a
+`0.5rem`), sombra sutil (`--depth: 1`) y sin textura (`--noise: 0`), para un aspecto
+sobrio y consistente en tarjetas, modales y avisos. Todo texto sobre su fondo cumple un
+contraste mínimo de 4.5:1 (WCAG AA); en `studio-dark` el texto sobre los colores vivos
+es oscuro por ese motivo. El foco de teclado y el de los campos usan el primario.
 Para cambiar colores, edita sus tokens en CSS. Si cambias nombres, actualiza también
 `ThemeToggle.tsx` e `index.html`. La preferencia guardada sigue usando
 `light` / `dark`, por lo que las elecciones anteriores se conservan.
@@ -106,14 +107,15 @@ La sección 3.B del PDF de la prueba pide un campo de consulta al agente
 seleccionado, un botón que llame al backend y estados de carga/error.
 La sección 8 comprueba seleccionar → escribir → recibir una respuesta.
 
-`ConsultPage` divide la vista en dos columnas. A la izquierda, `AgentPanel` reúne
-todo lo del agente: `AgentSelector`, y debajo `AgentDetails` con las instrucciones,
-la fecha y los botones Editar y Eliminar. A la derecha, `QueryPanel` muestra
-`AgentChat` (o una invitación a elegir agente): cabecera, mensajes con su propio
-scroll y `QueryForm` fijo al pie. El chat ocupa el alto disponible de la pantalla
-(`chatLayout.ts`). El nombre del agente aparece una sola vez, en el selector. En
-móvil el panel va antes del chat y el botón de envío muestra solo el icono, con
-«Enviar consulta» como nombre accesible.
+`ConsultPage` apila dos bloques. Arriba, `AgentPanel` es el encabezado de contexto:
+`AgentSelector` con los botones Editar y Eliminar al lado, y debajo `AgentDetails`
+con las instrucciones (recortadas a tres líneas con «Mostrar todo» si son largas), el
+número de caracteres y la fecha. Debajo, `QueryPanel` muestra `AgentChat` a todo el
+ancho (o una invitación a elegir agente): cabecera, mensajes con su propio scroll (los
+tuyos en burbuja violeta, los del agente en lila suave) y `QueryForm` fijo al pie. El
+chat ocupa el alto restante de la pantalla (`chatLayout.ts`). El nombre del agente
+aparece una sola vez, en el selector. En móvil el botón de envío muestra solo el icono,
+con «Enviar consulta» como nombre accesible.
 
 Al enviar, el mensaje se muestra en el chat y aparece un indicador de carga.
 Si la respuesta llega correctamente, el campo se limpia y recupera el foco.

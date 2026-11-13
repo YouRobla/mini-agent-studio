@@ -4,21 +4,21 @@
 }
 
 @plugin "daisyui/theme" {
-  name: "coffee-light";
+  name: "studio-light";
   default: true;
   prefersdark: false;
   color-scheme: light;
   --color-base-100: oklch(100% 0 0);
-  --color-base-200: oklch(97% 0.001 286.375);
-  --color-base-300: oklch(90% 0.004 286.033);
-  --color-base-content: oklch(21% 0.006 285.885);
-  --color-primary: oklch(49% 0.24 322.896);
-  --color-primary-content: oklch(97% 0.017 320.058);
+  --color-base-200: oklch(97.5% 0.004 293);
+  --color-base-300: oklch(91% 0.008 293);
+  --color-base-content: oklch(22% 0.015 293);
+  --color-primary: oklch(52% 0.2 293);
+  --color-primary-content: oklch(98% 0.01 293);
   --color-secondary: oklch(45% 0.13 149.214);
   --color-secondary-content: oklch(98% 0.018 155.826);
   --color-accent: oklch(48% 0.15 41.116);
   --color-accent-content: oklch(98% 0.016 73.684);
-  --color-neutral: oklch(21% 0.006 285.885);
+  --color-neutral: oklch(25% 0.015 293);
   --color-neutral-content: oklch(98% 0 0);
   --color-info: oklch(45% 0.1 237.323);
   --color-info-content: oklch(97% 0.013 236.62);
@@ -28,33 +28,33 @@
   --color-warning-content: oklch(25% 0.04 47.604);
   --color-error: oklch(49% 0.19 16.439);
   --color-error-content: oklch(96% 0.015 12.422);
-  --radius-selector: 2rem;
-  --radius-field: 0.25rem;
-  --radius-box: 0rem;
+  --radius-selector: 1rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
   --size-selector: 0.25rem;
   --size-field: 0.25rem;
   --border: 1px;
   --depth: 1;
-  --noise: 1;
+  --noise: 0;
 }
 
 @plugin "daisyui/theme" {
-  name: "coffee";
+  name: "studio-dark";
   default: false;
   prefersdark: true;
   color-scheme: dark;
-  --color-base-100: oklch(14% 0.005 285.823);
-  --color-base-200: oklch(21% 0.006 285.885);
-  --color-base-300: oklch(27% 0.006 286.033);
-  --color-base-content: oklch(96% 0.001 286.375);
-  --color-primary: oklch(66% 0.293 322.896);
-  --color-primary-content: oklch(16% 0.02 320);
+  --color-base-100: oklch(17% 0.01 293);
+  --color-base-200: oklch(21% 0.012 293);
+  --color-base-300: oklch(28% 0.014 293);
+  --color-base-content: oklch(95% 0.005 293);
+  --color-primary: oklch(74% 0.14 293);
+  --color-primary-content: oklch(17% 0.03 293);
   --color-secondary: oklch(62% 0.194 149.214);
   --color-secondary-content: oklch(16% 0.02 155);
   --color-accent: oklch(64% 0.222 41.116);
   --color-accent-content: oklch(16% 0.02 73);
-  --color-neutral: oklch(21% 0.006 285.885);
-  --color-neutral-content: oklch(98% 0 0);
+  --color-neutral: oklch(30% 0.015 293);
+  --color-neutral-content: oklch(96% 0.005 293);
   --color-info: oklch(68% 0.169 237.323);
   --color-info-content: oklch(16% 0.02 236);
   --color-success: oklch(70% 0.14 182.503);
@@ -63,14 +63,14 @@
   --color-warning-content: oklch(16% 0.02 73);
   --color-error: oklch(64% 0.246 16.439);
   --color-error-content: oklch(16% 0.02 12);
-  --radius-selector: 2rem;
-  --radius-field: 0.25rem;
-  --radius-box: 0rem;
+  --radius-selector: 1rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
   --size-selector: 0.25rem;
   --size-field: 0.25rem;
   --border: 1px;
   --depth: 1;
-  --noise: 1;
+  --noise: 0;
 }
 
 @keyframes toast-in {
@@ -104,9 +104,10 @@
 }
 
 @layer base {
+  /* Foco de teclado con el color primario: visible (contraste ≥ 3:1) y coherente con el tema. */
   :focus-visible {
-    outline: 2px solid var(--color-base-content);
-    outline-offset: 3px;
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -123,4 +124,17 @@
 .tooltip {
   --tt-off: calc(100% + 0.75rem);
   --tt-tail: calc(100% + var(--tt-overlap) + 0.5rem);
+}
+
+/*
+ * Campos con foco: daisyUI pinta borde y anillo con el color del texto (negro en
+ * el tema claro). Se usa el primario, más suave y coherente. Los campos con
+ * error conservan su color para no perder el aviso.
+ */
+:is(.input, .textarea, .select):not(
+    .input-error,
+    .textarea-error,
+    .select-error
+  ):is(:focus, :focus-within) {
+  --input-color: var(--color-primary);
 }

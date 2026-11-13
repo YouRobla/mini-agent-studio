@@ -1,50 +1,49 @@
+import { useState } from "react";
 import type { Agent } from "../../types/agent.ts";
 import { formatAgentDate } from "../agents/formatAgentDate.ts";
-import { EditIcon, TrashIcon } from "../ui/icons.tsx";
 
-interface AgentDetailsProps {
-  agent: Agent;
-  onEdit: () => void;
-  onDelete: () => void;
-}
+/** A partir de este tamaño las instrucciones se muestran recortadas. */
+const LONG_INSTRUCTIONS = 220;
 
 /**
- * Instrucciones y acciones del agente elegido, dentro del panel de Consultar.
- * El nombre no se repite aquí: ya lo muestra el selector de arriba.
+ * Contexto del agente elegido: sus instrucciones (que el modelo recibiría como
+ * mensaje de sistema) y la fecha de creación. Las instrucciones largas se
+ * recortan a tres líneas con un botón para verlas completas.
  */
-export function AgentDetails({ agent, onEdit, onDelete }: AgentDetailsProps) {
+export function AgentDetails({ agent }: { agent: Agent }) {
+  const [expanded, setExpanded] = useState(false);
+  const isLong =
+    agent.instructions.length > LONG_INSTRUCTIONS ||
+    agent.instructions.split("\n").length > 3;
+
   return (
-    <div className="space-y-3 border-t border-base-300 pt-4">
-      <div className="flex items-center justify-between gap-2">
+    <div className="border-t border-base-300 pt-4">
+      <div className="mb-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
         <h2 className="text-sm font-semibold">Instrucciones</h2>
-        <span className="badge badge-ghost badge-sm">
-          {agent.instructions.length} car.
+        <span className="text-xs text-base-content/60">
+          {agent.instructions.length} caracteres · Creado el{" "}
+          {formatAgentDate(agent.createdAt)}
         </span>
       </div>
-      <p className="max-h-[40dvh] overflow-y-auto rounded-box bg-base-200 p-3 text-sm leading-relaxed whitespace-pre-wrap text-base-content/80 [overflow-wrap:anywhere]">
+      <p
+        id="agent-instructions-text"
+        className={`text-sm leading-relaxed whitespace-pre-wrap text-base-content/80 [overflow-wrap:anywhere] ${
+          expanded ? "" : "line-clamp-3"
+        }`}
+      >
         {agent.instructions}
       </p>
-      <p className="text-xs text-base-content/60">
-        Creado el {formatAgentDate(agent.createdAt)}
-      </p>
-      <div className="flex gap-2">
+      {isLong && (
         <button
           type="button"
-          className="btn btn-sm flex-1 hover:bg-warning hover:text-warning-content focus-visible:bg-warning focus-visible:text-warning-content"
-          onClick={onEdit}
+          className="btn btn-link btn-xs mt-1 px-0"
+          aria-expanded={expanded}
+          aria-controls="agent-instructions-text"
+          onClick={() => setExpanded((value) => !value)}
         >
-          <EditIcon />
-          Editar
+          {expanded ? "Mostrar menos" : "Mostrar todo"}
         </button>
-        <button
-          type="button"
-          className="btn btn-sm btn-ghost flex-1 hover:bg-error hover:text-error-content focus-visible:bg-error focus-visible:text-error-content"
-          onClick={onDelete}
-        >
-          <TrashIcon />
-          Eliminar
-        </button>
-      </div>
+      )}
     </div>
   );
 }

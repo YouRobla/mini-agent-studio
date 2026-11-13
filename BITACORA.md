@@ -426,3 +426,29 @@ de cada cambio con mis palabras)_
 - **Revisión:** build y lint en verde; recorrido con Playwright: sin agente, con agente,
   consulta vacía, carga, respuesta, agente inexistente, móvil a 390 px sin desbordamiento,
   tooltip; consola sin errores (salvo el 404 esperado al abrir un agente inexistente).
+
+---
+
+## 2026-11-12 · Etapa 15 — Tema más redondeado y sobrio, y Consultar en vertical (decisión mía)
+
+- **Consultar:** no me convenció el panel a la izquierda. Pedí volver a algo parecido al
+  anterior, con un encabezado que dé contexto (qué agente, con qué instrucciones) y el
+  chat debajo. Ahora:
+  - Arriba, `AgentPanel`: selector con Editar y Eliminar al lado, e instrucciones con el
+    número de caracteres y la fecha; si son largas se recortan a tres líneas con
+    «Mostrar todo».
+  - Debajo, el chat a todo el ancho y al alto restante. Mis mensajes en burbuja violeta
+    (primario) y los del agente en lila suave (primario al 10 %).
+- **CSS:** el estilo anterior no me agradaba. Tomé como referencia el aspecto de los
+  componentes de la documentación de daisyUI: más redondeado, sobrio y consistente.
+  - Temas renombrados a `studio-light` y `studio-dark` (ya no tenían que ver con «coffee»).
+  - Esquinas: `--radius-box` de 0 a 1rem (tarjetas, modales, avisos), campos a 0.5rem.
+  - `--noise: 0`: se quita la textura granulada.
+  - Primario de magenta a violeta; bases con un leve tono violeta.
+  - Foco de teclado y de los campos en el primario, en lugar del anillo negro de
+    daisyUI; los campos con error siguen en rojo.
+- **Contraste:** todos los pares de texto de los dos temas por encima de 4.5:1 (mínimo
+  5.11:1), calculado antes de aplicar.
+- **Revisión:** build y lint en verde; capturas de Agentes, modal y Consultar con
+  respuesta en claro y oscuro, y Consultar en móvil (390 px, sin desbordamiento); consola
+  sin errores.

@@ -2,7 +2,7 @@ import { useState } from "react";
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState(() =>
-    document.documentElement.dataset.theme === "coffee" ? "dark" : "light",
+    document.documentElement.dataset.theme === "studio-dark" ? "dark" : "light",
   );
 
   function changeTheme(checked: boolean) {
@@ -10,7 +10,8 @@ export function ThemeToggle() {
     setTheme(next);
     // CSS theme-controller applies the theme; data-theme also preserves the
     // unchecked theme and the initial paint before React mounts.
-    document.documentElement.dataset.theme = next === "dark" ? "coffee" : "coffee-light";
+    document.documentElement.dataset.theme =
+      next === "dark" ? "studio-dark" : "studio-light";
     try {
       localStorage.setItem("studio-theme", next);
     } catch {
@@ -20,11 +21,14 @@ export function ThemeToggle() {
   const label = theme === "dark" ? "Activar tema claro" : "Activar tema oscuro";
 
   return (
-    <label className="swap swap-rotate btn btn-ghost btn-square focus-within:outline-2 focus-within:outline-offset-2" title={label}>
+    <label
+      className="swap swap-rotate btn btn-ghost btn-square focus-within:outline-2 focus-within:outline-offset-2"
+      title={label}
+    >
       <input
         type="checkbox"
         className="theme-controller"
-        value="coffee"
+        value="studio-dark"
         checked={theme === "dark"}
         aria-label="Tema oscuro"
         onChange={(event) => changeTheme(event.target.checked)}

@@ -5,8 +5,8 @@ import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { useAgent, useAgentOptions } from "../hooks/useAgents.ts";
 
 /**
- * Vista Consultar: a la izquierda el agente (selector, instrucciones y
- * acciones), a la derecha el chat. El agente elegido vive en la URL.
+ * Vista Consultar: arriba el contexto del agente (selector, instrucciones y
+ * acciones) y debajo el chat a todo el ancho. El agente elegido vive en la URL.
  */
 export function ConsultPage() {
   const { agentId } = useParams();
@@ -21,7 +21,7 @@ export function ConsultPage() {
         title="Consultar"
         description="Elige un agente, revisa sus instrucciones y pruébalo en el chat."
       />
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(17rem,22rem)_minmax(0,1fr)]">
+      <div className="space-y-4">
         <AgentPanel
           agentId={agentId}
           agentOptions={agentOptions}

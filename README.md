@@ -103,7 +103,7 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 │       ├── hooks/                   TanStack Query y lógica de formularios
 │       ├── types/                   Tipos de dominio Agent y RunResult
 │       ├── schemas/                 Validación de formularios (Zod)
-│       └── index.css                Tailwind, daisyUI y los temas coffee-light / coffee
+│       └── index.css                Tailwind, daisyUI y los temas studio-light / studio-dark
 ├── AI_USAGE.md                      Uso de IA durante el desarrollo
 └── BITACORA.md                      Registro del proceso y de las decisiones
 ```
