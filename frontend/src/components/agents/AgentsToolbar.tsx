@@ -1,3 +1,4 @@
+import { SEARCH_MAX_LENGTH } from "../../schemas/agent.schemas.ts";
 import type { AgentSort } from "../../types/agent.ts";
 import { GridIcon, ListIcon, SearchIcon } from "../ui/icons.tsx";
 
@@ -30,6 +31,7 @@ export function AgentsToolbar({
           className="grow"
           placeholder="Buscar por nombre o rol…"
           aria-label="Buscar agentes"
+          maxLength={SEARCH_MAX_LENGTH}
           value={searchInput}
           onChange={(event) => onSearchChange(event.target.value)}
         />

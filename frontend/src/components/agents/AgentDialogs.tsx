@@ -37,9 +37,13 @@ export function AgentDialogs({
       <DeleteAgentDialog
         agent={dialog.agent}
         onClose={onClose}
-        onDeleted={(agent) => {
+        onDeleted={(agent, alreadyDeleted) => {
           onClose();
-          showSuccess(`Agente «${agent.name}» eliminado`);
+          showSuccess(
+            alreadyDeleted
+              ? `El agente «${agent.name}» ya se había eliminado`
+              : `Agente «${agent.name}» eliminado`,
+          );
           onDeleted?.(agent);
         }}
       />

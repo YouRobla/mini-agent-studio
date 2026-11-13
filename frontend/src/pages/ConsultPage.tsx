@@ -27,15 +27,13 @@ export function ConsultPage() {
   const { agentId } = useParams();
   const navigate = useNavigate();
   const [dialog, setDialog] = useState<AgentDialog | null>(null);
-  const {
-    data: agent,
-    isPending,
-    isError,
-    error,
-    isFetching,
-    refetch,
-  } = useAgent(agentId);
+  const { data, isPending, isError, error, isFetching, refetch } =
+    useAgent(agentId);
   const notFound = isError && isNotFound(error);
+  // Si el agente se eliminó fuera de esta pestaña, la caché conserva sus datos
+  // anteriores. No se muestran, para no ofrecer acciones sobre un agente que ya
+  // no existe.
+  const agent = notFound ? undefined : data;
 
   return (
     <div className="space-y-4">

@@ -165,9 +165,14 @@ deleteAgent.mutate(agent.id, { onSuccess: () => cerrar() });
   `.queryKey`, así `setQueryData` sabe que guarda un `Agent`.
 - `useMutation` + `onSuccess`: tras crear, editar o eliminar se invalidan los listados
   (`invalidateQueries`) y se vuelven a pedir solos.
+- La caché solo sabe lo que pasa en esta pestaña. Si el agente se eliminó desde otra
+  pestaña o desde Swagger, el servidor responde `404`: eliminar lo da por hecho («ya se
+  había eliminado»); editar y consultar refrescan los datos y lo indican.
 - `placeholderData: keepPreviousData`: al cambiar de página se sigue viendo la anterior
   hasta que llega la nueva.
-- Ajustes globales en `main.tsx`: un reintento y datos frescos durante 30 s.
+- Ajustes globales en `main.tsx`: datos frescos durante 30 s y un reintento solo si
+  puede servir (sin conexión o error `5xx`). Un `400` o un `404` se muestran al momento.
+  Las mutaciones nunca se repiten solas.
 - Regla: los componentes no llaman a `fetch` ni a `api/` directamente; siempre a través
   de un hook de `useAgents.ts`.
 
@@ -240,8 +245,12 @@ trae el formato de error del backend (el proxy responde `502` sin cuerpo cuando 
 backend está apagado), se trata como «sin conexión»:
 
 - `errorMessage(error)`: texto para el usuario («No se pudo conectar con el servidor…»).
+  Si el error trae `details`, muestra esa explicación («La búsqueda no puede superar los
+  100 caracteres»). Para `AGENT_NOT_FOUND` usa un texto propio, porque el del servidor
+  incluye el id.
 - `fieldError(error, "name")`: el error que el servidor asignó a un campo concreto.
 - `isNotFound(error)`: si fue un 404.
+- `isRetryable(error)`: si repetir la petición puede servir (sin conexión o `5xx`).
 
 ## 4. Dónde vive cada estado
 

@@ -4,6 +4,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  type QueryClient,
 } from "@tanstack/react-query";
 import {
   createAgent,
@@ -30,13 +31,16 @@ import type { ListAgentsParams } from "../types/agent.ts";
  * Qué se pide y con qué clave se guarda en caché, juntos en un mismo sitio
  * (`queryOptions`). Las claves van de lo general a lo concreto:
  *
+ *   ["agents"]                                   todo lo de agentes
  *   ["agents", "list", { page, sort, search }]   un listado
  *   ["agents", "detail", id]                     un agente
  *
- * Invalidar `lists()` refresca a la vez el listado y el selector de Consultar.
+ * Invalidar `lists()` refresca a la vez el listado y el selector de Consultar;
+ * invalidar `all()`, además, el agente abierto en Consultar.
  */
 const agentQueries = {
-  lists: () => ["agents", "list"] as const,
+  all: () => ["agents"] as const,
+  lists: () => [...agentQueries.all(), "list"] as const,
   list: (params: ListAgentsParams) =>
     queryOptions({
       queryKey: [...agentQueries.lists(), params] as const,
@@ -44,10 +48,21 @@ const agentQueries = {
     }),
   detail: (agentId: string) =>
     queryOptions({
-      queryKey: ["agents", "detail", agentId] as const,
+      queryKey: [...agentQueries.all(), "detail", agentId] as const,
       queryFn: () => getAgent(agentId),
     }),
 };
+
+/**
+ * La caché solo conoce los cambios hechos en esta pestaña. Si el agente se
+ * eliminó desde otra pestaña o desde Swagger, editarlo o consultarlo responde
+ * 404. En ese caso se refresca todo lo de agentes: el listado deja de mostrarlo
+ * y Consultar indica que el agente no existe.
+ */
+function refreshIfAgentGone(queryClient: QueryClient, error: unknown) {
+  if (!isNotFound(error)) return;
+  return queryClient.invalidateQueries({ queryKey: agentQueries.all() });
+}
 
 /** Opciones del selector de Consultar: hasta 100 agentes (máximo del backend). */
 const OPTIONS_PARAMS: ListAgentsParams = {
@@ -79,12 +94,11 @@ export function useAgentOptions() {
   });
 }
 
-/** Un agente por id. Sin id no se pide; un 404 (no existe) no se reintenta. */
+/** Un agente por id. Sin id no se pide. */
 export function useAgent(agentId: string | undefined) {
   return useQuery({
     ...agentQueries.detail(agentId ?? ""),
     enabled: Boolean(agentId),
-    retry: (failureCount, error) => !isNotFound(error) && failureCount < 1,
   });
 }
 
@@ -118,14 +132,34 @@ export function useUpdateAgent() {
       );
       return queryClient.invalidateQueries({ queryKey: agentQueries.lists() });
     },
+    onError: (error) => refreshIfAgentGone(queryClient, error),
   });
 }
 
-/** Elimina un agente: quita su detalle de la caché y refresca los listados. */
+/** Resultado de eliminar: `alreadyDeleted` si el agente ya no existía. */
+export interface DeleteAgentResult {
+  alreadyDeleted: boolean;
+}
+
+/**
+ * Elimina un agente: quita su detalle de la caché y refresca los listados.
+ * Un 404 significa que ya no existía (se eliminó desde otra pestaña o desde
+ * Swagger). Lo que se buscaba, que el agente no exista, ya se cumple: se trata
+ * como éxito y el listado se refresca igual, en lugar de un error que fallaría
+ * en cada reintento.
+ */
 export function useDeleteAgent() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (agentId: string) => deleteAgent(agentId),
+    mutationFn: async (agentId: string): Promise<DeleteAgentResult> => {
+      try {
+        await deleteAgent(agentId);
+        return { alreadyDeleted: false };
+      } catch (error) {
+        if (isNotFound(error)) return { alreadyDeleted: true };
+        throw error;
+      }
+    },
     onSuccess: (_result, agentId) => {
       queryClient.removeQueries({
         queryKey: agentQueries.detail(agentId).queryKey,
@@ -140,7 +174,9 @@ export function useDeleteAgent() {
  * porque se lanza a demanda, aunque no cambia ningún dato guardado.
  */
 export function useRunAgent(agentId: string) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: RunAgentInput) => runAgent(agentId, input),
+    onError: (error) => refreshIfAgentGone(queryClient, error),
   });
 }

@@ -81,16 +81,45 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-/** Mensaje legible para cualquier error, venga o no de la API. */
+/**
+ * Textos propios para los códigos de error cuyo mensaje está pensado para quien
+ * usa la API. El 404 del backend incluye el id («No existe un agente con el id
+ * "1c4c…"»): útil en Swagger, pero no dice nada a quien usa la interfaz.
+ */
+const FRIENDLY_MESSAGES: Record<string, string> = {
+  AGENT_NOT_FOUND:
+    "Este agente ya no existe. Puede que se eliminara desde otra pestaña.",
+};
+
+/**
+ * Mensaje legible para cualquier error, venga o no de la API. Si el servidor
+ * explica qué falló (`details`), se muestra esa explicación en lugar del
+ * genérico «Los datos enviados no son válidos».
+ */
 export function errorMessage(error: unknown): string {
-  return error instanceof ApiError
-    ? error.message
-    : "Ocurrió un error inesperado. Inténtalo de nuevo.";
+  if (!(error instanceof ApiError)) {
+    return "Ocurrió un error inesperado. Inténtalo de nuevo.";
+  }
+  if (error.details.length > 0) {
+    return error.details.map((detail) => detail.message).join(". ");
+  }
+  return FRIENDLY_MESSAGES[error.code] ?? error.message;
 }
 
 /** true si el servidor respondió que el recurso no existe (404). */
 export function isNotFound(error: unknown): boolean {
   return error instanceof ApiError && error.status === 404;
+}
+
+/**
+ * true si repetir la petición puede servir: no hubo respuesta (servidor apagado,
+ * sin red) o el servidor falló (5xx). Un 4xx dice que la petición no es válida o
+ * que el recurso no existe; repetirla daría la misma respuesta.
+ */
+export function isRetryable(error: unknown): boolean {
+  return (
+    error instanceof ApiError && (error.status === 0 || error.status >= 500)
+  );
 }
 
 /** Mensaje del servidor para un campo concreto, si el error lo trae. */

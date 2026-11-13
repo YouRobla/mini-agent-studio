@@ -6,7 +6,8 @@ import { ConfirmDialog } from "../ui/ConfirmDialog.tsx";
 interface DeleteAgentDialogProps {
   agent: Agent;
   onClose: () => void;
-  onDeleted: (agent: Agent) => void;
+  /** `alreadyDeleted`: el agente ya no existía cuando se pidió eliminarlo. */
+  onDeleted: (agent: Agent, alreadyDeleted: boolean) => void;
 }
 
 /** Confirma y ejecuta la eliminación de un agente. Se monta solo al pedirla. */
@@ -25,7 +26,9 @@ export function DeleteAgentDialog({
       isPending={deleteAgent.isPending}
       error={deleteAgent.isError ? errorMessage(deleteAgent.error) : null}
       onConfirm={() =>
-        deleteAgent.mutate(agent.id, { onSuccess: () => onDeleted(agent) })
+        deleteAgent.mutate(agent.id, {
+          onSuccess: (result) => onDeleted(agent, result.alreadyDeleted),
+        })
       }
       onClose={onClose}
     />

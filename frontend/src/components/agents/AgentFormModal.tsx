@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef } from "react";
 import { useForm } from "react-hook-form";
-import { errorMessage, fieldError } from "../../api/client.ts";
+import { errorMessage, fieldError, isNotFound } from "../../api/client.ts";
 import { useCreateAgent, useUpdateAgent } from "../../hooks/useAgents.ts";
 import {
   createAgentSchema,
@@ -70,6 +70,8 @@ export function AgentFormModal({
     mutation.isError && !errors.name && !errors.instructions
       ? errorMessage(mutation.error)
       : null;
+  // El agente se eliminó fuera de esta pestaña: volver a guardar fallaría igual.
+  const agentGone = isNotFound(mutation.error);
   const isEdit = Boolean(agent);
 
   return (
@@ -154,7 +156,11 @@ export function AgentFormModal({
           >
             Cancelar
           </button>
-          <button type="submit" className="btn btn-primary" disabled={isSaving}>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={isSaving || agentGone}
+          >
             {isSaving && (
               <span className="loading loading-spinner loading-sm" />
             )}

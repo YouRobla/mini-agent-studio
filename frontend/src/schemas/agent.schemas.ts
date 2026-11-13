@@ -8,6 +8,8 @@ import { z } from "zod";
 const NAME_MAX_LENGTH = 100;
 const INSTRUCTIONS_MAX_LENGTH = 5000;
 const QUERY_MAX_LENGTH = 5000;
+/** Largo máximo del texto de búsqueda del listado. */
+export const SEARCH_MAX_LENGTH = 100;
 
 function requiredText(requiredMessage: string, maxLength: number) {
   return z
