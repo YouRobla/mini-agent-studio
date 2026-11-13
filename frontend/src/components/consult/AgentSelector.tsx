@@ -37,6 +37,7 @@ export function AgentSelector({
 
       {agents.isError && (
         <ErrorAlert
+          title="No se pudieron cargar los agentes"
           message={errorMessage(agents.error)}
           onRetry={() => agents.refetch()}
           retrying={agents.isFetching}
@@ -47,7 +48,7 @@ export function AgentSelector({
         <>
           <select
             id="agent-selector"
-            className="select w-full"
+            className="select w-full sm:max-w-sm"
             disabled={options.length === 0}
             value={isListed && agentId ? agentId : ""}
             onChange={(event) => onSelect(event.target.value)}

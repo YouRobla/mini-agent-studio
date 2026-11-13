@@ -51,7 +51,7 @@ export function ConsultPage() {
       >
         <div className="card-body gap-4 p-4 sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div className="w-full sm:max-w-sm">
+            <div className="min-w-0 flex-1">
               <AgentSelector
                 agentId={agentId}
                 notFound={notFound}
@@ -76,6 +76,7 @@ export function ConsultPage() {
 
           {isError && !notFound && (
             <ErrorAlert
+              title="No se pudo cargar el agente"
               message={errorMessage(error)}
               onRetry={() => refetch()}
               retrying={isFetching}

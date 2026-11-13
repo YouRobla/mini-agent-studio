@@ -43,6 +43,7 @@ export function AgentList({ onCreate, onEdit, onDelete }: AgentListProps) {
     if (agents.isError) {
       return (
         <ErrorAlert
+          title="No se pudieron cargar los agentes"
           message={errorMessage(agents.error)}
           onRetry={() => agents.refetch()}
           retrying={agents.isFetching}
