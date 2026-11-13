@@ -1,0 +1,40 @@
+# Segunda vía de ejecución, sin instalar Node:
+#   docker compose up --build   →   http://localhost:8080
+# La vía principal sigue siendo la del README (npm install en cada carpeta).
+
+services:
+  backend:
+    build: ./backend
+    env_file:
+      # Opcional: AI_PROVIDER y las claves de IA. Sin él, modo simulado.
+      - path: ./backend/.env
+        required: false
+    environment:
+      # Fijas dentro del contenedor; tienen prioridad sobre el .env.
+      PORT: "3000"
+      DATABASE_PATH: /app/data/agents.db
+    volumes:
+      # Los agentes sobreviven a reiniciar o reconstruir el contenedor.
+      - agents-data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+volumes:
+  agents-data:

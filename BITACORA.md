@@ -1423,3 +1423,32 @@ el sistema esté más presentable y pulido».
   `AI_USAGE.md` al día; se añaden a `AI_USAGE.md` la fila del trabajo del LLM, la prueba
   real y dos hallazgos en la tabla de errores (el `.env` que no se leía y los errores
   repetidos con el servidor caído).
+
+---
+
+## 2026-11-13 · Etapa 46 — Docker como segunda vía de ejecución
+
+- **Decisión mía (etapa 2):** Docker como segunda vía, no la principal; el README sigue
+  empezando por `npm install`. Aprobé el plan de la IA: `docker compose up --build` y la
+  app en `http://localhost:8080`.
+- **Cambios (IA):**
+  - Imágenes base con versión exacta, comprobadas en Docker Hub: `node:26.13.1-alpine3.24`
+    (la misma versión de Node del proyecto) y `nginx:1.30.6-alpine3.24` (rama estable).
+  - Backend en dos fases: compilar con todas las dependencias y ejecutar solo con las de
+    producción. Usuario `node` (sin privilegios), sistema de archivos de solo lectura,
+    `cap_drop: ALL`, `no-new-privileges` y comprobación de salud en `/api/ai/status`.
+    `npm ci --ignore-scripts`: ninguna dependencia necesita sus scripts de instalación.
+  - SQLite en el volumen `agents-data`. Frontend compilado y servido por nginx, que
+    reenvía `/api` al backend y devuelve `index.html` en las rutas de React Router.
+  - `backend/.env` es opcional (`required: false`): con él, IA real; sin él, simulado.
+- **Problema de mi equipo, no del proyecto:** Docker no podía crear la red («all
+  predefined address pools have been fully subnetted»): tenía 28 redes sin usar de otros
+  proyectos. La IA no ejecutó `docker network prune` sin mi permiso; para la prueba usó
+  una red temporal propia, fuera del repositorio, y la borró al terminar.
+- **Revisión:** imágenes construidas (backend 430 MB, frontend 95 MB). En el puerto
+  8080: página, Swagger y rutas del frontend en 200; crear un agente, reiniciar el
+  contenedor del backend y que siga ahí; consulta real con OpenAI desde el contenedor;
+  usuario `node` y escritura bloqueada fuera de los datos. Todo lo de la prueba
+  (contenedores, volumen, imágenes y red) se borró después.
+- **README:** sección «Con Docker (opcional)», el árbol con los Dockerfile, la tabla de
+  tecnologías y la limitación del frontend compilado.
