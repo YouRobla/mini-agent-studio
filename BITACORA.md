@@ -1617,3 +1617,19 @@ el sistema esté más presentable y pulido».
 - **Matiz de la documentación:** para datos sensibles recomienda Compose secrets. Para una
   app local de prueba, `env_file` en un archivo ignorado por Git es lo habitual; queda
   como posible mejora.
+
+---
+
+## 2026-11-13 · Etapa 53 — Límite de peticiones y tiempo máximo de espera
+
+- **Pregunta de mi entrevista:** «¿Cómo te aseguras de que tu API no se caiga?».
+- **Decisión mía:** límite de peticiones en la API (no en nginx, que solo existe en Docker)
+  con el módulo oficial `@nestjs/throttler` 6.7.1 (`npm audit`: 0 vulnerabilidades).
+- **Cambios (IA):** 100 peticiones por minuto por cliente en toda la API y 10 en
+  `POST /run`, que gasta dinero en la IA; el 429 sale con el formato único de error
+  (`TOO_MANY_REQUESTS`, mensaje en español). `trust proxy` solo para proxies locales y
+  nginx envía `X-Forwarded-For`, para contar a cada cliente por separado. Los SDK de IA
+  esperaban 10 minutos por defecto: ahora 45 s y un reintento.
+- **Revisión:** lint, tipos, 22 pruebas unitarias y 15 e2e; con el servidor en marcha, 10
+  consultas reciben su respuesta y la 11.ª recibe 429.
+- **Pendiente:** una prueba e2e del 429, el 429 en Swagger y el README.

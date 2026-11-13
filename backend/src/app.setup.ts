@@ -13,6 +13,10 @@ export function configureApp(app: NestExpressApplication): void {
   // No anunciar en cada respuesta con qué tecnología está hecho el servidor.
   app.disable('x-powered-by');
 
+  // Detrás de un proxy local (Vite o nginx), la IP real del cliente llega en
+  // X-Forwarded-For; sin esto, el límite de peticiones contaría a todos como uno.
+  app.set('trust proxy', 'loopback, uniquelocal');
+
   // Con el proxy de Vite el navegador no necesita CORS; esto es para quien llame
   // al backend directamente desde otro origen (VITE_API_URL).
   app.enableCors({

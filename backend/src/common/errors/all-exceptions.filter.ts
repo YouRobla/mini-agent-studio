@@ -15,6 +15,7 @@ const FRAMEWORK_ERROR_CODES: Record<number, string> = {
   [HttpStatus.BAD_REQUEST]: 'BAD_REQUEST',
   [HttpStatus.NOT_FOUND]: 'NOT_FOUND',
   [HttpStatus.PAYLOAD_TOO_LARGE]: 'PAYLOAD_TOO_LARGE',
+  [HttpStatus.TOO_MANY_REQUESTS]: 'TOO_MANY_REQUESTS',
 };
 
 /** Mensajes en español para esos mismos errores del framework. */
@@ -22,6 +23,8 @@ const FRAMEWORK_MESSAGES: Record<number, string> = {
   [HttpStatus.BAD_REQUEST]: 'La petición no es válida',
   [HttpStatus.NOT_FOUND]: 'La ruta solicitada no existe',
   [HttpStatus.PAYLOAD_TOO_LARGE]: 'La petición es demasiado grande',
+  [HttpStatus.TOO_MANY_REQUESTS]:
+    'Demasiadas peticiones. Espera un momento e inténtalo de nuevo.',
 };
 
 /**

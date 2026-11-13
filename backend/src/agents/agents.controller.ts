@@ -16,6 +16,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiUnexpectedErrorResponse,
   ApiValidationErrorResponse,
@@ -125,6 +126,8 @@ export class AgentsController {
   }
 
   // 200 y no 201: ejecutar una consulta no crea ningún recurso.
+  // Cada consulta llama al proveedor de IA, que cuesta dinero: 10 por minuto.
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
   @Post(':id/run')
   @HttpCode(200)
   @ApiOperation({
