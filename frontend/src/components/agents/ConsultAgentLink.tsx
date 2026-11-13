@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { paths } from "../../paths.ts";
 import type { Agent } from "../../types/agent.ts";
 import { ArrowUpRightIcon } from "../ui/icons.tsx";
 
@@ -7,7 +8,7 @@ export function ConsultAgentLink({ agent }: { agent: Agent }) {
   return (
     <Link
       className="btn btn-sm max-sm:btn-square"
-      to={`/consultar/${encodeURIComponent(agent.id)}`}
+      to={paths.consult(agent.id)}
       aria-label={`Consultar con ${agent.name}`}
     >
       {/* En móvil solo se ve la flecha; el aria-label nombra la acción. */}

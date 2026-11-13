@@ -1,36 +1,39 @@
-interface AgentsEmptyStateProps {
-  /** `empty`: no hay ningún agente; `no-results`: hay agentes pero ninguno en esta vista. */
-  variant: "empty" | "no-results";
+/*
+ * Estados vacíos del listado, cada uno con la acción para salir de él. El listado
+ * elige cuál pintar.
+ */
+
+const BOX = "rounded-box border border-dashed border-base-300 px-6 text-center";
+
+/** Todavía no hay ningún agente guardado. */
+export function AgentsEmptyState({ onCreate }: { onCreate: () => void }) {
+  return (
+    <div className={`${BOX} py-12`}>
+      <p className="font-semibold">Aquí empieza tu colección</p>
+      <p className="mt-1.5 text-sm text-base-content/70">
+        Aún no hay agentes guardados. Crea el primero para empezar a probar
+        instrucciones.
+      </p>
+      <button type="button" className="btn btn-sm mt-4" onClick={onCreate}>
+        + Crear primer agente
+      </button>
+    </div>
+  );
+}
+
+interface AgentsNoResultsProps {
   search: string;
-  onCreate: () => void;
   onClearFilters: () => void;
 }
 
-/** Estados vacíos del listado, con una acción para salir de ellos. */
-export function AgentsEmptyState({
-  variant,
+/** Hay agentes, pero ninguno en esta vista: por la búsqueda o por la página. */
+export function AgentsNoResults({
   search,
-  onCreate,
   onClearFilters,
-}: AgentsEmptyStateProps) {
-  if (variant === "empty") {
-    return (
-      <div className="rounded-box border border-dashed border-base-300 px-6 py-12 text-center">
-        <p className="font-semibold">Aquí empieza tu colección</p>
-        <p className="mt-1.5 text-sm text-base-content/70">
-          Aún no hay agentes guardados. Crea el primero para empezar a probar
-          instrucciones.
-        </p>
-        <button type="button" className="btn btn-sm mt-4" onClick={onCreate}>
-          + Crear primer agente
-        </button>
-      </div>
-    );
-  }
-
+}: AgentsNoResultsProps) {
   const hasSearch = search.trim().length > 0;
   return (
-    <div className="rounded-box border border-dashed border-base-300 px-6 py-10 text-center">
+    <div className={`${BOX} py-10`}>
       <p className="font-semibold">
         {hasSearch
           ? `Sin coincidencias para «${search}»`

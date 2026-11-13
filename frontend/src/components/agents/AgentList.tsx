@@ -1,41 +1,106 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { errorMessage } from "../../api/client.ts";
-import { useAgentActions } from "../../hooks/agents/useAgentActions.ts";
-import { useAgents } from "../../hooks/agents/useAgentQueries.ts";
-import { useAgentsListParams } from "../../hooks/agents/useAgentsListParams.ts";
+import { useAgents } from "../../hooks/useAgents.ts";
+import { useAgentsListParams } from "../../hooks/useAgentsListParams.ts";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue.ts";
+import type { Agent } from "../../types/agent.ts";
 import { ErrorAlert } from "../ui/ErrorAlert.tsx";
 import { Pagination } from "../ui/Pagination.tsx";
 import { AgentCard } from "./AgentCard.tsx";
 import { AgentRow } from "./AgentRow.tsx";
-import { AgentsEmptyState } from "./AgentsEmptyState.tsx";
+import {
+  AgentsEmptyState,
+  AgentsNoResults,
+} from "./AgentsEmptyState.tsx";
 import { AgentsSkeleton } from "./AgentsSkeleton.tsx";
 import { AgentsToolbar, type AgentView } from "./AgentsToolbar.tsx";
 
+interface AgentListProps {
+  onCreate: () => void;
+  onEdit: (agent: Agent) => void;
+  onDelete: (agent: Agent) => void;
+}
+
 /**
- * Listado de agentes guardados. Es el contenedor: lee página, orden y búsqueda
- * de la URL, pide los datos y decide qué estado mostrar (carga, error, vacío o
- * resultados). El aspecto de cada pieza está en los componentes hijos.
+ * Sección «Agentes guardados». Lee página, orden y búsqueda de la URL, se los pide
+ * al backend (que filtra, ordena y pagina) y muestra lo que responde: carga,
+ * error, vacío o resultados. Crear, editar y eliminar los resuelve la página.
  */
-export function AgentList() {
+export function AgentList({ onCreate, onEdit, onDelete }: AgentListProps) {
   const { page, sort, search, setPage, setSort, setSearch } =
     useAgentsListParams();
-  const { createAgent } = useAgentActions();
   const [view, setView] = useState<AgentView>("grid");
   // El buscador escribe en la URL al instante; la petición espera 250 ms.
   const debouncedSearch = useDebouncedValue(search, 250);
 
   const agents = useAgents({ page, sort, search: debouncedSearch });
-  const meta = agents.data?.meta;
-  const items = agents.data?.items ?? [];
+  const totalAll = agents.data?.meta.totalAll;
 
-  // Si la página pedida ya no existe (por ejemplo, tras eliminar el último
-  // agente de la última página), ir a la última que sí existe.
-  const totalPages = meta?.totalPages ?? 0;
-  const isFresh = agents.isSuccess && !agents.isPlaceholderData;
-  useEffect(() => {
-    if (isFresh && totalPages > 0 && page > totalPages) setPage(totalPages);
-  }, [isFresh, totalPages, page, setPage]);
+  /** Lo que se ve bajo la barra: el primer estado que se cumple. */
+  function content() {
+    if (agents.isPending) return <AgentsSkeleton view={view} />;
+
+    if (agents.isError) {
+      return (
+        <ErrorAlert
+          message={errorMessage(agents.error)}
+          onRetry={() => agents.refetch()}
+          retrying={agents.isFetching}
+        />
+      );
+    }
+
+    const { items, meta } = agents.data;
+
+    if (meta.totalAll === 0) return <AgentsEmptyState onCreate={onCreate} />;
+
+    if (items.length === 0) {
+      return (
+        <AgentsNoResults
+          search={debouncedSearch}
+          onClearFilters={() => setSearch("")}
+        />
+      );
+    }
+
+    return (
+      <>
+        {/* Atenuado mientras llega la página nueva y aún se ve la anterior. */}
+        <div
+          className={`transition-opacity ${agents.isPlaceholderData ? "opacity-65" : ""}`}
+        >
+          {view === "grid" ? (
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {items.map((agent) => (
+                <AgentCard
+                  key={agent.id}
+                  agent={agent}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                />
+              ))}
+            </div>
+          ) : (
+            <ul className="list divide-y divide-base-300/70">
+              {items.map((agent) => (
+                <AgentRow
+                  key={agent.id}
+                  agent={agent}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
+        <Pagination
+          meta={meta}
+          isUpdating={agents.isFetching && agents.isPlaceholderData}
+          onPageChange={setPage}
+        />
+      </>
+    );
+  }
 
   return (
     <section
@@ -48,12 +113,12 @@ export function AgentList() {
             <h2 id="agents-list-title" className="card-title text-lg">
               Agentes guardados
             </h2>
-            {meta && (
+            {totalAll !== undefined && (
               <span
                 className="badge badge-outline badge-sm"
-                aria-label={`${meta.totalAll} agentes guardados`}
+                aria-label={`${totalAll} agentes guardados`}
               >
-                {meta.totalAll}
+                {totalAll}
               </span>
             )}
             {agents.isFetching && !agents.isPending && (
@@ -74,53 +139,7 @@ export function AgentList() {
           />
         </div>
 
-        {agents.isPending && <AgentsSkeleton view={view} />}
-
-        {agents.isError && (
-          <ErrorAlert
-            message={errorMessage(agents.error)}
-            onRetry={() => agents.refetch()}
-            retrying={agents.isFetching}
-          />
-        )}
-
-        {agents.isSuccess && meta && items.length === 0 && (
-          <AgentsEmptyState
-            variant={meta.totalAll === 0 ? "empty" : "no-results"}
-            search={debouncedSearch}
-            onCreate={createAgent}
-            onClearFilters={() => setSearch("")}
-          />
-        )}
-
-        {agents.isSuccess && items.length > 0 && (
-          // Atenuado mientras llega la página nueva y aún se ve la anterior.
-          <div
-            className={`transition-opacity ${agents.isPlaceholderData ? "opacity-65" : ""}`}
-          >
-            {view === "grid" ? (
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {items.map((agent) => (
-                  <AgentCard key={agent.id} agent={agent} />
-                ))}
-              </div>
-            ) : (
-              <ul className="list divide-y divide-base-300/70">
-                {items.map((agent) => (
-                  <AgentRow key={agent.id} agent={agent} />
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-
-        {agents.isSuccess && meta && (
-          <Pagination
-            meta={meta}
-            isUpdating={agents.isFetching && agents.isPlaceholderData}
-            onPageChange={setPage}
-          />
-        )}
+        {content()}
       </div>
     </section>
   );

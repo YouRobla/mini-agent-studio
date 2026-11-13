@@ -1,11 +1,12 @@
 import { NavLink } from "react-router";
+import { paths } from "../../paths.ts";
 import { ChatIcon, GridIcon } from "../ui/icons.tsx";
 import { AppLogo } from "./AppLogo.tsx";
 
 /** Vistas de la aplicación. Para añadir una, basta con una entrada más. */
 const NAV_ITEMS = [
-  { to: "/", label: "Agentes", Icon: GridIcon, end: true },
-  { to: "/consultar", label: "Consultar", Icon: ChatIcon, end: false },
+  { to: paths.agents, label: "Agentes", Icon: GridIcon, end: true },
+  { to: paths.consult(), label: "Consultar", Icon: ChatIcon, end: false },
 ];
 
 /** Menú lateral: logo y navegación (`menu` de daisyUI) con la vista activa marcada. */

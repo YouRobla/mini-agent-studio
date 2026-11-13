@@ -11,17 +11,15 @@ import type {
 } from "../schemas/agent.schemas.ts";
 import { request } from "./client.ts";
 
-export function listAgents(
-  params: Partial<ListAgentsParams> = {},
-): Promise<PaginatedAgents> {
-  const query = new URLSearchParams();
-  if (params.page !== undefined) query.set("page", String(params.page));
-  if (params.limit !== undefined) query.set("limit", String(params.limit));
+/** Listado filtrado y paginado: el backend aplica página, orden y búsqueda. */
+export function listAgents(params: ListAgentsParams): Promise<PaginatedAgents> {
+  const query = new URLSearchParams({
+    page: String(params.page),
+    sort: params.sort,
+  });
   if (params.search) query.set("search", params.search);
-  if (params.sort) query.set("sort", params.sort);
-
-  const suffix = query.size > 0 ? `?${query.toString()}` : "";
-  return request<PaginatedAgents>(`/agents${suffix}`);
+  if (params.limit) query.set("limit", String(params.limit));
+  return request<PaginatedAgents>(`/agents?${query}`);
 }
 
 export function getAgent(agentId: string): Promise<Agent> {

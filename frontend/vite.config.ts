@@ -6,7 +6,7 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
-    // App local de dos pantallas: un único paquete (~510 KB, ~156 KB comprimido)
+    // App local de dos pantallas: un único paquete (~540 KB, ~165 KB comprimido)
     // es razonable y no compensa dividirlo con carga diferida de rutas.
     chunkSizeWarningLimit: 600,
   },

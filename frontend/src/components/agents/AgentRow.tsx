@@ -1,14 +1,20 @@
 import type { Agent } from "../../types/agent.ts";
-import { AgentAvatar } from "./AgentAvatar.tsx";
-import { AgentQuickActions } from "./AgentActionButtons.tsx";
-import { ConsultAgentLink } from "./ConsultAgentLink.tsx";
 import { formatShortDate } from "../../utils/formatDate.ts";
+import { AgentAvatar } from "./AgentAvatar.tsx";
+import { AgentIconActions } from "./AgentActions.tsx";
+import { ConsultAgentLink } from "./ConsultAgentLink.tsx";
+
+interface AgentRowProps {
+  agent: Agent;
+  onEdit: (agent: Agent) => void;
+  onDelete: (agent: Agent) => void;
+}
 
 /**
  * Agente en la vista de lista: nombre e instrucciones a la izquierda (lo que
  * se lee primero), fecha discreta y acciones al final de la fila.
  */
-export function AgentRow({ agent }: { agent: Agent }) {
+export function AgentRow({ agent, onEdit, onDelete }: AgentRowProps) {
   return (
     <li className="list-row items-center gap-3 px-1 py-3 transition-colors hover:bg-base-200">
       <AgentAvatar name={agent.name} />
@@ -28,7 +34,11 @@ export function AgentRow({ agent }: { agent: Agent }) {
       </span>
       <div className="flex shrink-0 items-center gap-1">
         <ConsultAgentLink agent={agent} />
-        <AgentQuickActions agent={agent} />
+        <AgentIconActions
+          agent={agent}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
       </div>
     </li>
   );

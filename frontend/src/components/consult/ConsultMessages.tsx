@@ -2,7 +2,7 @@ import type { RunResult } from "../../types/agent.ts";
 import { AgentAvatar } from "../agents/AgentAvatar.tsx";
 import { ChatIcon } from "../ui/icons.tsx";
 
-interface ChatMessagesProps {
+interface ConsultMessagesProps {
   agentName: string;
   /** Última consulta enviada. Sin ella se muestra la invitación inicial. */
   query?: string;
@@ -12,16 +12,16 @@ interface ChatMessagesProps {
 }
 
 /**
- * Mensajes del chat (`chat` de daisyUI): la consulta, la respuesta del agente
+ * Mensajes de la consulta (`chat` de daisyUI): la consulta, la respuesta del agente
  * o su espera, y el error si lo hubo. Tiene su propio scroll.
  */
-export function ChatMessages({
+export function ConsultMessages({
   agentName,
   query,
   isPending,
   result,
   error,
-}: ChatMessagesProps) {
+}: ConsultMessagesProps) {
   return (
     <div
       aria-live="polite"

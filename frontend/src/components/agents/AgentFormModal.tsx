@@ -1,5 +1,12 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef } from "react";
-import { useAgentForm } from "../../hooks/agents/useAgentForm.ts";
+import { useForm } from "react-hook-form";
+import { errorMessage, fieldError } from "../../api/client.ts";
+import { useCreateAgent, useUpdateAgent } from "../../hooks/useAgents.ts";
+import {
+  createAgentSchema,
+  type CreateAgentInput,
+} from "../../schemas/agent.schemas.ts";
 import type { Agent } from "../../types/agent.ts";
 import { Modal } from "../ui/Modal.tsx";
 
@@ -11,9 +18,12 @@ interface AgentFormModalProps {
 }
 
 /**
- * Formulario de agente en una ventana modal, para crear y para editar. La
- * lógica está en `useAgentForm`; aquí solo los campos. Los errores se muestran
- * dentro del modal y conservan lo escrito; mientras guarda no se puede cerrar.
+ * Formulario de agente en una ventana modal, para crear y para editar.
+ *
+ * React Hook Form guarda los campos y sus errores; Zod (`createAgentSchema`)
+ * valida antes de enviar. Si el servidor rechaza un campo, su mensaje se coloca
+ * junto a ese campo; si es otro error, se muestra debajo. Lo escrito se conserva
+ * y mientras guarda no se puede cerrar.
  */
 export function AgentFormModal({
   agent,
@@ -21,13 +31,45 @@ export function AgentFormModal({
   onSaved,
 }: AgentFormModalProps) {
   const dialog = useRef<HTMLDialogElement>(null);
-  const { register, errors, onSubmit, isSaving, generalError } = useAgentForm(
-    agent,
-    (saved) => {
+  const createAgent = useCreateAgent();
+  const updateAgent = useUpdateAgent();
+  const mutation = agent ? updateAgent : createAgent;
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<CreateAgentInput>({
+    resolver: zodResolver(createAgentSchema),
+    defaultValues: {
+      name: agent?.name ?? "",
+      instructions: agent?.instructions ?? "",
+    },
+  });
+
+  // Se ejecuta al enviar (no durante el render), por eso puede usar el ref.
+  async function save(values: CreateAgentInput) {
+    try {
+      const saved = agent
+        ? await updateAgent.mutateAsync({ id: agent.id, input: values })
+        : await createAgent.mutateAsync(values);
       dialog.current?.close();
       onSaved(saved);
-    },
-  );
+    } catch (error) {
+      for (const field of ["name", "instructions"] as const) {
+        const message = fieldError(error, field);
+        if (message) setError(field, { message });
+      }
+    }
+  }
+
+  const isSaving = mutation.isPending;
+  // El error general solo se muestra si no se pudo colocar junto a un campo.
+  const generalError =
+    mutation.isError && !errors.name && !errors.instructions
+      ? errorMessage(mutation.error)
+      : null;
   const isEdit = Boolean(agent);
 
   return (
@@ -38,7 +80,13 @@ export function AgentFormModal({
       locked={isSaving}
       onClose={onClose}
     >
-      <form className="space-y-4" onSubmit={onSubmit} noValidate>
+      {/* Envuelto en una función para que `handleSubmit(save)` no se llame durante
+          el render: `save` usa el ref del diálogo (regla react/refs del lint). */}
+      <form
+        className="space-y-4"
+        onSubmit={(event) => handleSubmit(save)(event)}
+        noValidate
+      >
         <h2 id="agent-form-title" className="text-xl font-semibold">
           {isEdit ? "Editar agente" : "Nuevo agente"}
         </h2>

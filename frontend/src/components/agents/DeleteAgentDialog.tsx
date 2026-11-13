@@ -1,5 +1,5 @@
 import { errorMessage } from "../../api/client.ts";
-import { useDeleteAgent } from "../../hooks/agents/useAgentMutations.ts";
+import { useDeleteAgent } from "../../hooks/useAgents.ts";
 import type { Agent } from "../../types/agent.ts";
 import { ConfirmDialog } from "../ui/ConfirmDialog.tsx";
 

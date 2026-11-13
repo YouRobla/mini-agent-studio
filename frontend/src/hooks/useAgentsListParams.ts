@@ -1,5 +1,5 @@
 import { useSearchParams } from "react-router";
-import type { AgentSort } from "../../types/agent.ts";
+import type { AgentSort } from "../types/agent.ts";
 
 interface ListParamsChange {
   page?: number;
@@ -25,31 +25,29 @@ function parseSort(raw: string | null): AgentSort {
  *   escriben, para que la URL quede limpia.
  * - `replace: true` evita que cada letra del buscador sea un paso del botón Atrás.
  * - Ordenar o buscar vuelve a la página 1, porque cambia el conjunto de resultados.
+ * - Cada cambio parte de la URL actual del navegador y no de la del último
+ *   render: si dos cambios llegan seguidos (limpiar la búsqueda y ordenar), el
+ *   segundo no deshace el primero.
  */
 export function useAgentsListParams() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   function update(change: ListParamsChange) {
-    setSearchParams(
-      (current) => {
-        const next = new URLSearchParams(current);
-        const write = (key: string, value: string, isDefault: boolean) => {
-          if (isDefault) next.delete(key);
-          else next.set(key, value);
-        };
-        if (change.page !== undefined) {
-          write("page", String(change.page), change.page <= 1);
-        }
-        if (change.sort !== undefined) {
-          write("sort", change.sort, change.sort === "recent");
-        }
-        if (change.search !== undefined) {
-          write("search", change.search, change.search.length === 0);
-        }
-        return next;
-      },
-      { replace: true },
-    );
+    const next = new URLSearchParams(window.location.search);
+    const write = (key: string, value: string, isDefault: boolean) => {
+      if (isDefault) next.delete(key);
+      else next.set(key, value);
+    };
+    if (change.page !== undefined) {
+      write("page", String(change.page), change.page <= 1);
+    }
+    if (change.sort !== undefined) {
+      write("sort", change.sort, change.sort === "recent");
+    }
+    if (change.search !== undefined) {
+      write("search", change.search, change.search.length === 0);
+    }
+    setSearchParams(next, { replace: true });
   }
 
   return {

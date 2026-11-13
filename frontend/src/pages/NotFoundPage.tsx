@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { paths } from "../paths.ts";
 
 /** Página 404 para rutas desconocidas, con enlace de vuelta a Agentes. */
 export function NotFoundPage() {
@@ -10,7 +11,7 @@ export function NotFoundPage() {
         <p className="mt-2 text-base-content/70">
           La dirección que buscas no está disponible.
         </p>
-        <Link to="/" className="btn mt-5">
+        <Link to={paths.agents} className="btn mt-5">
           Volver a Agentes
         </Link>
       </div>

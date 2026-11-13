@@ -1,4 +1,5 @@
 import { isRouteErrorResponse, Link, useRouteError } from "react-router";
+import { paths } from "../paths.ts";
 
 /**
  * Error inesperado al pintar una ruta (`ErrorBoundary` de React Router). Muestra
@@ -24,7 +25,7 @@ export function ErrorPage() {
             {detail}
           </p>
         )}
-        <Link to="/" className="btn btn-primary mt-4">
+        <Link to={paths.agents} className="btn btn-primary mt-4">
           Volver a Agentes
         </Link>
       </div>

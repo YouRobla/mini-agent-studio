@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { errorMessage } from "../../api/client.ts";
-import { useAgentOptions } from "../../hooks/agents/useAgentQueries.ts";
+import { useAgentOptions } from "../../hooks/useAgents.ts";
+import { paths } from "../../paths.ts";
 import { ErrorAlert } from "../ui/ErrorAlert.tsx";
 
 interface AgentSelectorProps {
@@ -68,7 +69,7 @@ export function AgentSelector({
           {options.length === 0 && (
             <p className="mt-1.5 text-sm text-base-content/70">
               Todavía no hay agentes disponibles.{" "}
-              <Link to="/" className="link">
+              <Link to={paths.agents} className="link">
                 Crea tu primer agente
               </Link>{" "}
               para empezar.

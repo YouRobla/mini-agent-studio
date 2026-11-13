@@ -1,16 +1,48 @@
-import { useQueryForm } from "../../hooks/consultation/useQueryForm.ts";
-import type { RunAgentInput } from "../../schemas/agent.schemas.ts";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { fieldError } from "../../api/client.ts";
+import {
+  runAgentSchema,
+  type RunAgentInput,
+} from "../../schemas/agent.schemas.ts";
 import { SendIcon } from "../ui/icons.tsx";
 
-interface QueryFormProps {
+interface ConsultFormProps {
   isPending: boolean;
   /** Envía la consulta. Si la promesa falla, el campo conserva el texto. */
   onSend: (input: RunAgentInput) => Promise<unknown>;
 }
 
-/** Campo de la consulta y botón de envío, fijos al pie del chat. */
-export function QueryForm({ isPending, onSend }: QueryFormProps) {
-  const { register, queryError, onSubmit } = useQueryForm(onSend);
+/**
+ * Campo de la consulta y botón de envío, fijos al pie de la caja. React Hook Form
+ * guarda el campo y Zod (`runAgentSchema`) lo valida antes de enviar. Si todo va
+ * bien, limpia el campo y le devuelve el foco; si falla, conserva el texto.
+ */
+export function ConsultForm({ isPending, onSend }: ConsultFormProps) {
+  const {
+    register,
+    handleSubmit,
+    setError,
+    resetField,
+    setFocus,
+    formState: { errors },
+  } = useForm<RunAgentInput>({
+    resolver: zodResolver(runAgentSchema),
+    defaultValues: { query: "" },
+  });
+  const queryError = errors.query?.message;
+
+  const onSubmit = handleSubmit(async (values) => {
+    try {
+      await onSend(values);
+      resetField("query");
+      setFocus("query");
+    } catch (error) {
+      // Aquí solo el error del propio campo; los demás los muestra ConsultMessages.
+      const message = fieldError(error, "query");
+      if (message) setError("query", { message });
+    }
+  });
 
   return (
     <form

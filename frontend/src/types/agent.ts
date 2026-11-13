@@ -7,9 +7,10 @@ export interface Agent {
 
 export type AgentSort = "recent" | "oldest" | "name";
 
+/** Filtros del listado. Sin `limit`, el backend usa su tamaño de página (6). */
 export interface ListAgentsParams {
   page: number;
-  limit: number;
+  limit?: number;
   search: string;
   sort: AgentSort;
 }

@@ -1,22 +1,22 @@
 import { errorMessage, fieldError } from "../../api/client.ts";
-import { useRunAgent } from "../../hooks/agents/useAgentMutations.ts";
+import { useRunAgent } from "../../hooks/useAgents.ts";
 import type { Agent } from "../../types/agent.ts";
-import { ChatMessages } from "./ChatMessages.tsx";
-import { QueryForm } from "./QueryForm.tsx";
+import { ConsultForm } from "./ConsultForm.tsx";
+import { ConsultMessages } from "./ConsultMessages.tsx";
 
 /**
- * Alto del chat: lo que queda de pantalla bajo la barra, el encabezado y el
+ * Alto de la caja: lo que queda de pantalla bajo la barra, el encabezado y el
  * contexto del agente, con un mínimo para pantallas bajas y un máximo para las
  * muy altas.
  */
 const CHAT_HEIGHT = "h-[clamp(24rem,calc(100dvh-26rem),48rem)]";
 
 /**
- * Conversación con un agente. Es el contenedor: ejecuta la consulta contra el
- * backend y reparte su estado entre los mensajes y el formulario. Muestra la
- * última consulta y su respuesta; no guarda historial.
+ * Caja de consulta a un agente (con el aspecto de un chat). Ejecuta la consulta
+ * contra el backend y reparte su estado entre los mensajes y el formulario.
+ * Muestra la última consulta y su respuesta; no guarda historial.
  */
-export function AgentChat({ agent }: { agent: Agent }) {
+export function ConsultBox({ agent }: { agent: Agent }) {
   const run = useRunAgent(agent.id);
   // Un error de validación de la consulta ya se muestra junto al campo.
   const error =
@@ -44,7 +44,7 @@ export function AgentChat({ agent }: { agent: Agent }) {
         )}
       </div>
 
-      <ChatMessages
+      <ConsultMessages
         agentName={agent.name}
         query={run.variables?.query}
         isPending={run.isPending}
@@ -52,7 +52,7 @@ export function AgentChat({ agent }: { agent: Agent }) {
         error={error}
       />
 
-      <QueryForm
+      <ConsultForm
         isPending={run.isPending}
         onSend={(input) => run.mutateAsync(input)}
       />
@@ -60,8 +60,8 @@ export function AgentChat({ agent }: { agent: Agent }) {
   );
 }
 
-/** Hueco del chat cuando todavía no hay un agente elegido. */
-export function ChatPlaceholder() {
+/** Lugar de la caja de consulta cuando todavía no hay un agente elegido. */
+export function ConsultBoxPlaceholder() {
   return (
     <section
       className={`card card-border min-w-0 items-center justify-center bg-base-100 px-6 text-center ${CHAT_HEIGHT}`}
