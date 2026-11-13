@@ -1,27 +1,34 @@
-import type { INestApplication } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { AI_PROVIDER } from '../src/ai/ai-provider.js';
+import type { AiProvider } from '../src/ai/ai-provider.js';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
+import { DATABASE, openDatabase } from '../src/database/database.provider.js';
+import { setupSwagger } from '../src/swagger.setup.js';
 
 describe('Agents API (e2e)', () => {
-  let app: INestApplication;
+  let app: NestExpressApplication;
 
   beforeAll(async () => {
-    process.env.DATABASE_PATH = ':memory:';
+    // Base de datos en memoria: las pruebas no tocan backend/data/.
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(DATABASE)
+      .useValue(openDatabase(':memory:'))
+      .compile();
 
-    app = moduleRef.createNestApplication();
+    app = moduleRef.createNestApplication<NestExpressApplication>();
     configureApp(app);
+    setupSwagger(app);
     await app.init();
   });
 
   afterAll(async () => {
     await app.close();
-    delete process.env.DATABASE_PATH;
   });
 
   it('GET /api/agents pagina, filtra y valida parámetros de consulta', async () => {
@@ -74,6 +81,100 @@ describe('Agents API (e2e)', () => {
       .get('/api/agents?page=0&limit=999')
       .expect(400);
     expect(invalidQuery.body.error).toBe('VALIDATION_ERROR');
+  });
+
+  describe('Flujo principal: crear un agente y consultarlo', () => {
+    it('crea el agente, lo consulta y recibe la respuesta del modo simulado', async () => {
+      const server = app.getHttpServer();
+
+      const created = await request(server)
+        .post('/api/agents')
+        .send({
+          name: 'Asistente de resúmenes',
+          instructions: 'Eres un asistente que resume textos',
+        })
+        .expect(201);
+      expect(created.body).toMatchObject({
+        id: expect.any(String),
+        name: 'Asistente de resúmenes',
+        instructions: 'Eres un asistente que resume textos',
+        createdAt: expect.any(String),
+      });
+
+      const run = await request(server)
+        .post(`/api/agents/${created.body.id}/run`)
+        .send({ query: 'Resume este párrafo' })
+        .expect(200);
+      expect(run.body).toMatchObject({
+        agentId: created.body.id,
+        provider: 'mock',
+      });
+      // El mock usa el contexto del agente y la consulta (§3.C del enunciado).
+      expect(run.body.response).toContain('Asistente de resúmenes');
+      expect(run.body.response).toContain(
+        'Eres un asistente que resume textos',
+      );
+      expect(run.body.response).toContain('Resume este párrafo');
+    });
+
+    it('POST /api/agents con datos inválidos responde 400 con un detalle por campo', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/agents')
+        .send({ name: '', instructions: 'x'.repeat(5001) })
+        .expect(400);
+
+      expect(res.body).toEqual({
+        statusCode: 400,
+        error: 'VALIDATION_ERROR',
+        message: 'Los datos enviados no son válidos',
+        details: [
+          { field: 'name', message: 'El nombre es obligatorio' },
+          {
+            field: 'instructions',
+            message: 'No puede superar los 5000 caracteres',
+          },
+        ],
+      });
+    });
+
+    it('POST /run con la consulta vacía responde 400', async () => {
+      const created = await request(app.getHttpServer())
+        .post('/api/agents')
+        .send({ name: 'Agente', instructions: 'Instrucciones' })
+        .expect(201);
+
+      const res = await request(app.getHttpServer())
+        .post(`/api/agents/${created.body.id}/run`)
+        .send({ query: '   ' })
+        .expect(400);
+      expect(res.body.details).toEqual([
+        { field: 'query', message: 'La consulta es obligatoria' },
+      ]);
+    });
+
+    it('POST /run sobre un agente inexistente responde 404', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/agents/no-existe/run')
+        .send({ query: 'Hola' })
+        .expect(404);
+      expect(res.body.error).toBe('AGENT_NOT_FOUND');
+    });
+  });
+
+  it('GET /api/docs-json documenta las rutas con los esquemas de validación', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/api/docs-json')
+      .expect(200);
+
+    expect(Object.keys(res.body.paths)).toEqual([
+      '/api/agents',
+      '/api/agents/{id}',
+      '/api/agents/{id}/run',
+    ]);
+    // El límite del nombre sale del esquema Zod, no está escrito dos veces.
+    expect(
+      res.body.components.schemas.AgentInput.properties.name,
+    ).toMatchObject({ type: 'string', minLength: 1, maxLength: 100 });
   });
 
   describe('PUT y DELETE /api/agents/:id', () => {
@@ -157,5 +258,56 @@ describe('Agents API (e2e)', () => {
         .expect(404);
       expect(res.body.error).toBe('AGENT_NOT_FOUND');
     });
+  });
+});
+
+describe('Agents API (e2e) con el proveedor de IA caído', () => {
+  let app: NestExpressApplication;
+
+  // Se sustituye el proveedor real por uno que siempre falla.
+  const failingProvider: AiProvider = {
+    name: 'roto',
+    generate: () => Promise.reject(new Error('sin conexión')),
+  };
+
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [AppModule],
+    })
+      .overrideProvider(DATABASE)
+      .useValue(openDatabase(':memory:'))
+      .overrideProvider(AI_PROVIDER)
+      .useValue(failingProvider)
+      .compile();
+    moduleRef.useLogger(false);
+
+    app = moduleRef.createNestApplication<NestExpressApplication>();
+    configureApp(app);
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('POST /run responde 502 sin detalles internos y el servidor sigue en pie', async () => {
+    const server = app.getHttpServer();
+    const created = await request(server)
+      .post('/api/agents')
+      .send({ name: 'Agente', instructions: 'Instrucciones' })
+      .expect(201);
+
+    const res = await request(server)
+      .post(`/api/agents/${created.body.id}/run`)
+      .send({ query: 'Hola' })
+      .expect(502);
+    expect(res.body).toEqual({
+      statusCode: 502,
+      error: 'AI_PROVIDER_ERROR',
+      message:
+        'El proveedor de IA no pudo generar una respuesta. Inténtalo de nuevo.',
+    });
+
+    await request(server).get('/api/agents').expect(200);
   });
 });

@@ -2,11 +2,9 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { AI_PROVIDER } from '../ai/ai-provider.js';
 import type { AiProvider } from '../ai/ai-provider.js';
-import {
-  AgentNotFoundException,
-  AiProviderException,
-} from '../common/exceptions.js';
+import { AiProviderException } from '../ai/ai.exceptions.js';
 import { Agent, PaginatedAgents, RunResult } from './agent.types.js';
+import { AgentNotFoundException } from './agents.exceptions.js';
 import { AgentsRepository } from './agents.repository.js';
 import {
   CreateAgentInput,
@@ -83,10 +81,7 @@ export class AgentsService {
 
   /** Ejecuta una consulta: une las instrucciones del agente con la consulta. */
   async run(agentId: string, input: RunAgentInput): Promise<RunResult> {
-    const agent = this.agentsRepository.findById(agentId);
-    if (!agent) {
-      throw new AgentNotFoundException(agentId);
-    }
+    const agent = this.findById(agentId);
 
     let response: string;
     try {

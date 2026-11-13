@@ -31,23 +31,3 @@ export class ValidationException extends AppException {
     );
   }
 }
-
-export class AgentNotFoundException extends AppException {
-  constructor(id: string) {
-    super(
-      HttpStatus.NOT_FOUND,
-      'AGENT_NOT_FOUND',
-      `No existe un agente con el id "${id}"`,
-    );
-  }
-}
-
-export class AiProviderException extends AppException {
-  constructor() {
-    super(
-      HttpStatus.BAD_GATEWAY,
-      'AI_PROVIDER_ERROR',
-      'El proveedor de IA no pudo generar una respuesta. Inténtalo de nuevo.',
-    );
-  }
-}

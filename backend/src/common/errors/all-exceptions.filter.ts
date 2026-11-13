@@ -7,21 +7,21 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { AppException, ErrorDetail } from './exceptions.js';
-
-/** Forma única de todas las respuestas de error de la API. */
-interface ErrorBody {
-  statusCode: number;
-  error: string;
-  message: string;
-  details?: ErrorDetail[];
-}
+import type { ErrorResponse } from './error-response.schema.js';
+import { AppException } from './app.exception.js';
 
 /** Códigos para los errores HTTP que lanza el propio framework. */
 const FRAMEWORK_ERROR_CODES: Record<number, string> = {
   [HttpStatus.BAD_REQUEST]: 'BAD_REQUEST',
   [HttpStatus.NOT_FOUND]: 'NOT_FOUND',
   [HttpStatus.PAYLOAD_TOO_LARGE]: 'PAYLOAD_TOO_LARGE',
+};
+
+/** Mensajes en español para esos mismos errores del framework. */
+const FRAMEWORK_MESSAGES: Record<number, string> = {
+  [HttpStatus.BAD_REQUEST]: 'La petición no es válida',
+  [HttpStatus.NOT_FOUND]: 'La ruta solicitada no existe',
+  [HttpStatus.PAYLOAD_TOO_LARGE]: 'La petición es demasiado grande',
 };
 
 /**
@@ -39,7 +39,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     response.status(body.statusCode).json(body);
   }
 
-  private toErrorBody(exception: unknown): ErrorBody {
+  private toErrorBody(exception: unknown): ErrorResponse {
     if (exception instanceof AppException) {
       return {
         statusCode: exception.getStatus(),
@@ -69,9 +69,3 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
   }
 }
-
-const FRAMEWORK_MESSAGES: Record<number, string> = {
-  [HttpStatus.BAD_REQUEST]: 'La petición no es válida',
-  [HttpStatus.NOT_FOUND]: 'La ruta solicitada no existe',
-  [HttpStatus.PAYLOAD_TOO_LARGE]: 'La petición es demasiado grande',
-};

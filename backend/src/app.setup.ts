@@ -1,13 +1,17 @@
-import { INestApplication, StandardSchemaValidationPipe } from '@nestjs/common';
-import { AllExceptionsFilter } from './common/all-exceptions.filter.js';
-import { ValidationException } from './common/exceptions.js';
+import { StandardSchemaValidationPipe } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+import { AllExceptionsFilter } from './common/errors/all-exceptions.filter.js';
+import { ValidationException } from './common/errors/app.exception.js';
 
 /**
  * Configuración global de la aplicación.
  * Vive fuera de main.ts para que las pruebas e2e usen exactamente la misma.
  */
-export function configureApp(app: INestApplication): void {
+export function configureApp(app: NestExpressApplication): void {
   app.setGlobalPrefix('api');
+
+  // No anunciar en cada respuesta con qué tecnología está hecho el servidor.
+  app.disable('x-powered-by');
 
   // El frontend corre en otro puerto (Vite), así que el navegador necesita CORS.
   app.enableCors({

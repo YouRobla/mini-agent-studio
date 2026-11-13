@@ -1,7 +1,6 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
-import { existsSync, mkdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { Inject, Injectable } from '@nestjs/common';
 import { DatabaseSync } from 'node:sqlite';
+import { DATABASE, normalizeText } from '../database/database.provider.js';
 import { Agent, AgentSort, ListAgentsParams } from './agent.types.js';
 
 /** Fila tal como está guardada en la tabla `agents`. */
@@ -19,7 +18,7 @@ interface CountRow {
 const SORT_ORDER_SQL: Record<AgentSort, string> = {
   recent: 'created_at DESC, rowid DESC',
   oldest: 'created_at ASC, rowid ASC',
-  name: 'name COLLATE NOCASE ASC, created_at DESC, rowid DESC',
+  name: 'normalize_text(name) ASC, created_at DESC, rowid DESC',
 };
 
 function escapeLikePattern(value: string): string {
@@ -27,42 +26,14 @@ function escapeLikePattern(value: string): string {
 }
 
 /**
- * Busca la raíz del backend (la carpeta con package.json) subiendo desde este
- * archivo. Así la ruta de la base de datos no depende del directorio desde el
- * que se arranca el servidor ni de si el código corre desde src/ o dist/.
- */
-function findBackendRoot(): string {
-  let dir = import.meta.dirname;
-  while (!existsSync(join(dir, 'package.json'))) {
-    const parent = dirname(dir);
-    if (parent === dir) return process.cwd();
-    dir = parent;
-  }
-  return dir;
-}
-
-function resolveDatabasePath(): string {
-  return (
-    process.env.DATABASE_PATH ?? join(findBackendRoot(), 'data', 'agents.db')
-  );
-}
-
-/**
  * Persistencia de agentes en SQLite (módulo integrado de Node, sin dependencias).
- * Es la única clase que sabe dónde y cómo se guardan los datos.
+ * Es la única clase que sabe cómo se guardan los agentes: recibe la conexión
+ * ya abierta de DatabaseModule y solo contiene las consultas.
  * Todas las consultas usan sentencias preparadas con parámetros.
  */
 @Injectable()
-export class AgentsRepository implements OnModuleDestroy {
-  private readonly db: DatabaseSync;
-
-  constructor() {
-    const path = resolveDatabasePath();
-    if (path !== ':memory:') {
-      // En una instalación limpia la carpeta puede no existir todavía.
-      mkdirSync(dirname(path), { recursive: true });
-    }
-    this.db = new DatabaseSync(path);
+export class AgentsRepository {
+  constructor(@Inject(DATABASE) private readonly db: DatabaseSync) {
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS agents (
         id           TEXT PRIMARY KEY,
@@ -93,9 +64,9 @@ export class AgentsRepository implements OnModuleDestroy {
 
     const searchTerm = params.search.trim();
     const hasSearch = searchTerm.length > 0;
-    const likeParam = `%${escapeLikePattern(searchTerm)}%`;
+    const likeParam = `%${escapeLikePattern(normalizeText(searchTerm))}%`;
     const whereClause = hasSearch
-      ? "WHERE LOWER(name) LIKE LOWER(?) ESCAPE '\\' OR LOWER(instructions) LIKE LOWER(?) ESCAPE '\\'"
+      ? "WHERE normalize_text(name) LIKE ? ESCAPE '\\' OR normalize_text(instructions) LIKE ? ESCAPE '\\'"
       : '';
     const filterArgs = hasSearch ? [likeParam, likeParam] : [];
 
@@ -143,10 +114,6 @@ export class AgentsRepository implements OnModuleDestroy {
   delete(id: string): boolean {
     const result = this.db.prepare('DELETE FROM agents WHERE id = ?').run(id);
     return Number(result.changes) > 0;
-  }
-
-  onModuleDestroy(): void {
-    this.db.close();
   }
 }
 

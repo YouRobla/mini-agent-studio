@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AiProvider } from '../ai/ai-provider.js';
-import { AgentNotFoundException } from '../common/exceptions.js';
+import { openDatabase } from '../database/database.provider.js';
+import { AgentNotFoundException } from './agents.exceptions.js';
 import { AgentsRepository } from './agents.repository.js';
 import { listAgentsQuerySchema } from './agents.schemas.js';
 import { AgentsService } from './agents.service.js';
@@ -11,18 +12,16 @@ const mockAiProvider: AiProvider = {
 };
 
 describe('AgentsService (paginación, búsqueda y orden)', () => {
-  let repository: AgentsRepository;
+  let db: ReturnType<typeof openDatabase>;
   let service: AgentsService;
 
   beforeEach(() => {
-    process.env.DATABASE_PATH = ':memory:';
-    repository = new AgentsRepository();
-    service = new AgentsService(repository, mockAiProvider);
+    db = openDatabase(':memory:');
+    service = new AgentsService(new AgentsRepository(db), mockAiProvider);
   });
 
   afterEach(() => {
-    repository.onModuleDestroy();
-    delete process.env.DATABASE_PATH;
+    db.close();
   });
 
   it('devuelve metadatos vacíos cuando no hay agentes', () => {
@@ -98,6 +97,22 @@ describe('AgentsService (paginación, búsqueda y orden)', () => {
       listAgentsQuerySchema.parse({ search: 'inglés' }),
     );
     expect(instructionsMatch.items.map((a) => a.name)).toEqual(['Traductor']);
+  });
+
+  it('busca y ordena sin distinguir mayúsculas ni tildes', () => {
+    service.create({ name: 'Zeta', instructions: 'Traduce al inglés' });
+    service.create({ name: 'Ángel', instructions: 'Ayuda general' });
+    service.create({ name: 'beta', instructions: 'Resume textos' });
+
+    for (const search of ['INGLÉS', 'ingles', 'Inglés']) {
+      const result = service.findAll(listAgentsQuerySchema.parse({ search }));
+      expect(result.items.map((a) => a.name)).toEqual(['Zeta']);
+    }
+
+    const byName = service.findAll(
+      listAgentsQuerySchema.parse({ sort: 'name' }),
+    );
+    expect(byName.items.map((a) => a.name)).toEqual(['Ángel', 'beta', 'Zeta']);
   });
 
   it('ordena por recent, oldest y name', () => {
