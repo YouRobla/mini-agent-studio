@@ -3,10 +3,9 @@
 # La vía principal sigue siendo la del README (npm install en cada carpeta).
 
 services:
-  app:
-    build: .
-    ports:
-      - "8080:3000"
+  # La API. No se publica fuera: solo la alcanza el frontend por el nombre «backend».
+  backend:
+    build: ./backend
     env_file:
       # Opcional: IA real (AI_PROVIDER y su clave). Sin él, modo simulado.
       - path: ./backend/.env
@@ -18,6 +17,27 @@ services:
     volumes:
       # La base de datos sobrevive a reiniciar o reconstruir el contenedor.
       - agents-data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/ai/status"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # La página (nginx). Es lo único que se publica: puerto 8080 del equipo.
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      # 127.0.0.1 y no localhost: dentro del contenedor localhost apunta a IPv6 y nginx escucha en IPv4.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
 volumes:

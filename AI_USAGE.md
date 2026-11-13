@@ -153,7 +153,7 @@ La IA generó el código del backend y del frontend siguiendo el diseño acordad
 | Carpetas por responsabilidad, modal, `theme-controller`, Consultar | Codex (`gpt-6-astra`), dirigido por mí | La estructura de mi proyecto anterior, el modal, el tema nativo y la distribución de Consultar |
 | Consolidaciones, proxy de Vite, Sonner, `queryOptions`, errores | Claude Code (Opus 5.5) | Cada cambio tras pedir un análisis y aprobarlo; mantuve `window.location.search` cuando la IA quiso revertirlo |
 | Chat de varios turnos, fábrica de proveedores, adaptadores de Claude y OpenAI, errores del proveedor | Claude Code (Opus 5.5) | Pedí el chat continuo y poder cambiar entre Claude y ChatGPT; elegí los modelos ligeros (Claude Haiku 5.5 y `gpt-6.1-terra`); descarté runonweb y un modelo en el navegador porque el PDF pide que responda el backend; pedí mostrar el Markdown de las respuestas con formato |
-| Docker (un solo contenedor) | Claude Code (Opus 5.5) | Docker como segunda vía (etapa 2); al ver dos contenedores con nginx, lo simplifiqué a uno solo, porque para esta prueba era más de lo necesario |
+| Docker (frontend con nginx + backend) | Claude Code (Opus 5.5) | Docker como segunda vía (etapa 2). Probé un solo contenedor, pero el backend pasaba a servir el frontend; pedí separarlos por contenedor y que se buscara el estándar antes de implementar, y elegí nginx |
 | Icono y favicon | Worker Antigravity (`gemini-4-hydrogen-xhigh`) | Delegarlo al modelo con generación de imágenes; cambiar la estrella por un robot de chat porque no comunicaba nada; el lápiz blanco por estética |
 decisiones de diseño las tomé yo, y en varias corregí lo que la IA proponía:
 
@@ -187,9 +187,13 @@ principio, con una sola pantalla, y lo incorporé cuando pasé a dos vistas.
   derecha con pausa al pasar el ratón, idea de mi proyecto anterior.
 - **Cuando sentí que el frontend se había complicado**, pedí un análisis sincero de
   sobreingeniería y lo reorganizamos hasta que entendí cada pieza.
-- **Lo mismo con Docker:** la primera versión tenía dos contenedores (nginx y Node) y
-  opciones de seguridad que no sabría defender. Pedí que me explicara por qué nginx y la
-  simplifiqué a un solo contenedor, con el volumen para que no se pierda la base de datos.
+- **Lo mismo con Docker:** la primera versión (nginx + Node) tenía opciones de seguridad
+  que no sabría defender. Pedí que me explicara por qué nginx y probé un solo contenedor,
+  pero entonces el backend tenía que servir el frontend. Pedí separarlos por contenedor,
+  y cuando la IA propuso `vite preview`, le pedí que no implementara nada hasta buscar el
+  estándar con ejemplos y las skills de Docker. La documentación de Vite dice que
+  `vite preview` no es para producción, así que elegí el patrón habitual: nginx para el
+  frontend y NestJS solo para la API, con el volumen para la base de datos.
 
 ## Cómo comprobé que funciona
 
@@ -211,9 +215,11 @@ principio, con una sola pantalla, y lo incorporé cuando pasé a dos vistas.
 - **Markdown seguro:** una respuesta simulada con `<script>` e `<img onerror>` se muestra
   como texto, sin crear esos elementos ni ejecutar nada; y una respuesta real de OpenAI
   con tabla, lista y código se ve con formato en los dos temas.
-- **Docker:** `docker compose up --build` con un solo contenedor en el puerto 8080: la
-  página, una ruta del frontend, la API, Swagger y un 404 de la API en JSON; crear un
-  agente, reiniciar el contenedor y comprobar que sigue (volumen); y una consulta real.
+- **Docker:** `docker compose up --build` en el puerto 8080: los dos contenedores
+  «healthy», la página, una ruta del frontend, la API, Swagger y un 404 de la API en JSON;
+  crear un agente, reiniciar el backend y comprobar que sigue (volumen); una consulta
+  real; y que funciona sin `backend/.env`. Los Dockerfile y el compose, pasados por los
+  analizadores de la skill de Docker.
 - **Cómo verifiqué el trabajo de los agentes delegados:**
   - Cada encargo era cerrado: alcance, restricciones y evidencia obligatoria (build, lint,
     `npm audit`, rutas en 200, contraste, recorrido en el navegador). Un build o un lint
@@ -273,6 +279,8 @@ principio, con una sola pantalla, y lo incorporé cuando pasé a dos vistas.
 | Con el puerto 5173 ocupado, Vite pasaba al 5174 y CORS bloqueaba la app con un mensaje falso de «sin conexión». Venía de mi decisión inicial de no usar proxy | Prueba en el navegador con Vite en otro puerto | Proxy de Vite: mismo origen, sin CORS, en cualquier puerto |
 | Buscar «INGLÉS» no encontraba «inglés» y «Ángel» se ordenaba después de la Z | Pregunté «¿estás seguro de que no hay nada más?» y se probaron casos límite contra el servidor | Función `normalize_text` en SQLite y una prueba que lo cubre |
 | Las estimaciones de la IA en las reorganizaciones («unas 300 líneas menos») | Se midió antes y después | Optimistas: la mejora real fue la legibilidad, no el tamaño; queda registrado |
+| La IA propuso `vite preview` para servir el frontend en Docker | Le pedí buscar el estándar antes de implementar; la documentación de Vite dice que no es un servidor de producción | Retirada: nginx, el patrón habitual |
+| La comprobación de salud de nginx fallaba aunque la web funcionaba | Probé la comprobación dentro del contenedor | `localhost` apuntaba a IPv6 y nginx escucha en IPv4: se usa `127.0.0.1` |
 | El backend nunca leía `backend/.env`, aunque el README decía que se podía configurar ahí | Al preparar el LLM real, revisando cómo llegaba la clave | `process.loadEnvFile` de Node, sin dependencias, y una prueba con un `.env` real |
 | Con el servidor caído, Consultar mostraba dos errores iguales y un «Elige un agente» falso; con una clave inválida decía «Inténtalo de nuevo» | Lo vi yo en el navegador y pedí reproducirlo | Un solo error con un «Reintentar» que recupera todo, y un mensaje que dice que la clave fue rechazada |
 

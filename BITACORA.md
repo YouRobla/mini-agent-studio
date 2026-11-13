@@ -1512,3 +1512,42 @@ el sistema esté más presentable y pulido».
   Swagger y favicon en 200; una ruta inexistente de la API da 404 en JSON, no la página;
   crear un agente, reiniciar el contenedor y que siga; consulta real con OpenAI; usuario
   `node`. Todo lo de la prueba se borró después.
+
+---
+
+## 2026-11-13 · Etapa 49 — Docker con dos contenedores: el estándar, investigado antes de implementar
+
+- **Pregunta mía:** ¿por qué añadir líneas en NestJS para servir el frontend? ¿No es mejor
+  separar y llamar a los contenedores por su nombre?
+- **Propuesta de la IA, retirada:** dos contenedores con `vite preview` para el
+  frontend, porque reutiliza el proxy de `vite.config.ts`.
+- **Decisión mía:** no implementar nada hasta saber cuál es el estándar, con ejemplos y
+  usando las skills de Docker, no solo «lo nuevo».
+- **Investigación (IA):**
+  - La documentación de Vite dice que `vite preview` no está pensado como servidor de
+    producción: se descarta.
+  - NestJS tiene una receta oficial para servir el frontend (`@nestjs/serve-static`); lo
+    que se había escrito a mano en la etapa 48 era eso sin el módulo oficial.
+  - El patrón más común en los ejemplos de Compose es nginx sirviendo el frontend y
+    reenviando `/api` al backend por su nombre de servicio.
+- **Decisión mía:** nginx con dos contenedores (`frontend` y `backend`). El backend vuelve
+  a ser solo la API: se borra `frontend.setup.ts` y `main.ts` queda como antes.
+- **Pregunta mía:** ¿hay que crear `backend/.env` antes de `docker compose up`? No: es
+  opcional. Si existe, Compose pasa sus variables al contenedor al arrancar; la clave no
+  entra en la imagen; un cambio se aplica con `docker compose up -d`.
+- **Revisión con las skills de Docker (analizadores):**
+  - Crítico real: nginx corría como root → `nginxinc/nginx-unprivileged:1.30.6-alpine3.24`,
+    la variante oficial sin privilegios (escucha en el 8080), con `USER nginx` explícito.
+  - Falta de healthcheck del frontend → añadido en el compose, junto al del backend.
+  - `COPY . .` (falso positivo: se copia tras instalar dependencias y con
+    `.dockerignore`), límites de memoria y redes explícitas: se dejan fuera a propósito
+    para una app local.
+- **Fallo encontrado en la prueba:** el frontend quedaba «unhealthy» aunque servía bien.
+  Dentro del contenedor `localhost` apunta a IPv6 y nginx escucha en IPv4; las
+  comprobaciones usan `127.0.0.1`.
+- **Revisión:** los dos contenedores «healthy»; página, `/consultar/abc`, API, Swagger,
+  favicon y un 404 de la API en JSON; crear un agente, reiniciar el backend y que siga;
+  consulta real con OpenAI; frontend como `nginx` y backend como `node`; y el compose
+  válido sin `backend/.env`. Todo lo de la prueba se borró después.
+- **README:** guía de Docker reescrita: arquitectura con esquema, tabla de puertos, uso
+  del `.env` y tabla de comandos (arrancar, aplicar el `.env`, registros, parar, borrar).

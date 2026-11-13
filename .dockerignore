@@ -1,9 +1,0 @@
-.git
-**/node_modules
-**/dist
-backend/data
-docs
-**/.env
-**/.env.*
-!**/.env.example
-*.log

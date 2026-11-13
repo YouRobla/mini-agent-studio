@@ -69,7 +69,8 @@ La base de datos se crea sola en `backend/data/agents.db` en el primer arranque.
 
 ### Con Docker (opcional)
 
-Una segunda vía que no necesita Node instalado, solo Docker con Compose:
+Una segunda vía que no necesita Node instalado, solo Docker con Compose. No hace falta
+crear ningún archivo antes:
 
 ```bash
 git clone https://github.com/YouRobla/mini-agent-studio.git
@@ -77,24 +78,44 @@ cd mini-agent-studio
 docker compose up --build
 ```
 
-Todo queda en el puerto 8080: la página en `http://localhost:8080`, la API en
-`/api` y su documentación en `http://localhost:8080/api/docs`.
+Abre `http://localhost:8080`. La API y su documentación quedan en el mismo puerto:
+`http://localhost:8080/api` y `http://localhost:8080/api/docs`.
 
 | Cómo se arranca | Página | API y Swagger |
 | --- | --- | --- |
 | `npm run dev` + `npm run start` | `http://localhost:5173` | `http://localhost:3000/api` y `/api/docs` |
 | `docker compose up --build` | `http://localhost:8080` | `http://localhost:8080/api` y `/api/docs` |
 
-- **Un solo contenedor:** el `Dockerfile` de la raíz compila el frontend y el backend, y
-  la imagen final ejecuta solo NestJS, que sirve la API y también los archivos del
-  frontend. La página y la API comparten origen, así que no hay CORS ni hace falta un
-  servidor web aparte.
+**Cómo está montado:** dos contenedores, cada uno con su `Dockerfile` en su carpeta.
+
+```
+Navegador ──► :8080 [ frontend: nginx ] ── /api ──► [ backend: NestJS ] ──► volumen agents-data
+                    archivos de React                 la API (no se publica)   (agents.db)
+```
+
+- **`frontend`:** Node compila React y la imagen final es solo nginx sirviendo esos
+  archivos (`frontend/nginx.conf`). nginx reenvía `/api` al contenedor `backend` por su
+  nombre, así que la página y la API comparten origen y no hay CORS (el mismo papel que el
+  proxy de Vite en desarrollo). Usa `nginx-unprivileged`, la variante oficial que no corre
+  como root.
+- **`backend`:** NestJS compilado, solo con las dependencias de producción y como usuario
+  sin privilegios. No se publica fuera: solo lo alcanza el frontend.
 - **Datos:** la base SQLite vive en el volumen `agents-data`, así que los agentes
-  sobreviven a reiniciar o reconstruir el contenedor. `docker compose down -v` los borra.
-- **Seguridad básica:** imágenes con versión exacta, usuario sin privilegios y
-  comprobación de salud en `/api/ai/status`.
-- **IA real:** si existe `backend/.env` con `AI_PROVIDER` y su clave, el contenedor lo usa;
-  si no, modo simulado.
+  sobreviven a reiniciar o reconstruir los contenedores.
+- **Salud:** el compose comprueba los dos servicios, y el frontend espera a que el
+  backend responda antes de arrancar.
+
+**IA real con Docker:** `backend/.env` es opcional. Si existe, Compose pasa sus variables
+(`AI_PROVIDER` y la clave) al contenedor al arrancarlo; si no, modo simulado. La clave no
+se copia dentro de la imagen.
+
+| Quiero… | Comando |
+| --- | --- |
+| Arrancar (y reconstruir si cambió el código) | `docker compose up --build` |
+| Aplicar un cambio en `backend/.env` | `docker compose up -d` (recrea el backend con las variables nuevas, sin reconstruir) |
+| Ver los registros del backend | `docker compose logs -f backend` |
+| Parar sin perder los agentes | `docker compose down` |
+| Parar y borrar los agentes | `docker compose down -v` |
 
 ### Variables de entorno (opcionales)
 
@@ -177,9 +198,9 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 
 ```
 ├── backend/                         API (NestJS)
+│   ├── Dockerfile                   Imagen del backend (vía Docker)
 │   ├── src/
 │   │   ├── main.ts                  Arranque del servidor
-│   │   ├── frontend.setup.ts        Solo en Docker: sirve el frontend compilado
 │   │   ├── app.setup.ts             Configuración global: prefijo, CORS, validación, errores
 │   │   ├── swagger.setup.ts         Documentación interactiva (Swagger) en /api/docs
 │   │   ├── agents/                  Funcionalidad: agentes
@@ -205,6 +226,7 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 │   ├── test/                        Prueba e2e de la API (Supertest)
 │   └── data/                        Archivo de la base de datos (no se sube a Git)
 ├── frontend/                        Interfaz (React)
+│   ├── Dockerfile, nginx.conf       Imagen del frontend: compilado y servido por nginx
 │   └── src/
 │       ├── main.tsx                 Monta la caché de datos y el router
 │       ├── router.tsx               Rutas (createBrowserRouter)
@@ -219,7 +241,7 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 │       ├── types/                   Tipos del dominio
 │       ├── utils/                   Formato de fechas
 │       └── index.css                Tailwind, daisyUI y los temas studio-light / studio-dark
-├── Dockerfile, docker-compose.yml   Segunda vía: todo en un contenedor (puerto 8080)
+├── docker-compose.yml               Segunda vía: frontend (nginx) + backend con Docker
 ├── docs/capturas/                   Capturas de este README
 ├── AI_USAGE.md                      Uso de IA durante el desarrollo
 └── BITACORA.md                      Registro del proceso y de las decisiones
@@ -481,7 +503,7 @@ proveedor simulado.
 | SDK oficial de Claude (`@anthropic-ai/sdk`) | Proveedor real opcional (Claude Haiku 5.5, el más barato): conversación con historial, errores tipados y sin depender de un intermediario |
 | SDK oficial de OpenAI (`openai`) | Segundo proveedor real, para demostrar que la fábrica cambia de proveedor sin tocar el resto del código |
 | `react-markdown` + `remark-gfm` | Los modelos responden en Markdown: lo convierte en componentes de React sin ejecutar HTML (más seguro que inyectar HTML) y añade tablas. Se carga aparte, con la primera respuesta |
-| Docker Compose (opcional) | Ejecutar todo con un comando sin instalar Node, en un solo contenedor. Es una segunda vía: el evaluador puede no tener Docker |
+| Docker Compose + nginx (opcional) | Ejecutar todo con un comando sin instalar Node. Dos contenedores: nginx sirve el frontend y hace de proxy, NestJS solo la API (el patrón habitual). Es una segunda vía: el evaluador puede no tener Docker |
 | Vitest + Supertest | Vienen con el proyecto de NestJS 12; prueban el servicio y la API sin levantar el servidor |
 
 Decisiones tomadas a propósito para no añadir complejidad: sin ORM (una tabla y unas
@@ -501,7 +523,7 @@ razonamiento completo está en `BITACORA.md`.
 - El selector de la vista Consultar carga como máximo 100 agentes. Un agente fuera de esa
   lista se puede consultar igualmente desde el listado, porque se busca por su id.
 - Con `npm run dev` el frontend se sirve con el servidor de desarrollo de Vite; la versión
-  compilada solo se sirve con Docker (la sirve NestJS).
+  compilada solo se sirve con Docker (la sirve nginx).
 
 ## Mejoras con más tiempo
 
