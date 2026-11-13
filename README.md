@@ -55,12 +55,17 @@ Hay un `.env.example` en cada carpeta. Ninguna variable contiene secretos.
 2. En la vista **Agentes**, pulsa **Nuevo agente**. Escribe el nombre "Asistente de
    resúmenes" y las instrucciones "Eres un asistente que resume textos". Pulsa
    **Guardar agente**.
-3. Aparece un aviso de confirmación y el agente se muestra en **Agentes guardados**.
+3. Aparece un aviso (toast) abajo a la derecha que desaparece solo, y el agente se muestra
+   en **Agentes guardados**.
 4. Detén el backend (`Ctrl+C`), vuelve a ejecutar `npm run start` y recarga la página:
    el agente sigue en el listado.
-5. Pulsa **Consultar** junto al agente (o **Probar agente** en el aviso). Se abre la vista
+5. Pulsa **Consultar** junto al agente (o **Probar agente** en el aviso, mientras siga visible). Se abre la vista
    **Consultar** con ese agente elegido; escribe una consulta y pulsa **Enviar consulta**.
-6. Para ver el manejo de errores: guarda un agente con los campos vacíos, envía una
+6. Para editar un agente, abre su menú **⋯** y elige **Editar**: el formulario se abre con
+   sus valores; cambia lo que quieras y pulsa **Guardar cambios**. Para eliminarlo, elige
+   **Eliminar** en el mismo menú y confirma en el diálogo. Ambas acciones también están
+   en la ficha de la vista **Consultar**; si eliminas desde ahí, vuelves a `/consultar`.
+7. Para ver el manejo de errores: guarda un agente con los campos vacíos, envía una
    consulta vacía, abre `/consultar/no-existe`, o detén el backend y recarga la página.
 
 El botón de sol y luna de la barra superior alterna entre el tema claro y el oscuro.
@@ -74,7 +79,7 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 │   │   ├── app.setup.ts             Configuración global: prefijo, CORS, validación, errores
 │   │   ├── agents/
 │   │   │   ├── agents.controller.ts Rutas HTTP
-│   │   │   ├── agents.service.ts    Lógica: crear, listar, buscar, ejecutar
+│   │   │   ├── agents.service.ts    Lógica: crear, listar, buscar, editar, eliminar, ejecutar
 │   │   │   ├── agents.repository.ts PERSISTENCIA (SQLite)
 │   │   │   ├── agents.schemas.ts    Reglas de validación (Zod)
 │   │   │   └── agents.service.spec.ts Pruebas unitarias del servicio
@@ -90,9 +95,9 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 │       ├── app/                     AppProviders y AppRoutes (React Router)
 │       ├── pages/                   AgentsPage, ConsultPage, NotFoundPage
 │       ├── components/layout/       Panel: menú lateral, barra superior, botón de tema
-│       ├── components/agents/       Modal de creación, listado, tarjeta, fila, detalle
+│       ├── components/agents/       Formulario crear/editar, confirmar borrado, menú de acciones, listado, tarjeta, fila, detalle
 │       ├── components/consultation/ Selector, ficha del agente, chat y formulario
-│       ├── components/ui/           Piezas compartidas: encabezado, aviso, paginación
+│       ├── components/ui/           Piezas compartidas: encabezado, paginación, ConfirmDialog y toast/
 │       ├── api/                     Cliente HTTP: único lugar que conoce el backend
 │       ├── hooks/                   TanStack Query y lógica de formularios
 │       ├── types/                   Tipos de dominio Agent y RunResult
@@ -147,6 +152,8 @@ Todos bajo el prefijo `/api`.
 | `POST` | `/api/agents` | Crea un agente | `201` con el agente |
 | `GET` | `/api/agents` | Lista los agentes, paginados, con búsqueda y orden | `200` con `{ items, meta }` |
 | `GET` | `/api/agents/:id` | Devuelve un agente | `200` con el agente, `404` si no existe |
+| `PUT` | `/api/agents/:id` | Reemplaza nombre e instrucciones | `200` con el agente, `400` si no es válido, `404` si no existe |
+| `DELETE` | `/api/agents/:id` | Elimina un agente | `204` sin cuerpo, `404` si no existe |
 | `POST` | `/api/agents/:id/run` | Ejecuta una consulta sobre un agente | `200` con la respuesta |
 
 Parámetros opcionales de `GET /api/agents`:
@@ -205,6 +212,35 @@ curl "http://localhost:3000/api/agents?page=1&limit=6&search=resum&sort=recent"
 
 `total` cuenta los agentes que coinciden con la búsqueda; `totalAll`, todos los guardados.
 
+### Ejemplo: editar un agente
+
+```bash
+curl -X PUT http://localhost:3000/api/agents/1c4c8e63-2f0e-4c24-aad6-57b31dfdc208 \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Asistente de resúmenes v2","instructions":"Resume textos en tres frases"}'
+```
+
+```json
+{
+  "id": "1c4c8e63-2f0e-4c24-aad6-57b31dfdc208",
+  "name": "Asistente de resúmenes v2",
+  "instructions": "Resume textos en tres frases",
+  "createdAt": "2026-11-12T23:51:48.959Z"
+}
+```
+
+El cuerpo usa las mismas reglas que al crear; `id` y `createdAt` no cambian.
+
+### Ejemplo: eliminar un agente
+
+```bash
+curl -i -X DELETE http://localhost:3000/api/agents/1c4c8e63-2f0e-4c24-aad6-57b31dfdc208
+```
+
+```
+HTTP/1.1 204 No Content
+```
+
 ### Ejemplo: ejecutar una consulta
 
 ```bash
@@ -225,7 +261,7 @@ curl -X POST http://localhost:3000/api/agents/1c4c8e63-2f0e-4c24-aad6-57b31dfdc2
 
 | Campo | Regla |
 | --- | --- |
-| `name` | Obligatorio, máximo 100 caracteres |
+| `name` | Obligatorio, máximo 100 caracteres (al crear y al editar) |
 | `instructions` | Obligatorio, máximo 5000 caracteres |
 | `query` | Obligatorio, máximo 5000 caracteres |
 
@@ -252,8 +288,8 @@ Los espacios al inicio y al final se recortan. Todos los errores tienen el mismo
 
 ```bash
 cd backend
-npm test          # pruebas unitarias del servicio (paginación, búsqueda, orden, detalle)
-npm run test:e2e  # prueba de la API completa con Supertest
+npm test          # pruebas unitarias del servicio (paginación, búsqueda, orden, detalle, editar, eliminar)
+npm run test:e2e  # pruebas de la API completa con Supertest (listado, PUT y DELETE)
 ```
 
 Las pruebas usan una base SQLite en memoria y no tocan `backend/data/`.
@@ -282,7 +318,6 @@ razonamiento completo está en `BITACORA.md`.
 
 - Las reglas de validación están duplicadas en frontend y backend.
 - No se guarda el historial de consultas; la respuesta se pierde al recargar la página.
-- Los agentes no se pueden editar ni eliminar.
 - El modo mock no genera respuestas reales: muestra lo que se enviaría al modelo.
 - Las pruebas cubren el backend; el frontend no tiene pruebas automatizadas.
 - El selector de la vista Consultar carga como máximo 100 agentes. Un agente fuera de esa
@@ -297,6 +332,6 @@ razonamiento completo está en `BITACORA.md`.
 2. **Esquemas de validación compartidos** entre frontend y backend en un paquete común,
    para tener una sola fuente de reglas.
 
-Otras: historial de conversaciones por agente, editar y eliminar agentes, pruebas del
+Otras: historial de conversaciones por agente, pruebas del
 frontend, ejecución con Docker Compose y, a más largo plazo, un editor visual de flujos
 para agentes con varios pasos.

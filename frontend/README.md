@@ -11,10 +11,10 @@ El código se separa por responsabilidades, agrupado por dominio
 - `app/AppProviders.tsx`: proveedor de TanStack Query y BrowserRouter.
 - `App.tsx`: composición de la aplicación; `app/AppRoutes.tsx`: rutas anidadas con layout y 404.
 - `pages/`: composición de pantallas y navegación.
-- `components/agents/`: creación, listado (tarjeta, fila, barra de herramientas, estados vacíos) y detalle de agentes.
+- `components/agents/`: formulario de crear/editar, confirmación de borrado, menú de acciones, listado (tarjeta, fila, barra de herramientas, estados vacíos) y detalle de agentes.
 - `components/consultation/`: selección, formulario y resultado de consultas.
 - `components/layout/`: navegación y estructura de la aplicación.
-- `components/ui/`: elementos compartidos, independientes del dominio.
+- `components/ui/`: elementos compartidos, independientes del dominio (`ConfirmDialog`, `toast/`).
 - `hooks/`: peticiones/cache y lógica de formularios, incluyendo validación y errores de campos.
 - `api/`: transporte HTTP y endpoints.
 - `schemas/`: validación de entradas; `types/`: contratos del dominio.
@@ -31,15 +31,29 @@ No se necesitan stores, buses de eventos ni una capa adicional de servicios.
 
 ## Interfaz
 
-El listado ocupa el ancho disponible. «Nuevo agente» abre el componente
-`CreateAgentModal`, que usa `<dialog>` con `showModal()` y las clases de daisyUI.
-El navegador gestiona el foco y la modalidad. Escape, Cancelar y el fondo cierran
-el formulario; durante el guardado se bloquea el cierre. Los errores mantienen el
-modal abierto. Al cerrar se limpian los campos y los errores.
+El listado ocupa el ancho disponible. «Nuevo agente» abre `AgentFormModal` en modo
+crear; el menú «⋯» de cada tarjeta o fila (y los botones de la ficha en Consultar) lo
+abre en modo editar con los valores del agente. Es un solo formulario (`useAgentForm`):
+el modo decide el título, el texto del botón y los valores iniciales. Usa `<dialog>` con
+`showModal()` y las clases de daisyUI; el navegador gestiona el foco y la modalidad.
+Escape, Cancelar y el fondo cierran el formulario; durante el guardado se bloquea el
+cierre. Los errores (por campo o generales) se muestran dentro del modal y conservan lo
+escrito. El modal se monta al abrirse y se desmonta al cerrar, así que cada apertura
+empieza limpia.
 
-Una creación correcta cierra el modal, actualiza el listado y muestra
-`SuccessAlert`: un `alert alert-success` dentro de la página, con icono y cierre
-manual. No hay toast, temporizador ni contexto global de notificaciones.
+`ConfirmDialog` (`ui/`) es un `<dialog>` genérico para acciones destructivas: título,
+mensaje, botón `btn-error`, estado de carga y error dentro del diálogo. No conoce
+endpoints; `DeleteAgentDialog` le aporta el texto y la mutación. Tras eliminar se
+muestra un aviso y, si se hizo desde Consultar, se navega a `/consultar`.
+
+Los avisos usan `ToastProvider` (contexto de React, montado en `AppProviders`) y el hook
+`useToast()` con `success(mensaje, acción?)`, `error` e `info`. `ToastViewport` los dibuja
+con `toast toast-end toast-bottom` y `alert` de daisyUI. Desaparecen a los 4 s; el
+temporizador se pausa con el ratón encima o con foco dentro; hay como máximo 3 a la vez.
+Éxito e info usan `role="status"` y los errores `role="alert"`. La animación breve se
+desactiva con `prefers-reduced-motion`. La acción opcional («Probar agente») es un
+enlace dentro del aviso; como caduca, la misma acción existe en el botón Consultar del
+listado. Los errores de una mutación no usan toast: se quedan en su modal o diálogo.
 
 El selector de tema usa `theme-controller` y `swap`, sin React Context ni store.
 daisyUI aplica los colores mediante CSS. El estado local del control guarda la
@@ -61,7 +75,8 @@ npm run lint
 ```
 
 Revisión manual: abrir/cancelar el modal, validar campos y crear un agente;
-comprobar actualización del listado y alert; cerrar el aviso; seleccionar un agente
+comprobar actualización del listado y el toast; editar y eliminar desde el listado y
+desde Consultar; seleccionar un agente
 y enviar una consulta; cambiar de agente y comprobar el reinicio del formulario;
 revisar navegación directa, móvil, teclado y persistencia del tema.
 

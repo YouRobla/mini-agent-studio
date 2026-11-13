@@ -348,3 +348,29 @@ de cada cambio con mis palabras)_
   - Formato de 2 archivos del backend; `.playwright-mcp/` añadido a `.gitignore`;
     `frontend/UI_UX_REPORT.md` (informe obsoleto del worker) retirado del repositorio.
   - Todo el trabajo de las etapas 10 y 11 quedó en commits separados por tema.
+
+---
+
+## 2026-11-12 · Etapa 12 — Editar y eliminar agentes, y avisos tipo toast
+
+- **Decisión mía:** completar el extra «Editar o eliminar agentes» (PDF §9; opcional, no
+  obligatorio) ya con lo esencial terminado, y sustituir el aviso fijo por avisos tipo
+  toast que se cierran solos.
+- **Antes de delegar:** se corrigieron y confirmaron los hallazgos de la etapa 11 y se
+  dividió `AgentList`. Tomé de mi proyecto anterior (SistemaCalendarioDesplegable) la idea
+  del aviso abajo a la derecha con pausa al pasar el ratón; aquí se implementa con un
+  contexto de React en lugar de eventos globales de `window`.
+- **Herramienta:** Orca, con un worker de Claude Sonnet coordinado desde Claude Code.
+  Encargo cerrado: contrato (`PUT` con el esquema de creación, `DELETE` con 204), dónde
+  aparecen las acciones, que los errores de mutación se queden en su modal, restricciones
+  (sin dependencias, sin commits) y evidencia obligatoria.
+- **Resultado:** `PUT` y `DELETE` en el backend con 4 pruebas unitarias y 5 e2e nuevas
+  (9 y 6 en total); en el frontend `AgentFormModal` (crear/editar), `ConfirmDialog`,
+  `DeleteAgentDialog`, `AgentActionsMenu` (dropdown de daisyUI con la API Popover) y
+  `ToastProvider` + `useToast`.
+- **Mi revisión:** pruebas en verde; recorrido con Playwright: toast al crear con «Probar
+  agente» que desaparece solo, edición con valores precargados y validación, borrado con
+  cancelación y confirmación, editar y eliminar desde Consultar (vuelve a `/consultar`),
+  y error de red dentro del diálogo de borrado. Consola sin errores.
+- **Riesgo descartado:** el menú usa posicionamiento por ancla de CSS; comprobé que
+  Firefox 159 lo soporta.
