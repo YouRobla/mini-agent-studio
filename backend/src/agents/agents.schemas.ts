@@ -13,6 +13,7 @@ import type { Agent, PaginatedAgents, RunResult } from './agent.types.js';
 export const NAME_MAX_LENGTH = 100;
 export const INSTRUCTIONS_MAX_LENGTH = 5000;
 export const QUERY_MAX_LENGTH = 5000;
+export const HISTORY_MAX_MESSAGES = 20;
 export const SEARCH_MAX_LENGTH = 100;
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_LIMIT = 6;
@@ -46,6 +47,38 @@ export const createAgentSchema = z
   )
   .meta({ id: 'AgentInput' });
 
+const chatMessageSchema = z
+  .object({
+    role: z.enum(['user', 'assistant'], {
+      error: 'El rol debe ser "user" o "assistant"',
+    }),
+    content: requiredText('El mensaje no puede estar vacío', QUERY_MAX_LENGTH),
+  })
+  .meta({ id: 'ChatMessage' });
+
+/**
+ * Historial de la conversación. Alterna usuario y agente empezando por el
+ * usuario y termina en una respuesta del agente, así la consulta nueva sigue
+ * el orden que esperan los modelos.
+ */
+const historySchema = z
+  .array(chatMessageSchema)
+  .max(
+    HISTORY_MAX_MESSAGES,
+    `El historial no puede superar los ${HISTORY_MAX_MESSAGES} mensajes`,
+  )
+  .refine(
+    (messages) =>
+      messages.length % 2 === 0 &&
+      messages.every((m, i) => m.role === (i % 2 === 0 ? 'user' : 'assistant')),
+    'El historial debe alternar "user" y "assistant", empezando por "user"',
+  )
+  .default([])
+  .meta({
+    description:
+      'Mensajes anteriores de la conversación, del más antiguo al más reciente. Opcional.',
+  });
+
 export const runAgentSchema = z
   .object(
     {
@@ -53,6 +86,7 @@ export const runAgentSchema = z
         description: 'Consulta para el agente',
         example: 'Resume este texto: NestJS es un framework de Node.js...',
       }),
+      history: historySchema,
     },
     { error: 'El cuerpo de la petición debe ser un objeto JSON' },
   )

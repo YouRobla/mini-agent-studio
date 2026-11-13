@@ -15,11 +15,8 @@ import {
   updateAgent,
 } from "../api/agents.ts";
 import { isNotFound } from "../api/client.ts";
-import type {
-  RunAgentInput,
-  UpdateAgentInput,
-} from "../schemas/agent.schemas.ts";
-import type { ListAgentsParams } from "../types/agent.ts";
+import type { UpdateAgentInput } from "../schemas/agent.schemas.ts";
+import type { ListAgentsParams, RunRequest } from "../types/agent.ts";
 
 /*
  * Datos del servidor con TanStack Query. Lecturas con `useQuery` y escrituras con
@@ -176,7 +173,7 @@ export function useDeleteAgent() {
 export function useRunAgent(agentId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: RunAgentInput) => runAgent(agentId, input),
+    mutationFn: (input: RunRequest) => runAgent(agentId, input),
     onError: (error) => refreshIfAgentGone(queryClient, error),
   });
 }

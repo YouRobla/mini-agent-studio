@@ -21,9 +21,14 @@ export class MockAiProvider implements AiProvider {
   async generate(request: AiRequest): Promise<string> {
     await sleep(SIMULATED_DELAY_MS);
 
+    // Número de esta consulta dentro de la conversación (1 si no hay historial).
+    const turn =
+      request.history.filter((message) => message.role === 'user').length + 1;
+    const label = turn === 1 ? 'Tu consulta' : `Tu consulta #${turn}`;
+
     return [
       `Soy «${request.agentName}» y sigo estas instrucciones: «${request.instructions}».`,
-      `Tu consulta fue: «${request.query}».`,
+      `${label} fue: «${request.query}».`,
     ].join('\n');
   }
 }

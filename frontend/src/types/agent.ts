@@ -30,6 +30,18 @@ export interface PaginatedAgents {
   meta: PaginationMeta;
 }
 
+/** Un mensaje de la conversación, en el formato que espera la API. */
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+/** Cuerpo de `POST /agents/:id/run`: la consulta nueva y lo hablado antes. */
+export interface RunRequest {
+  query: string;
+  history: ChatMessage[];
+}
+
 /** Resultado de ejecutar una consulta sobre un agente. */
 export interface RunResult {
   agentId: string;

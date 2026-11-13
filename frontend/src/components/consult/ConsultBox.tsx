@@ -1,5 +1,7 @@
 import { errorMessage, fieldError } from "../../api/client.ts";
 import { useRunAgent } from "../../hooks/useAgents.ts";
+import { useConversation } from "../../hooks/useConversation.ts";
+import type { RunAgentInput } from "../../schemas/agent.schemas.ts";
 import type { Agent } from "../../types/agent.ts";
 import { ConsultForm } from "./ConsultForm.tsx";
 import { ConsultMessages } from "./ConsultMessages.tsx";
@@ -12,12 +14,28 @@ import { ConsultMessages } from "./ConsultMessages.tsx";
 const CHAT_HEIGHT = "h-[clamp(24rem,calc(100dvh-26rem),48rem)]";
 
 /**
- * Caja de consulta a un agente (con el aspecto de un chat). Ejecuta la consulta
- * contra el backend y reparte su estado entre los mensajes y el formulario.
- * Muestra la última consulta y su respuesta; no guarda historial.
+ * Chat con un agente. Cada consulta viaja al backend con el historial de la
+ * conversación (`useConversation`), así el agente recuerda lo hablado; la
+ * respuesta se añade al chat solo si llega bien. Reparte el estado entre los
+ * mensajes y el formulario.
  */
 export function ConsultBox({ agent }: { agent: Agent }) {
   const run = useRunAgent(agent.id);
+  const conversation = useConversation(agent.id);
+
+  async function send({ query }: RunAgentInput) {
+    const result = await run.mutateAsync({
+      query,
+      history: conversation.history,
+    });
+    conversation.addExchange(query, result.response, result.provider);
+  }
+
+  function clear() {
+    conversation.clear();
+    run.reset();
+  }
+
   // Un error de validación de la consulta ya se muestra junto al campo.
   const error =
     run.isError && !fieldError(run.error, "query")
@@ -33,29 +51,26 @@ export function ConsultBox({ agent }: { agent: Agent }) {
         <h2 id="chat-title" className="font-semibold">
           Conversación
         </h2>
-        {!run.isIdle && !run.isPending && (
-          <button
-            type="button"
-            className="btn btn-ghost btn-xs"
-            onClick={() => run.reset()}
-          >
-            Limpiar chat
-          </button>
-        )}
+        {(conversation.messages.length > 0 || run.isError) &&
+          !run.isPending && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-xs"
+              onClick={clear}
+            >
+              Limpiar chat
+            </button>
+          )}
       </div>
 
       <ConsultMessages
         agentName={agent.name}
-        query={run.variables?.query}
-        isPending={run.isPending}
-        result={run.data}
+        messages={conversation.messages}
+        pendingQuery={run.isPending ? run.variables?.query : undefined}
         error={error}
       />
 
-      <ConsultForm
-        isPending={run.isPending}
-        onSend={(input) => run.mutateAsync(input)}
-      />
+      <ConsultForm isPending={run.isPending} onSend={send} />
     </section>
   );
 }

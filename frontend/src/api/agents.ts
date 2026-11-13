@@ -2,11 +2,11 @@ import type {
   Agent,
   ListAgentsParams,
   PaginatedAgents,
+  RunRequest,
   RunResult,
 } from "../types/agent.ts";
 import type {
   CreateAgentInput,
-  RunAgentInput,
   UpdateAgentInput,
 } from "../schemas/agent.schemas.ts";
 import { request } from "./client.ts";
@@ -51,7 +51,7 @@ export function deleteAgent(agentId: string): Promise<void> {
 
 export function runAgent(
   agentId: string,
-  input: RunAgentInput,
+  input: RunRequest,
 ): Promise<RunResult> {
   return request<RunResult>(`/agents/${encodeURIComponent(agentId)}/run`, {
     method: "POST",

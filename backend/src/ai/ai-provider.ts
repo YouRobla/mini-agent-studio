@@ -1,3 +1,9 @@
+/** Un mensaje anterior de la conversación. */
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 /** Lo que necesita un proveedor de IA para responder. */
 export interface AiRequest {
   agentName: string;
@@ -5,6 +11,12 @@ export interface AiRequest {
   instructions: string;
   /** Consulta del usuario: en un LLM real sería el mensaje del usuario. */
   query: string;
+  /**
+   * Mensajes anteriores, del más antiguo al más reciente (vacío en la primera
+   * consulta). El backend no guarda conversaciones: el frontend envía el
+   * historial completo en cada petición.
+   */
+  history: ChatMessage[];
 }
 
 /**

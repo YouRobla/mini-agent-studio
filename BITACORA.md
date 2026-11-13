@@ -1248,3 +1248,36 @@ el sistema esté más presentable y pulido».
   README (sección del mock, ejemplo de respuesta y limitaciones) y `AI_USAGE.md`.
 - **Revisión:** lint y build en verde; 10 pruebas unitarias y 12 e2e sin cambios (siguen
   comprobando el nombre, las instrucciones y la consulta).
+
+---
+
+## 2026-11-13 · Etapa 40 — Plan del LLM y chat de varios turnos (etapa A)
+
+- **Pedido mío:** antes de conectar un LLM real, pensar la implementación: un chat
+  continuo en el que se pueda seguir preguntando, un proveedor real (y poder cambiar entre
+  Claude y ChatGPT), y si convenía usar `runonweb.ai`.
+- **Investigación (IA):** `runonweb.ai` es una librería MIT (v0.1.0) con 13 módulos que
+  corren en el navegador (OCR, voz, traducción…), pero no tiene modelo de chat, descarga
+  cada modelo en el navegador y varios módulos están en beta. Un modelo de IA en el
+  navegador, además, saltaría el backend, y el PDF pide que la solicitud la procese el
+  backend (§2, §3.C).
+- **Decisiones mías:**
+  - Etapas **A** (chat de varios turnos), **B** (Claude real con fábrica de proveedores)
+    y **C** (adaptador de OpenAI). Fuera: streaming, guardar conversaciones, runonweb.
+  - Modelo de Claude: **Haiku 5.5**, el más barato.
+  - Descarto el agente fijo que extrae texto de imágenes: complejidad innecesaria.
+- **Decididas por la IA con su recomendación, porque no las respondí** (las puedo
+  cambiar): conversación en memoria (se pierde al recargar), contrato
+  `{ query, history }` con `history` opcional, y sin agentes de ejemplo al arrancar.
+- **Etapa A (IA):**
+  - Backend: `history` opcional en `POST /run`, validado con Zod (como mucho 20
+    mensajes, roles `user`/`assistant` alternados empezando por `user`; un rol `system`
+    se rechaza). `AiRequest` lleva el historial; el mock numera el turno («Tu consulta
+    #2 fue…»). Ejemplos nuevos en Swagger.
+  - Frontend: `useConversation(agentId)` guarda la conversación de cada agente en
+    memoria y envía como mucho los últimos 20 mensajes; `ConsultMessages` pinta todos
+    los mensajes y baja solo al último; la respuesta se añade solo si llega bien.
+- **Revisión:** lint y build en verde en las dos partes; 10 pruebas unitarias y 14 e2e
+  (2 nuevas: conversación con historial e historial inválido o demasiado largo). En el
+  navegador: tres turnos con historial de 0, 2 y 4 mensajes, conversación conservada al
+  ir a Agentes y volver, «Limpiar chat», consola sin errores.

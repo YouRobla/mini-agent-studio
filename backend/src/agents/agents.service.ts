@@ -79,7 +79,7 @@ export class AgentsService {
     }
   }
 
-  /** Ejecuta una consulta: une las instrucciones del agente con la consulta. */
+  /** Ejecuta una consulta con las instrucciones del agente y el historial. */
   async run(agentId: string, input: RunAgentInput): Promise<RunResult> {
     const agent = this.findById(agentId);
 
@@ -89,6 +89,7 @@ export class AgentsService {
         agentName: agent.name,
         instructions: agent.instructions,
         query: input.query,
+        history: input.history,
       });
     } catch (error) {
       // El fallo del proveedor se registra y se traduce a un error controlado.

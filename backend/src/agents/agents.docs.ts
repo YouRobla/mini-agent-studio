@@ -79,9 +79,26 @@ export const ApiRunBodyExamples = () =>
           query: 'Resume este texto: NestJS es un framework de Node.js...',
         },
       },
+      conHistorial: {
+        summary: 'Segunda consulta de una conversación',
+        value: {
+          query: 'Ahora hazlo más corto',
+          history: [
+            { role: 'user', content: 'Resume este texto: NestJS es…' },
+            { role: 'assistant', content: 'NestJS es un framework de Node.js…' },
+          ],
+        },
+      },
       consultaVacia: {
         summary: 'Consulta vacía (400)',
         value: { query: '' },
+      },
+      historialDesordenado: {
+        summary: 'Historial que no alterna los roles (400)',
+        value: {
+          query: 'Hola',
+          history: [{ role: 'assistant', content: 'Respuesta suelta' }],
+        },
       },
     },
   });

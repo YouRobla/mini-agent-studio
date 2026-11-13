@@ -177,10 +177,12 @@ servicio depende del contrato `AiProvider`, no del proveedor simulado.
 ### Flujo de una consulta
 
 1. El usuario escribe la consulta y pulsa **Enviar consulta**. El frontend valida que no esté
-   vacía y envía `POST /api/agents/:id/run`.
+   vacía y envía `POST /api/agents/:id/run` con la consulta y el historial de la conversación
+   (`history`, opcional: los mensajes anteriores, como mucho 20). El backend no guarda
+   conversaciones; el frontend las conserva en memoria mientras la pestaña está abierta.
 2. El controlador recibe la petición; el pipe global valida el cuerpo.
 3. El servicio busca el agente en el repositorio. Si no existe, responde `404`.
-4. El servicio entrega el nombre, las instrucciones y la consulta al proveedor de IA.
+4. El servicio entrega el nombre, las instrucciones, la consulta y el historial al proveedor de IA.
    El servicio solo conoce el contrato `AiProvider`, no la implementación.
 5. El proveedor devuelve el texto y el frontend lo muestra. Cualquier fallo llega al
    frontend con el mismo formato de error (lo construye el filtro global de
@@ -320,6 +322,17 @@ curl -X POST http://localhost:3000/api/agents/1c4c8e63-2f0e-4c24-aad6-57b31dfdc2
 }
 ```
 
+Para continuar una conversación se envía también lo hablado antes. `history` alterna
+`user` y `assistant`, empieza por `user` y admite como mucho 20 mensajes:
+
+```bash
+curl -X POST http://localhost:3000/api/agents/1c4c8e63-2f0e-4c24-aad6-57b31dfdc208/run \
+  -H "Content-Type: application/json" \
+  -d '{"query":"Ahora hazlo más corto","history":[{"role":"user","content":"Resume este párrafo"},{"role":"assistant","content":"Un resumen"}]}'
+```
+
+La respuesta del mock indica el turno: `Tu consulta #2 fue: «Ahora hazlo más corto».`
+
 ### Validación y errores
 
 | Campo | Regla |
@@ -382,7 +395,7 @@ razonamiento completo está en `BITACORA.md`.
 ## Limitaciones conocidas
 
 - Las reglas de validación están duplicadas en frontend y backend.
-- No se guarda el historial de consultas; la respuesta se pierde al recargar la página.
+- La conversación vive en la memoria del navegador: se pierde al recargar la página.
 - El modo mock no genera respuestas reales: devuelve el agente, sus instrucciones y la consulta.
 - Las pruebas cubren el backend; el frontend no tiene pruebas automatizadas.
 - El selector de la vista Consultar carga como máximo 100 agentes. Un agente fuera de esa
@@ -398,7 +411,7 @@ razonamiento completo está en `BITACORA.md`.
    a partir del documento OpenAPI (`/api/docs-json`), que ya sale de los esquemas Zod del
    backend, o moverlos a un paquete común.
 
-Otras: historial de conversaciones por agente, pruebas del
+Otras: guardar las conversaciones en la base de datos, pruebas del
 frontend, ejecución con Docker Compose y, a más largo plazo, un editor visual de flujos
 para agentes con varios pasos.
 

@@ -38,8 +38,8 @@ src/
 │   ├── consult/          Todo lo de probar un agente
 │   │   ├── AgentSelector.tsx    Selector del agente (pide sus opciones)
 │   │   ├── AgentInstructions.tsx  Instrucciones del agente elegido
-│   │   ├── ConsultBox.tsx       Ejecuta la consulta y reparte su estado
-│   │   ├── ConsultMessages.tsx  Pregunta, espera, respuesta o error
+│   │   ├── ConsultBox.tsx       Envía cada consulta con el historial y reparte el estado
+│   │   ├── ConsultMessages.tsx  La conversación: mensajes, espera y error
 │   │   └── ConsultForm.tsx      Campo de texto y botón de envío
 │   └── ui/               Piezas sin dominio (no saben qué es un agente)
 │       └── Modal, ConfirmDialog, ErrorAlert, Pagination, PageHeader, icons, toast
@@ -47,6 +47,7 @@ src/
 ├── hooks/
 │   ├── useAgents.ts          Datos del servidor (TanStack Query): lecturas y escrituras
 │   ├── useAgentsListParams.ts  Página, orden y búsqueda guardados en la URL
+│   ├── useConversation.ts      Conversación de cada agente, en memoria
 │   └── useDebouncedValue.ts    Retrasa la búsqueda 250 ms
 │
 ├── api/
@@ -97,7 +98,7 @@ ConsultPage                   useAgent(agentId de la URL) + diálogo abierto
 ├── AgentSelector             useAgentOptions ──► navega a /consultar/:id
 ├── AgentLabelActions
 ├── AgentInstructions
-├── ConsultBox                useRunAgent (se reinicia con key={agent.id})
+├── ConsultBox                useRunAgent + useConversation (key={agent.id})
 │   ├── ConsultMessages
 │   └── ConsultForm
 └── AgentDialogs              al eliminar ──► navega a /consultar
@@ -121,7 +122,7 @@ pintar cuando cambian sus datos.
 - `useState`: estado local de un componente (diálogo abierto, vista cuadrícula o lista).
 - `useEffect`: sincronizar con algo externo (el temporizador de un aviso, el debounce).
 - `key`: si cambia, React monta el componente de cero. `ConsultBox` usa
-  `key={agent.id}` para empezar limpio al cambiar de agente.
+  `key={agent.id}` para cargar la conversación del agente elegido.
 - Regla: si un dato viene del servidor, no va en `useState` sino en TanStack Query.
 
 ### React Router: las rutas y la URL
@@ -290,8 +291,10 @@ backend está apagado), se trata como «sin conexión»:
   marcada, daisyUI lo aplica. No hay estado de React, `localStorage` ni script en
   `index.html`; al recargar se vuelve al tema del sistema.
 - **Consulta**: al enviar, la pregunta aparece en el chat con un indicador de carga. Si
-  va bien, el campo se limpia y recupera el foco; si falla, conserva el texto. Se muestra
-  la última consulta, sin historial. `Ctrl + Enter` envía.
+  va bien, el campo se limpia y recupera el foco; si falla, conserva el texto. Es un chat
+  de varios turnos: cada consulta viaja con el historial (`useConversation`, como mucho
+  los últimos 20 mensajes), así el agente recuerda lo hablado. La conversación de cada
+  agente se conserva al cambiar de vista y se pierde al recargar. `Ctrl + Enter` envía.
 
 ## 7. Editar los temas
 
