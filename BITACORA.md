@@ -1573,3 +1573,10 @@ el sistema esté más presentable y pulido».
   borró y se clonó de nuevo desde cero.
 - **README:** el índice menciona Docker y la IA real opcional. No se crea documentación
   nueva: está todo en el README, `AI_USAGE.md`, esta bitácora y `frontend/README.md`.
+- **Revisión de riesgos antes de entregar (pedido mío: «¿estás seguro?»):**
+  - Node 24.22.3, el mínimo del README: dependencias reinstaladas con esa versión, lint,
+    22 pruebas unitarias, 15 e2e, build y el escenario del §8 sin CORS, todo en verde.
+  - Docker: `env_file` con `required: false` solo existe desde Compose 2.24 (enero de
+    2024); con una versión anterior el compose fallaría. Se añade a los requisitos.
+  - Sin probar: Windows y macOS. Docker evita las diferencias de sistema; con npm no hay
+    rutas ni comandos propios de Linux en los scripts.

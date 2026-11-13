@@ -30,6 +30,8 @@ Prueba técnica Fullstack.
   fija la 26.13.1). El backend usa el módulo `node:sqlite` integrado en Node, así que no
   hay que instalar ninguna base de datos.
 - npm (incluido con Node).
+- Solo para la vía con Docker (opcional): Docker con **Compose 2.24 o superior**, que es la
+  versión que admite el `.env` opcional (`required: false`). Probado con Compose 5.6.
 
 ### Pasos
 
