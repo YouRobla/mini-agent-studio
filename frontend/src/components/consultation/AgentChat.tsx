@@ -1,44 +1,47 @@
-import type { Agent } from "../../types/agent.ts";
-import type { useQueryForm } from "../../hooks/useQueryForm.ts";
 import { errorMessage } from "../../api/client.ts";
+import { useQueryForm } from "../../hooks/useQueryForm.ts";
+import type { Agent } from "../../types/agent.ts";
+import { CHAT_HEIGHT } from "./chatLayout.ts";
 import { QueryForm } from "./QueryForm.tsx";
 
-interface AgentChatProps {
-  agent: Agent;
-  form: ReturnType<typeof useQueryForm>;
-}
-
-export function AgentChat({ agent, form }: AgentChatProps) {
+/**
+ * Conversación con el agente: cabecera, mensajes (con su propio scroll) y el
+ * formulario fijo abajo. Muestra la última consulta y su respuesta, la espera
+ * mientras el backend responde y cualquier error en un mensaje legible.
+ */
+export function AgentChat({ agent }: { agent: Agent }) {
+  const form = useQueryForm(agent.id);
   const { runAgent, showGeneralError } = form;
 
   return (
     <section
-      className="card card-border min-w-0 bg-base-100"
-      aria-labelledby="result-title"
+      className={`card card-border flex min-w-0 flex-col bg-base-100 ${CHAT_HEIGHT}`}
+      aria-labelledby="chat-title"
     >
-      <div className="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3.5 sm:px-5">
-        <h2 id="result-title" className="card-title text-base sm:text-lg [overflow-wrap:anywhere]">
-          Chat con {agent.name}
+      <div className="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3 sm:px-5">
+        <h2 id="chat-title" className="font-semibold">
+          Conversación
         </h2>
         {!runAgent.isIdle && !runAgent.isPending && (
           <button
             type="button"
-            className="btn btn-ghost btn-xs shrink-0"
+            className="btn btn-ghost btn-xs"
             onClick={() => runAgent.reset()}
           >
             Limpiar chat
           </button>
         )}
       </div>
+
       <div
         aria-live="polite"
         aria-atomic="true"
-        className="min-h-56 min-w-0 max-h-80 space-y-4 overflow-y-auto p-4 sm:p-5"
-        tabIndex={0}
         aria-label="Mensajes de la consulta"
+        tabIndex={0}
+        className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5"
       >
         {runAgent.isIdle && (
-          <div className="flex min-h-48 flex-col items-center justify-center px-3 text-center">
+          <div className="flex h-full flex-col items-center justify-center px-3 text-center">
             <svg
               className="mb-3 size-8 text-base-content/50"
               viewBox="0 0 24 24"
@@ -50,13 +53,13 @@ export function AgentChat({ agent, form }: AgentChatProps) {
               <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-2 2V11.5A8.5 8.5 0 0 1 10.5 3h2a8.5 8.5 0 0 1 8.5 8.5Z" />
               <path d="M7 9h9M7 13h6" />
             </svg>
-            <p className="flex-none font-medium">Inicia una consulta</p>
-            <p className="mt-1.5 max-w-xs flex-none text-sm text-base-content/70">
-              Escribe tu mensaje abajo. La respuesta de este agente aparecerá
-              aquí.
+            <p className="font-medium">Inicia la conversación</p>
+            <p className="mt-1.5 max-w-xs text-sm text-base-content/70">
+              Escribe tu consulta abajo; la respuesta aparecerá aquí.
             </p>
           </div>
         )}
+
         {runAgent.variables && !runAgent.isIdle && (
           <div className="chat chat-end">
             <div className="chat-header mb-1 text-xs text-base-content/70">
@@ -67,12 +70,13 @@ export function AgentChat({ agent, form }: AgentChatProps) {
             </div>
           </div>
         )}
+
         {(runAgent.isPending || runAgent.isSuccess) && (
           <div className="chat chat-start">
-            <div className="chat-header mb-1 break-words text-xs text-base-content/70">
-              {agent.name}
+            <div className="chat-header mb-1 text-xs text-base-content/70">
+              Agente
             </div>
-            <div className="chat-bubble max-w-[90%] bg-base-200 whitespace-pre-wrap leading-relaxed text-base-content [overflow-wrap:anywhere]">
+            <div className="chat-bubble max-w-[90%] bg-base-200 leading-relaxed whitespace-pre-wrap text-base-content [overflow-wrap:anywhere]">
               {runAgent.isPending ? (
                 <>
                   <span
@@ -87,18 +91,15 @@ export function AgentChat({ agent, form }: AgentChatProps) {
             </div>
           </div>
         )}
+
         {showGeneralError && (
           <div role="alert" className="alert alert-error alert-soft">
             {errorMessage(runAgent.error)}
           </div>
         )}
-        {runAgent.isError && !showGeneralError && (
-          <p className="py-6 text-sm text-base-content/70">
-            Revisa el campo de consulta antes de volver a ejecutar.
-          </p>
-        )}
       </div>
-      <QueryForm agent={agent} form={form} />
+
+      <QueryForm form={form} />
     </section>
   );
 }

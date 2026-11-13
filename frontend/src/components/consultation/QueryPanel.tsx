@@ -1,66 +1,23 @@
-import { useState } from "react";
-import { useNavigate } from "react-router";
 import type { Agent } from "../../types/agent.ts";
-import { useQueryForm } from "../../hooks/useQueryForm.ts";
-import { AgentFormModal } from "../agents/AgentFormModal.tsx";
-import { DeleteAgentDialog } from "../agents/DeleteAgentDialog.tsx";
-import { useToast } from "../ui/toast/useToast.ts";
-import { AgentDetails } from "./AgentDetails.tsx";
 import { AgentChat } from "./AgentChat.tsx";
+import { CHAT_HEIGHT } from "./chatLayout.ts";
 
+/**
+ * Columna derecha de Consultar: el chat del agente elegido, o un aviso para
+ * elegir uno. La `key` reinicia consulta y respuesta al cambiar de agente.
+ */
 export function QueryPanel({ agent }: { agent: Agent | undefined }) {
-  if (!agent) {
-    return (
-      <section className="rounded-box border border-dashed border-base-300 bg-base-100 px-6 py-16 text-center">
-        <h2 className="font-semibold">Selecciona un agente para empezar</h2>
-        <p className="mt-2 text-sm text-base-content/70">
-          Aquí podrás escribir tu consulta y revisar su respuesta.
-        </p>
-      </section>
-    );
-  }
-
-  return <QueryWorkspace key={agent.id} agent={agent} />;
-}
-
-function QueryWorkspace({ agent }: { agent: Agent }) {
-  const form = useQueryForm(agent.id);
-  const [editing, setEditing] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const navigate = useNavigate();
-  const toast = useToast();
+  if (agent) return <AgentChat key={agent.id} agent={agent} />;
 
   return (
-    <>
-      <div className="grid items-start gap-6 md:grid-cols-[minmax(14rem,0.75fr)_minmax(0,1.5fr)]">
-        <AgentDetails
-          agent={agent}
-          onEdit={() => setEditing(true)}
-          onDelete={() => setDeleting(true)}
-        />
-        <AgentChat agent={agent} form={form} />
-      </div>
-
-      {editing && (
-        <AgentFormModal
-          agent={agent}
-          onClose={() => setEditing(false)}
-          onSaved={(saved) =>
-            toast.success(`Agente «${saved.name}» actualizado`)
-          }
-        />
-      )}
-
-      {deleting && (
-        <DeleteAgentDialog
-          agent={agent}
-          onClose={() => setDeleting(false)}
-          onDeleted={(deleted) => {
-            toast.success(`Agente «${deleted.name}» eliminado`);
-            navigate("/consultar");
-          }}
-        />
-      )}
-    </>
+    <section
+      className={`card card-border min-w-0 items-center justify-center bg-base-100 px-6 text-center ${CHAT_HEIGHT}`}
+    >
+      <h2 className="font-semibold">Elige un agente para empezar</h2>
+      <p className="mt-2 max-w-sm text-sm text-base-content/70">
+        Selecciónalo en el panel de la izquierda; aquí podrás escribirle y ver
+        su respuesta.
+      </p>
+    </section>
   );
 }

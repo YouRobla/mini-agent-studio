@@ -397,3 +397,32 @@ de cada cambio con mis palabras)_
   `components/ui/icons.tsx`, sin librerías nuevas.
 - **Revisión:** build y lint en verde; capturas de tarjetas, lista (escritorio y móvil a
   390 px sin desbordamiento) y ficha de Consultar; consola sin errores.
+
+---
+
+## 2026-11-12 · Etapa 14 — Vista Consultar reorganizada y ajustes finos (decisión mía)
+
+- **Tooltip:** pedí más separación entre el texto y el icono. Primero fue una clase en el
+  componente; luego pregunté qué hacía y se movió a una regla global en `index.css`
+  (`--tt-off` / `--tt-tail` de daisyUI), así todos los tooltips quedan igual y el
+  componente solo usa `tooltip`.
+- **Color al pasar el ratón:** editar en amarillo y eliminar en rojo. Se rellena el fondo
+  del botón (con su texto `*-content`) y no solo el icono, porque un icono amarillo sobre
+  fondo claro tiene contraste 1.6:1 y no se distingue.
+- **Vista Consultar:** elegí la opción «panel del agente a la izquierda» entre dos
+  propuestas. Problemas que resolvía: el selector estaba lejos de la ficha que controla,
+  el nombre del agente aparecía tres veces, el chat tenía una altura fija pequeña y
+  quedaban huecos grandes.
+  - Columna izquierda (`AgentPanel`): selector, instrucciones, fecha, Editar y Eliminar.
+  - Columna derecha: chat a todo el alto disponible, con el campo fijo abajo; cabecera
+    «Conversación» y burbujas «Tú» / «Agente».
+  - En móvil, el botón de envío muestra solo el icono; «Enviar consulta» sigue siendo su
+    nombre accesible.
+- **Menú lateral:** se quitó el bloque inferior («Modo simulado» y su texto), que repetía
+  la etiqueta de la barra superior; esa etiqueta ahora también se ve en móvil.
+- **Lo que exige la prueba se conserva (§3.B, §8.4):** campo de consulta, botón que llama
+  al backend, estado de carga («Enviando…» y burbuja de espera) y errores legibles
+  (consulta vacía, agente inexistente, backend caído).
+- **Revisión:** build y lint en verde; recorrido con Playwright: sin agente, con agente,
+  consulta vacía, carga, respuesta, agente inexistente, móvil a 390 px sin desbordamiento,
+  tooltip; consola sin errores (salvo el 404 esperado al abrir un agente inexistente).

@@ -118,3 +118,9 @@
     }
   }
 }
+
+/* Tooltips de daisyUI un poco más separados del elemento (0.75rem en vez de 0.5rem). */
+.tooltip {
+  --tt-off: calc(100% + 0.75rem);
+  --tt-tail: calc(100% + var(--tt-overlap) + 0.5rem);
+}

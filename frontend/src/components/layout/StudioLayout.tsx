@@ -56,7 +56,10 @@ export function StudioLayout() {
           >
             Mini Agent Studio
           </Link>
-          <span className="badge badge-outline hidden text-xs sm:inline-flex">
+          <span
+            className="badge badge-outline badge-sm shrink-0 sm:badge-md"
+            title="Las respuestas las genera un proveedor de IA simulado"
+          >
             Modo simulado
           </span>
           <ThemeToggle />
@@ -151,13 +154,6 @@ export function StudioLayout() {
               </li>
             </ul>
           </nav>
-          <div className="mt-auto px-2 pt-6 pb-2">
-            <span className="badge badge-outline badge-sm">Modo simulado</span>
-            <p className="mt-2.5 text-xs leading-relaxed text-base-content/70">
-              Un espacio para definir agentes y explorar sus respuestas con un
-              proveedor simulado.
-            </p>
-          </div>
         </aside>
       </div>
     </div>

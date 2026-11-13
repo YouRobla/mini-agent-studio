@@ -7,10 +7,6 @@ interface AgentQuickActionsProps {
   onDelete: (agent: Agent) => void;
 }
 
-/** Tooltip un poco más separado del icono que el de daisyUI por defecto. */
-const TOOLTIP =
-  "tooltip [--tt-off:calc(100%_+_0.75rem)] [--tt-tail:calc(100%_+_var(--tt-overlap)_+_0.5rem)]";
-
 /**
  * Editar y eliminar como botones de icono siempre visibles. El tooltip
  * explica el icono. En reposo son neutros para no competir con Consultar; al
@@ -25,7 +21,7 @@ export function AgentQuickActions({
 }: AgentQuickActionsProps) {
   return (
     <div className="flex shrink-0 items-center">
-      <div className={TOOLTIP} data-tip="Editar">
+      <div className="tooltip" data-tip="Editar">
         <button
           type="button"
           className="btn btn-ghost btn-xs btn-square hover:bg-warning hover:text-warning-content focus-visible:bg-warning focus-visible:text-warning-content"
@@ -35,7 +31,7 @@ export function AgentQuickActions({
           <EditIcon />
         </button>
       </div>
-      <div className={TOOLTIP} data-tip="Eliminar">
+      <div className="tooltip" data-tip="Eliminar">
         <button
           type="button"
           className="btn btn-ghost btn-xs btn-square hover:bg-error hover:text-error-content focus-visible:bg-error focus-visible:text-error-content"

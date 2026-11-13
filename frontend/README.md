@@ -106,10 +106,14 @@ La sección 3.B del PDF de la prueba pide un campo de consulta al agente
 seleccionado, un botón que llame al backend y estados de carga/error.
 La sección 8 comprueba seleccionar → escribir → recibir una respuesta.
 
-`ConsultPage` alinea el encabezado y `AgentSelector` en escritorio.
-`QueryPanel` coordina el estado entre la ficha `AgentDetails`, con el nombre y
-las instrucciones siempre visibles, y `AgentChat`, con mensajes en burbujas
-y `QueryForm` integrado al pie del chat. En móvil la ficha aparece antes del chat.
+`ConsultPage` divide la vista en dos columnas. A la izquierda, `AgentPanel` reúne
+todo lo del agente: `AgentSelector`, y debajo `AgentDetails` con las instrucciones,
+la fecha y los botones Editar y Eliminar. A la derecha, `QueryPanel` muestra
+`AgentChat` (o una invitación a elegir agente): cabecera, mensajes con su propio
+scroll y `QueryForm` fijo al pie. El chat ocupa el alto disponible de la pantalla
+(`chatLayout.ts`). El nombre del agente aparece una sola vez, en el selector. En
+móvil el panel va antes del chat y el botón de envío muestra solo el icono, con
+«Enviar consulta» como nombre accesible.
 
 Al enviar, el mensaje se muestra en el chat y aparece un indicador de carga.
 Si la respuesta llega correctamente, el campo se limpia y recupera el foco.
