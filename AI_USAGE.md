@@ -104,6 +104,7 @@ _(completar: cambios que hice a mano en el código después de revisarlo)_
 | El tema oscuro que diseñé tenía 7 de 11 pares de color por debajo del contraste mínimo 4.5:1 | Cálculo de contraste de los colores OKLCH durante la revisión | Texto oscuro sobre los colores vivos; mínimo actual 5.11:1 |
 | El worker de Codex dejó el botón "Cerrar" del aviso de éxito casi ilegible (texto oscuro sobre verde) | Revisión visual en el navegador antes de confirmar | Se le devolvió la corrección; pasó a un botón con contraste 13.85:1 |
 | El revisor (Sonnet) sugirió sustituir NestJS por Express | Revisión del plan | Descartado: mantuve NestJS y lo justifico en el README |
+| La IA propuso convertir los esquemas Zod a mano (`z.toJSONSchema`) para Swagger | Le pedí verificarlo en la documentación; leyó el código de `@nestjs/swagger` 12 y generó el documento | No hacía falta: Swagger 12 lee los esquemas de `@Body({ schema })` directamente. Se usó esa vía |
 | Reglas por palabras clave para simular inteligencia en el mock | Discusión de diseño | Descartado: darían respuestas falsas; el mock muestra lo que se enviaría al modelo |
 
 El registro completo, etapa por etapa, está en `BITACORA.md`.

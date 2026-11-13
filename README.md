@@ -17,7 +17,8 @@ Prueba técnica Fullstack.
 
 Se necesitan dos terminales, una para cada parte.
 
-**Backend** (queda en `http://localhost:3000/api`):
+**Backend** (queda en `http://localhost:3000/api`; documentación interactiva en
+`http://localhost:3000/api/docs`):
 
 ```bash
 cd backend
@@ -82,16 +83,21 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 │   ├── src/
 │   │   ├── main.ts                  Arranque del servidor
 │   │   ├── app.setup.ts             Configuración global: prefijo, CORS, validación, errores
-│   │   ├── agents/
+│   │   ├── swagger.setup.ts         Documentación interactiva (Swagger) en /api/docs
+│   │   ├── agents/                  Funcionalidad: agentes
 │   │   │   ├── agents.controller.ts Rutas HTTP
 │   │   │   ├── agents.service.ts    Lógica: crear, listar, buscar, editar, eliminar, ejecutar
-│   │   │   ├── agents.repository.ts PERSISTENCIA (SQLite)
-│   │   │   ├── agents.schemas.ts    Reglas de validación (Zod)
+│   │   │   ├── agents.repository.ts PERSISTENCIA: consultas SQL de los agentes
+│   │   │   ├── agents.schemas.ts    Reglas de validación (Zod); Swagger las lee
+│   │   │   ├── agents.docs.ts       Decoradores y ejemplos para la documentación
+│   │   │   ├── agents.exceptions.ts Error «agente no encontrado»
 │   │   │   └── agents.service.spec.ts Pruebas unitarias del servicio
-│   │   ├── ai/
+│   │   ├── ai/                      Funcionalidad: proveedor de IA
 │   │   │   ├── ai-provider.ts       Contrato del proveedor de IA
-│   │   │   └── mock-ai.provider.ts  ADAPTADOR DE IA simulado
-│   │   └── common/                  Excepciones y filtro global de errores
+│   │   │   ├── mock-ai.provider.ts  ADAPTADOR DE IA simulado
+│   │   │   └── ai.exceptions.ts     Error «falló el proveedor de IA»
+│   │   ├── database/                Conexión a SQLite: la abre, la comparte y la cierra
+│   │   └── common/errors/           Filtro global de errores y su formato único
 │   ├── test/                        Prueba e2e de la API (Supertest)
 │   └── data/                        Archivo de la base de datos (no se sube a Git)
 ├── frontend/                        Interfaz (React)
@@ -152,6 +158,14 @@ en `ai.module.ts`. El controlador, el servicio y el frontend no cambian.
 ## Endpoints
 
 Todos bajo el prefijo `/api`.
+
+**Documentación interactiva (Swagger):** con el backend en marcha, abre
+`http://localhost:3000/api/docs`. Muestra cada ruta con sus parámetros y errores
+posibles, y permite ejecutarla sin usar `curl`: los campos ya salen editables, cada
+cuerpo trae un desplegable con un ejemplo válido y otros inválidos, y la portada explica
+cómo recorrer el flujo crear → consultar. El documento OpenAPI está en `/api/docs-json`.
+Se genera al arrancar a partir de los controladores y de los mismos esquemas Zod que
+validan las peticiones, así que no puede quedar desactualizado respecto al código.
 
 | Método | Ruta | Descripción | Respuesta |
 | --- | --- | --- | --- |
@@ -295,7 +309,7 @@ Los espacios al inicio y al final se recortan. Todos los errores tienen el mismo
 ```bash
 cd backend
 npm test          # pruebas unitarias del servicio (paginación, búsqueda, orden, detalle, editar, eliminar)
-npm run test:e2e  # pruebas de la API completa con Supertest (listado, PUT y DELETE)
+npm run test:e2e  # pruebas de la API completa con Supertest (flujo crear → consultar, errores, listado, PUT, DELETE y documentación)
 ```
 
 Las pruebas usan una base SQLite en memoria y no tocan `backend/data/`.
@@ -312,6 +326,7 @@ Las pruebas usan una base SQLite en memoria y no tocan `backend/data/`.
 | Tailwind CSS 4 + daisyUI 5 | Estándar visual consistente con poco código; es solo CSS y se compila localmente. Dos temas propios (claro y oscuro) con contraste AA (4.5:1 como mínimo) |
 | NestJS 12 | Su inyección de dependencias hace explícita la separación entre controlador, lógica, persistencia y proveedor de IA |
 | Zod en el backend | NestJS 12 lo valida de forma nativa (`StandardSchemaValidationPipe`), sin clases DTO |
+| Swagger (`@nestjs/swagger` 12) | Documenta y permite probar los endpoints desde el navegador; genera los esquemas a partir de Zod, sin escribir las reglas dos veces |
 | SQLite (`node:sqlite`) | Persistencia real con escritura segura, sin instalar dependencias ni un servidor |
 | Vitest + Supertest | Vienen con el proyecto de NestJS 12; prueban el servicio y la API sin levantar el servidor |
 
@@ -336,8 +351,9 @@ razonamiento completo está en `BITACORA.md`.
 
 1. **Proveedor LLM real**, seleccionable por variable de entorno y con el mock como
    respaldo cuando no hay API key. La interfaz `AiProvider` ya lo permite.
-2. **Esquemas de validación compartidos** entre frontend y backend en un paquete común,
-   para tener una sola fuente de reglas.
+2. **Una sola fuente de reglas para frontend y backend:** generar los tipos del frontend
+   a partir del documento OpenAPI (`/api/docs-json`), que ya sale de los esquemas Zod del
+   backend, o moverlos a un paquete común.
 
 Otras: historial de conversaciones por agente, pruebas del
 frontend, ejecución con Docker Compose y, a más largo plazo, un editor visual de flujos

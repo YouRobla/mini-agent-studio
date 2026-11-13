@@ -825,3 +825,105 @@ de cada cambio con mis palabras)_
   decisión final y su motivo.
 - **Revisión:** build y lint en verde; capturas con el backend apagado en Agentes y
   Consultar, en claro, oscuro y móvil, y con el backend en marcha (selector sin cambios).
+
+---
+
+## 2026-11-13 · Etapa 29 — Swagger: documentación interactiva de la API
+
+- **Pedido mío:** documentar los endpoints para poder probarlos (§3.C: «Documenta los
+  endpoints») y ordenar el backend entendiendo por qué está estructurado así. Pedí a la
+  IA un análisis crítico, como si fuera un backend senior que me va a entrevistar.
+- **Análisis (IA):** el backend ya cumple el PDF y sigue la organización por
+  funcionalidad de NestJS (`agents/`, `ai/`, `common/`) con capas dentro: controlador →
+  servicio → repositorio / proveedor de IA. No es MVC clásico (no hay vistas: la vista es
+  el frontend), sino una arquitectura en capas por módulo. Faltaban Swagger, la prueba
+  e2e del flujo principal y cuatro retoques de orden (etapas siguientes).
+- **Decisión mía:** aprobar `@nestjs/swagger` 12.1.1 con Zod como única fuente de los
+  esquemas.
+- **Descartado:** `nestjs-zod` (solo declara soporte hasta Nest 11) y migrar a
+  `class-validator` (reescribir una validación que ya funciona y está probada).
+- **Corrección a la IA:** propuso convertir los esquemas con `z.toJSONSchema` a mano. Le
+  pedí verificarlo con documentación actual. Leyó el código de `@nestjs/swagger` 12 y
+  comprobó que lee el esquema de `@Body({ schema })` y `@Query({ schema })` por sí solo
+  (Standard Schema: Zod 4.6 expone `~standard.jsonSchema` y Swagger lo pide con el
+  destino `openapi-3.0`). No hizo falta conversión manual.
+- **Cambios (IA):**
+  - `swagger.setup.ts`: Swagger UI en `/api/docs` y OpenAPI en `/api/docs-json`.
+  - `agents.schemas.ts`: `.meta()` con descripción, ejemplo y nombre de cada esquema;
+    esquemas de respuesta (`Agent`, `PaginatedAgents`, `RunResult`) atados a los tipos
+    con `satisfies`, para que el compilador avise si dejan de coincidir.
+  - `common/error-response.schema.ts`: el formato de error pasa a ser un esquema; el
+    filtro global usa su tipo y Swagger lo publica.
+  - `agents.docs.ts` y `common/api-error-responses.ts`: decoradores con nombre para los
+    errores (400, 404, 500, 502), así el controlador sigue siendo legible.
+  - `agents.controller.ts`: resumen, respuestas y errores de cada ruta.
+- **Revisión:** `npm audit` con 0 vulnerabilidades tras instalar; lint y build en verde;
+  9 pruebas unitarias y 7 e2e (una nueva comprueba que `/api/docs-json` lista las tres
+  rutas y que el límite del nombre sale del esquema Zod). Con el servidor compilado:
+  `/api/docs` responde 200 y el documento contiene las 6 operaciones con sus parámetros,
+  cuerpos, respuestas y ejemplos de error.
+- **Pendiente de aprobar:** etapa B (orden) y etapa C (prueba e2e del flujo principal).
+
+---
+
+## 2026-11-13 · Etapa 30 — Búsqueda con tildes y prueba del flujo principal
+
+- **Pregunta mía:** «¿Estás seguro de que no hay nada más que mejorar?». La IA había
+  revisado el código leyéndolo; esta vez probó casos límite contra el servidor en marcha.
+- **Fallo encontrado (IA, reproducido en una base en memoria):** buscar «INGLÉS» no
+  encontraba «inglés», y al ordenar por nombre «Ángel» quedaba después de la Z. `LOWER()`
+  y `NOCASE` de SQLite solo convierten letras sin tilde.
+- **Arreglo (IA, aprobado por mí):** función `normalize_text` registrada en SQLite desde
+  el repositorio (minúsculas y sin tildes). La búsqueda y el orden por nombre la usan, así
+  que «ingles», «INGLÉS» e «inglés» encuentran lo mismo. Descartado: una columna extra con
+  el texto normalizado (obligaba a migrar la tabla existente).
+- **Casos límite comprobados que ya estaban bien:** JSON roto (400), sin cuerpo o texto
+  plano (400 con detalle), cuerpo de 200 KB (413), ruta o método inexistente (404). Todos
+  con el formato único de error.
+- **Pruebas nuevas (IA):** e2e del flujo del §8 (crear → consultar → respuesta del mock
+  con el nombre, las instrucciones y la consulta), 400 al crear con datos inválidos, 400
+  y 404 en `/run`, y 502 con un proveedor de IA que falla (`overrideProvider`),
+  comprobando que el servidor sigue respondiendo. Unitaria de búsqueda y orden con tildes.
+- **Revisión:** lint y build en verde; 10 pruebas unitarias y 12 e2e.
+- **Pendiente de aprobar:** reorganización de carpetas del backend (etapa B ampliada).
+
+---
+
+## 2026-11-13 · Etapa 31 — Backend reorganizado y Swagger más práctico
+
+- **Pedido mío:** ordenar el backend con una arquitectura sólida, revisar si las
+  respuestas están estandarizadas y si frontend y backend usan los mismos esquemas, y
+  mejorar la presentación de Swagger. Pregunté si convenía el MVC por carpetas de tipo
+  que usé con Express en `Sistema-de-Notas-Backend`.
+- **Análisis (IA):**
+  - Comparó ese proyecto con este: son las mismas piezas (rutas, controlador, modelo,
+    esquemas, manejador de errores). Aquí hay tres mejoras sobre aquel: carpetas por
+    funcionalidad en vez de por tipo, un filtro global en lugar de `try/catch` en cada
+    método, y una capa de servicio que saca las decisiones de negocio del controlador.
+    **Decisión:** mantener la organización de NestJS, no volver a carpetas por tipo.
+  - Respuestas: ya tienen tres formas fijas (recurso directo, `{ items, meta }` y el
+    formato único de error). Descartado envolver los éxitos en `{ success, data }`: el
+    código HTTP ya lo indica y obligaba a cambiar el frontend.
+  - Esquemas: frontend y backend tienen las mismas reglas y tipos, copiados a mano. Se
+    mantiene (ya se había descartado el monorepo) y pasa a «Mejoras con más tiempo»:
+    generar los tipos del frontend desde `/api/docs-json`.
+- **Decisión mía:** aplicar la reorganización completa propuesta por la IA.
+- **Cambios (IA):**
+  - `database/` nuevo: `DatabaseModule` abre la conexión, la comparte con el token
+    `DATABASE` y la cierra al parar. `AgentsRepository` hacía tres trabajos (ruta,
+    conexión, consultas) y ahora solo contiene consultas y recibe la conexión inyectada.
+  - Las pruebas dejan de modificar `process.env`: usan `openDatabase(':memory:')` y
+    `overrideProvider(DATABASE)`.
+  - Excepciones junto a su funcionalidad: `agents/agents.exceptions.ts` y
+    `ai/ai.exceptions.ts`. `common/errors/` queda solo con lo genérico.
+  - `run()` reutiliza `findById`; `enableShutdownHooks()` para cerrar la base con Ctrl+C;
+    se quita la cabecera `X-Powered-By`.
+  - Swagger: campos editables sin pulsar «Try it out», duración de cada petición,
+    desplegable de ejemplos por cuerpo (uno válido y los inválidos comunes), portada con
+    los pasos del flujo crear → consultar, y enteros sin límites técnicos.
+- **Error de la IA durante el cambio:** un script de edición falló a mitad y dejó el
+  repositorio sin migrar; las pruebas unitarias lo delataron al momento y se corrigió.
+- **Revisión:** lint y build en verde; 10 pruebas unitarias y 12 e2e, sin cambios en la
+  API. En el servidor en marcha: `/api/docs-json` con los ejemplos en las tres rutas con
+  cuerpo, sin `X-Powered-By`, y los agentes guardados siguen ahí.
+- **Sin verificar:** el cierre de la base al pulsar Ctrl+C no se probó a mano.
