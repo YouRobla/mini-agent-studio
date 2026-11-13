@@ -5,6 +5,6 @@ const shortDateFormatter = new Intl.DateTimeFormat("es", {
 });
 
 /** Fecha corta en español, por ejemplo «12 nov 2026». */
-export function formatAgentDate(isoDate: string): string {
+export function formatShortDate(isoDate: string): string {
   return shortDateFormatter.format(new Date(isoDate));
 }

@@ -1,4 +1,4 @@
-import type { useQueryForm } from "../../hooks/useQueryForm.ts";
+import type { useQueryForm } from "../../hooks/consultation/useQueryForm.ts";
 
 interface QueryFormProps {
   form: ReturnType<typeof useQueryForm>;

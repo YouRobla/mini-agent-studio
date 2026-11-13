@@ -2,7 +2,7 @@ import type { Agent } from "../../types/agent.ts";
 import { AgentAvatar } from "./AgentAvatar.tsx";
 import { AgentQuickActions } from "./AgentQuickActions.tsx";
 import { ConsultAgentLink } from "./ConsultAgentLink.tsx";
-import { formatAgentDate } from "./formatAgentDate.ts";
+import { formatShortDate } from "../../utils/formatDate.ts";
 
 interface AgentCardProps {
   agent: Agent;
@@ -22,7 +22,7 @@ export function AgentCard({ agent, onEdit, onDelete }: AgentCardProps) {
               {agent.name}
             </h3>
             <p className="text-xs text-base-content/60">
-              {formatAgentDate(agent.createdAt)}
+              {formatShortDate(agent.createdAt)}
             </p>
           </div>
           <AgentQuickActions

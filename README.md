@@ -92,17 +92,19 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 │   └── data/                        Archivo de la base de datos (no se sube a Git)
 ├── frontend/                        Interfaz (React)
 │   └── src/
-│       ├── App.tsx                  Composición de proveedores y rutas
-│       ├── app/                     AppProviders y AppRoutes (React Router)
-│       ├── pages/                   AgentsPage, ConsultPage, NotFoundPage
-│       ├── components/layout/       Panel: menú lateral, barra superior, botón de tema
-│       ├── components/agents/       Formulario crear/editar, confirmar borrado, acciones rápidas, listado, tarjeta, fila
-│       ├── components/consultation/ Selector, ficha del agente, chat y formulario
-│       ├── components/ui/           Piezas compartidas: encabezado, paginación, iconos, ConfirmDialog y toast/
+│       ├── main.tsx                 Monta la caché de datos y el router
+│       ├── app/                     Rutas (createBrowserRouter), ruta raíz y caché
+│       ├── pages/                   AgentsPage, ConsultPage, NotFoundPage, ErrorPage
+│       ├── components/layout/       Panel: menú lateral, barra superior, logo y tema
+│       ├── components/agents/       Listado, tarjeta, fila, formulario, borrado, acciones
+│       ├── components/consultation/ Contexto del agente, selector, chat y consulta
+│       ├── components/ui/           Toasts, diálogo, paginación, iconos, encabezado
+│       ├── hooks/agents/            Consultas, mutaciones, formulario y estado en la URL
+│       ├── hooks/consultation/      Formulario de la consulta
 │       ├── api/                     Cliente HTTP: único lugar que conoce el backend
-│       ├── hooks/                   TanStack Query y lógica de formularios
-│       ├── types/                   Tipos de dominio Agent y RunResult
 │       ├── schemas/                 Validación de formularios (Zod)
+│       ├── types/                   Tipos del dominio
+│       ├── utils/                   Formato de fechas
 │       └── index.css                Tailwind, daisyUI y los temas studio-light / studio-dark
 ├── AI_USAGE.md                      Uso de IA durante el desarrollo
 └── BITACORA.md                      Registro del proceso y de las decisiones

@@ -2,7 +2,7 @@ import { useParams } from "react-router";
 import { AgentPanel } from "../components/consultation/AgentPanel.tsx";
 import { QueryPanel } from "../components/consultation/QueryPanel.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
-import { useAgent, useAgentOptions } from "../hooks/useAgents.ts";
+import { useAgent, useAgentOptions } from "../hooks/agents/useAgentQueries.ts";
 
 /**
  * Vista Consultar: arriba el contexto del agente (selector, instrucciones y

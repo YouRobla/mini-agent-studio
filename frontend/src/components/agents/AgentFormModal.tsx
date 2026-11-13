@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { Agent } from "../../types/agent.ts";
-import { useAgentForm } from "../../hooks/useAgentForm.ts";
+import { useAgentForm } from "../../hooks/agents/useAgentForm.ts";
 import { AgentForm } from "./AgentForm.tsx";
 
 interface AgentFormModalProps {

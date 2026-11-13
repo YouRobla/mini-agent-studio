@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { errorMessage } from "../../api/client.ts";
-import { DEFAULT_AGENTS_LIMIT, useAgents } from "../../hooks/useAgents.ts";
+import { useAgents } from "../../hooks/agents/useAgentQueries.ts";
+import { useAgentsListParams } from "../../hooks/agents/useAgentsListParams.ts";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue.ts";
-import type { Agent, AgentSort } from "../../types/agent.ts";
+import type { Agent } from "../../types/agent.ts";
 import { useToast } from "../ui/toast/useToast.ts";
 import { Pagination } from "../ui/Pagination.tsx";
 import { AgentCard } from "./AgentCard.tsx";
@@ -13,64 +14,35 @@ import { AgentsSkeleton } from "./AgentsSkeleton.tsx";
 import { DeleteAgentDialog } from "./DeleteAgentDialog.tsx";
 import { AgentsToolbar, type AgentView } from "./AgentsToolbar.tsx";
 
-interface AgentListProps {
-  page: number;
-  sort: AgentSort;
-  searchInput: string;
-  onPageChange: (page: number) => void;
-  onSortChange: (sort: AgentSort) => void;
-  onSearchChange: (value: string) => void;
-  onClearFilters: () => void;
-  onRequestCreate: () => void;
-}
-
 /**
- * Listado de agentes guardados. Pide los datos y decide qué estado mostrar
- * (carga, error, vacío o resultados); el detalle visual está en los
- * componentes hijos.
+ * Listado de agentes guardados. Lee página, orden y búsqueda de la URL, pide
+ * los datos y decide qué estado mostrar (carga, error, vacío o resultados).
+ * También abre los modales de editar y eliminar. El detalle visual está en
+ * los componentes hijos.
  */
 export function AgentList({
-  page,
-  sort,
-  searchInput,
-  onPageChange,
-  onSortChange,
-  onSearchChange,
-  onClearFilters,
   onRequestCreate,
-}: AgentListProps) {
+}: {
+  onRequestCreate: () => void;
+}) {
+  const { page, sort, search, setPage, setSort, setSearch } =
+    useAgentsListParams();
   const [view, setView] = useState<AgentView>("grid");
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
   const [deletingAgent, setDeletingAgent] = useState<Agent | null>(null);
   const toast = useToast();
-  const debouncedSearch = useDebouncedValue(searchInput, 250);
+  // El buscador escribe en la URL al instante; la petición espera 250 ms.
+  const debouncedSearch = useDebouncedValue(search, 250);
 
-  const agents = useAgents({
-    page,
-    limit: DEFAULT_AGENTS_LIMIT,
-    search: debouncedSearch,
-    sort,
-  });
+  const agents = useAgents({ page, sort, search: debouncedSearch });
 
-  // Si la página pedida ya no existe (por ejemplo, tras filtrar), ir a la última.
+  // Si la página pedida ya no existe (por ejemplo, tras eliminar el último
+  // agente de la última página), ir a la última que sí existe.
+  const totalPages = agents.data?.meta.totalPages ?? 0;
+  const isFresh = agents.isSuccess && !agents.isPlaceholderData;
   useEffect(() => {
-    const meta = agents.data?.meta;
-    if (
-      agents.isSuccess &&
-      !agents.isPlaceholderData &&
-      meta &&
-      meta.totalPages > 0 &&
-      page > meta.totalPages
-    ) {
-      onPageChange(meta.totalPages);
-    }
-  }, [
-    agents.isSuccess,
-    agents.isPlaceholderData,
-    agents.data,
-    page,
-    onPageChange,
-  ]);
+    if (isFresh && totalPages > 0 && page > totalPages) setPage(totalPages);
+  }, [isFresh, totalPages, page, setPage]);
 
   const meta = agents.data?.meta;
   const items = agents.data?.items ?? [];
@@ -104,10 +76,10 @@ export function AgentList({
             </div>
 
             <AgentsToolbar
-              searchInput={searchInput}
-              onSearchChange={onSearchChange}
+              searchInput={search}
+              onSearchChange={setSearch}
               sort={sort}
-              onSortChange={onSortChange}
+              onSortChange={setSort}
               view={view}
               onViewChange={setView}
             />
@@ -137,7 +109,7 @@ export function AgentList({
               variant={meta.totalAll === 0 ? "empty" : "no-results"}
               search={debouncedSearch}
               onCreate={onRequestCreate}
-              onClearFilters={onClearFilters}
+              onClearFilters={() => setSearch("")}
             />
           )}
 
@@ -179,8 +151,7 @@ export function AgentList({
             <Pagination
               meta={meta}
               isUpdating={agents.isFetching && agents.isPlaceholderData}
-              onPageChange={onPageChange}
-              onPrefetch={agents.prefetchPage}
+              onPageChange={setPage}
             />
           )}
         </div>

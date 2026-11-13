@@ -1,5 +1,5 @@
 import { errorMessage } from "../../api/client.ts";
-import type { useAgentForm } from "../../hooks/useAgentForm.ts";
+import type { useAgentForm } from "../../hooks/agents/useAgentForm.ts";
 
 type AgentFormMode = "create" | "edit";
 

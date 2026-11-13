@@ -4,7 +4,6 @@ interface PaginationProps {
   meta: PaginationMeta;
   isUpdating?: boolean;
   onPageChange: (page: number) => void;
-  onPrefetch?: (page: number) => void;
 }
 
 type PageItem = number | "ellipsis-left" | "ellipsis-right";
@@ -33,7 +32,6 @@ export function Pagination({
   meta,
   isUpdating = false,
   onPageChange,
-  onPrefetch,
 }: PaginationProps) {
   if (meta.total === 0) return null;
 
@@ -71,10 +69,6 @@ export function Pagination({
               className="join-item btn btn-sm"
               disabled={!meta.hasPrevPage}
               onClick={() => onPageChange(meta.page - 1)}
-              onMouseEnter={() =>
-                meta.hasPrevPage && onPrefetch?.(meta.page - 1)
-              }
-              onFocus={() => meta.hasPrevPage && onPrefetch?.(meta.page - 1)}
               aria-label="Página anterior"
             >
               «
@@ -89,8 +83,6 @@ export function Pagination({
                     item === meta.page ? "btn-active" : ""
                   }`}
                   onClick={() => onPageChange(item)}
-                  onMouseEnter={() => item !== meta.page && onPrefetch?.(item)}
-                  onFocus={() => item !== meta.page && onPrefetch?.(item)}
                   aria-current={item === meta.page ? "page" : undefined}
                   aria-label={`Página ${item}`}
                 >
@@ -112,10 +104,6 @@ export function Pagination({
               className="join-item btn btn-sm"
               disabled={!meta.hasNextPage}
               onClick={() => onPageChange(meta.page + 1)}
-              onMouseEnter={() =>
-                meta.hasNextPage && onPrefetch?.(meta.page + 1)
-              }
-              onFocus={() => meta.hasNextPage && onPrefetch?.(meta.page + 1)}
               aria-label="Página siguiente"
             >
               »

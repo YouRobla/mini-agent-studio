@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ApiError, errorMessage } from "../../api/client.ts";
-import type { useAgent, useAgentOptions } from "../../hooks/useAgents.ts";
+import type {
+  useAgent,
+  useAgentOptions,
+} from "../../hooks/agents/useAgentQueries.ts";
 import { AgentFormModal } from "../agents/AgentFormModal.tsx";
 import { DeleteAgentDialog } from "../agents/DeleteAgentDialog.tsx";
 import { EditIcon, TrashIcon } from "../ui/icons.tsx";

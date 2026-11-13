@@ -1,5 +1,5 @@
 import type { Agent } from "../../types/agent.ts";
-import { formatAgentDate } from "../agents/formatAgentDate.ts";
+import { formatShortDate } from "../../utils/formatDate.ts";
 
 /**
  * Contexto del agente elegido: sus instrucciones (lo que un modelo real
@@ -16,7 +16,7 @@ export function AgentDetails({ agent }: { agent: Agent }) {
         Instrucciones
         <span className="ml-2 font-normal text-base-content/60">
           {agent.instructions.length} caracteres · Creado el{" "}
-          {formatAgentDate(agent.createdAt)}
+          {formatShortDate(agent.createdAt)}
         </span>
       </summary>
       <div className="collapse-content">

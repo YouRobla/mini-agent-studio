@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { errorMessage } from "../../api/client.ts";
-import type { useAgentOptions } from "../../hooks/useAgents.ts";
+import type { useAgentOptions } from "../../hooks/agents/useAgentQueries.ts";
 import { AgentsSkeleton } from "../agents/AgentsSkeleton.tsx";
 
 interface AgentSelectorProps {

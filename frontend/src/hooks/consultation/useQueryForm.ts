@@ -1,11 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { ApiError } from "../api/client.ts";
-import { useRunAgent } from "./useAgents.ts";
+import { ApiError } from "../../api/client.ts";
+import { useRunAgent } from "../agents/useAgentMutations.ts";
 import {
   runAgentSchema,
   type RunAgentInput,
-} from "../schemas/agent.schemas.ts";
+} from "../../schemas/agent.schemas.ts";
 
 /** Formulario de la consulta: valida, envía al backend y gestiona sus errores. */
 export function useQueryForm(agentId: string) {

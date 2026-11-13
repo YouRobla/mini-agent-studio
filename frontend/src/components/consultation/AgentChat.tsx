@@ -1,5 +1,5 @@
 import { errorMessage } from "../../api/client.ts";
-import { useQueryForm } from "../../hooks/useQueryForm.ts";
+import { useQueryForm } from "../../hooks/consultation/useQueryForm.ts";
 import { AgentAvatar } from "../agents/AgentAvatar.tsx";
 import type { Agent } from "../../types/agent.ts";
 import { CHAT_HEIGHT } from "./chatLayout.ts";

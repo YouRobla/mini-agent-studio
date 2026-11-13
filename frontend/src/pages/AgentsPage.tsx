@@ -1,80 +1,18 @@
-import { useCallback, useState } from "react";
-import { useSearchParams } from "react-router";
-import { AgentList } from "../components/agents/AgentList.tsx";
+import { useState } from "react";
 import { AgentFormModal } from "../components/agents/AgentFormModal.tsx";
+import { AgentList } from "../components/agents/AgentList.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { useToast } from "../components/ui/toast/useToast.ts";
-import type { AgentSort } from "../types/agent.ts";
-
-function parsePage(raw: string | null): number {
-  const parsed = Number(raw);
-  return Number.isInteger(parsed) && parsed >= 1 ? parsed : 1;
-}
-
-function parseSort(raw: string | null): AgentSort {
-  if (raw === "oldest" || raw === "name") return raw;
-  return "recent";
-}
+import { useAgentsListParams } from "../hooks/agents/useAgentsListParams.ts";
 
 /**
- * Vista Agentes: crear y listar. Página, orden y búsqueda viven en la URL
- * (`?page=&sort=&search=`) para poder recargar o compartir el estado.
+ * Vista Agentes: encabezado, listado y modal para crear. El estado del listado
+ * (página, orden y búsqueda) lo gestiona `useAgentsListParams` en la URL.
  */
 export function AgentsPage() {
   const [creating, setCreating] = useState(false);
+  const { resetFilters } = useAgentsListParams();
   const toast = useToast();
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const page = parsePage(searchParams.get("page"));
-  const sort = parseSort(searchParams.get("sort"));
-  const searchInput = searchParams.get("search") ?? "";
-
-  const updateParams = useCallback(
-    (next: { page?: number; sort?: AgentSort; search?: string }) => {
-      setSearchParams(
-        (prev) => {
-          const updated = new URLSearchParams(prev);
-
-          if (next.page !== undefined) {
-            if (next.page <= 1) updated.delete("page");
-            else updated.set("page", String(next.page));
-          }
-          if (next.sort !== undefined) {
-            if (next.sort === "recent") updated.delete("sort");
-            else updated.set("sort", next.sort);
-          }
-          if (next.search !== undefined) {
-            if (next.search.length === 0) updated.delete("search");
-            else updated.set("search", next.search);
-          }
-
-          return updated;
-        },
-        { replace: true },
-      );
-    },
-    [setSearchParams],
-  );
-
-  const handlePageChange = useCallback(
-    (nextPage: number) => updateParams({ page: nextPage }),
-    [updateParams],
-  );
-
-  const handleSortChange = useCallback(
-    (nextSort: AgentSort) => updateParams({ sort: nextSort, page: 1 }),
-    [updateParams],
-  );
-
-  const handleSearchChange = useCallback(
-    (nextSearch: string) => updateParams({ search: nextSearch, page: 1 }),
-    [updateParams],
-  );
-
-  const handleClearFilters = useCallback(
-    () => updateParams({ search: "", page: 1 }),
-    [updateParams],
-  );
 
   return (
     <div className="space-y-3.5">
@@ -93,16 +31,7 @@ export function AgentsPage() {
         </button>
       </div>
 
-      <AgentList
-        page={page}
-        sort={sort}
-        searchInput={searchInput}
-        onPageChange={handlePageChange}
-        onSortChange={handleSortChange}
-        onSearchChange={handleSearchChange}
-        onClearFilters={handleClearFilters}
-        onRequestCreate={() => setCreating(true)}
-      />
+      <AgentList onRequestCreate={() => setCreating(true)} />
 
       {creating && (
         <AgentFormModal
@@ -112,7 +41,8 @@ export function AgentsPage() {
               label: "Probar agente",
               to: `/consultar/${encodeURIComponent(agent.id)}`,
             });
-            updateParams({ page: 1, sort: "recent", search: "" });
+            // El agente nuevo es el más reciente: volver a la primera página sin filtros.
+            resetFilters();
           }}
         />
       )}

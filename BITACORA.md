@@ -525,3 +525,34 @@ de cada cambio con mis palabras)_
 - **Decisión mía sobre el lápiz:** al pasar el ratón, el icono de editar queda en blanco
   sobre el amarillo. La IA avisó de que ese par da 1.78:1 (un icono necesita 3:1) y
   decidí mantenerlo así por estética.
+
+---
+
+## 2026-11-12 · Etapa 19 — Arquitectura del frontend reorganizada
+
+- **Motivo (mío):** al revisar `AgentsPage` vi `useCallback` en todas las funciones y me
+  pareció de más para este proyecto. Pedí reorganizar el frontend de forma práctica:
+  funciones, hooks, API y enrutado ordenados, tomando como referencia solo la estructura
+  de mi proyecto anterior y la documentación de React Router.
+- **Análisis previo (IA):** `useCallback` no aportaba casi nada: ningún hijo usa
+  `React.memo` y, en React Router 8.5.1, `setSearchParams` cambia de identidad con cada
+  cambio de URL (comprobado en su código), así que las funciones se recreaban igualmente.
+- **Cambios:**
+  - Enrutado con `createBrowserRouter` y objetos de ruta (modo de datos), `RouterProvider`
+    de `react-router/dom`, ruta raíz `RootLayout` y `ErrorPage` como `ErrorBoundary`
+    (dentro del panel gracias a una ruta sin `path`). Se eliminan `App.tsx`,
+    `AppProviders.tsx` y `AppRoutes.tsx`.
+  - Hooks agrupados por dominio: `hooks/agents/` (`agentKeys`, `useAgentQueries`,
+    `useAgentMutations`, `useAgentForm`, `useAgentsListParams`) y `hooks/consultation/`.
+  - `useAgentsListParams` guarda página, orden y búsqueda en la URL; `AgentList` y
+    `AgentsPage` lo usan directamente, sin pasar siete props de uno a otro.
+  - Fuera los `useCallback` de la página y el prefetch de la página siguiente (no
+    aportaba nada con 6 agentes por página y un backend local). Solo `ToastProvider`
+    conserva `useCallback`, porque el temporizador de cada aviso depende de él.
+  - `utils/formatDate.ts` para la fecha, que usaban dos dominios.
+  - El paquete pasa a 509 KB (156 KB comprimido) por el router de datos; se sube el
+    umbral del aviso de Vite a 600 KB con un comentario en lugar de dividirlo.
+- **Revisión:** build y lint en verde; sin archivos ni exportaciones sin uso; en una
+  instancia aislada: paginación, orden y búsqueda en la URL (se conservan al recargar),
+  página fuera de rango corregida, 404 dentro del panel, enlace directo a Consultar, y el
+  recorrido completo de crear, editar, eliminar, consultar y errores; consola sin errores.

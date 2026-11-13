@@ -1,12 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import type { Agent } from "../types/agent.ts";
-import { ApiError } from "../api/client.ts";
-import { useCreateAgent, useUpdateAgent } from "./useAgents.ts";
+import type { Agent } from "../../types/agent.ts";
+import { ApiError } from "../../api/client.ts";
+import { useCreateAgent, useUpdateAgent } from "./useAgentMutations.ts";
 import {
   createAgentSchema,
   type CreateAgentInput,
-} from "../schemas/agent.schemas.ts";
+} from "../../schemas/agent.schemas.ts";
 
 /**
  * Formulario único para crear y editar. Con `agent` entra en modo editar y

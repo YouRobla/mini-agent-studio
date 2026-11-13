@@ -4,30 +4,52 @@ React + TypeScript, React Router, TanStack Query, React Hook Form, Zod y daisyUI
 
 ## Organización
 
-El código se separa por responsabilidades, agrupado por dominio
-(agentes y consulta) y adaptado a las dos pantallas de la aplicación:
+Organización por capas, y dentro de cada capa por dominio (agentes y consulta):
 
-- `main.tsx`: montaje de React.
-- `app/AppProviders.tsx`: proveedor de TanStack Query y BrowserRouter.
-- `App.tsx`: composición de la aplicación; `app/AppRoutes.tsx`: rutas anidadas con layout y 404.
-- `pages/`: composición de pantallas y navegación.
-- `components/agents/`: formulario de crear/editar, confirmación de borrado, acciones rápidas (editar y eliminar) y listado (tarjeta, fila, barra de herramientas, estados vacíos).
-- `components/consultation/`: selección, formulario y resultado de consultas.
-- `components/layout/`: navegación y estructura de la aplicación.
-- `components/ui/`: elementos compartidos, independientes del dominio (`ConfirmDialog`, `toast/`).
-- `hooks/`: peticiones/cache y lógica de formularios, incluyendo validación y errores de campos.
-- `api/`: transporte HTTP y endpoints.
-- `schemas/`: validación de entradas; `types/`: contratos del dominio.
-- `components/layout/ThemeToggle.tsx`: control nativo de daisyUI con persistencia local.
+```
+src/
+├── main.tsx                 Monta la caché de TanStack Query y el RouterProvider
+├── app/
+│   ├── router.tsx           Rutas con createBrowserRouter (objetos de ruta)
+│   ├── RootLayout.tsx       Ruta raíz: avisos (toasts) y panel con <Outlet />
+│   └── queryClient.ts       Caché compartida de TanStack Query
+├── pages/                   Un componente por ruta: Agents, Consult, NotFound, Error
+├── components/
+│   ├── layout/              Panel: menú lateral, barra superior, logo y tema
+│   ├── agents/              Listado, tarjeta, fila, formulario, borrado, acciones
+│   ├── consultation/        Contexto del agente, selector, chat y consulta
+│   └── ui/                  Piezas sin dominio: toasts, diálogo, paginación, iconos
+├── hooks/
+│   ├── agents/              agentKeys (claves de caché), useAgentQueries,
+│   │                        useAgentMutations, useAgentForm, useAgentsListParams
+│   ├── consultation/        useQueryForm
+│   └── useDebouncedValue.ts
+├── api/                     client.ts (fetch y ApiError) y agents.ts (endpoints)
+├── schemas/                 Validación con Zod (mismas reglas que el backend)
+├── types/                   Tipos del dominio
+└── utils/                   formatDate
+```
 
-Las páginas componen componentes y conectan la navegación. Los hooks gestionan
-formularios y datos; la API no depende de componentes. Los componentes compartidos
-no conocen los endpoints. El estado remoto permanece en TanStack Query.
+Dependencias en un solo sentido: `pages` → `components` → `hooks` → `api`.
+Las páginas componen; los componentes pintan y llaman a hooks; los hooks gestionan
+datos (TanStack Query), formularios y la URL; `api/` es el único sitio que conoce el
+backend. `components/ui/` no conoce endpoints ni el dominio.
 
-Para agregar una función, extiende primero la API y su hook cuando sea necesario,
-crea su componente dentro del grupo correspondiente y compón la página. Extrae
-elementos a `ui/` cuando tengan una responsabilidad independiente o se reutilicen.
-No se necesitan stores, buses de eventos ni una capa adicional de servicios.
+**Enrutado.** `app/router.tsx` usa el modo de datos de React Router: un array de
+objetos de ruta con `Component` y `ErrorBoundary`. La ruta raíz pinta el panel; una
+ruta sin `path` agrupa las páginas para que un error inesperado se muestre con
+`ErrorPage` dentro del panel, sin perder el menú. Las rutas son `/` (Agentes),
+`/consultar/:agentId?` (Consultar, con el agente en la URL) y `*` (404).
+
+**Estado.** El estado del servidor vive en TanStack Query. La página, el orden y la
+búsqueda del listado viven en la URL con `useAgentsListParams`: cualquier componente
+lo lee sin pasar props, y la vista se puede recargar o compartir. El resto es estado
+local de cada componente (modal abierto, vista tarjetas/lista). No hay librería de
+estado global. Solo `ToastProvider` usa `useCallback`/`useMemo`: el temporizador de
+cada aviso depende de la función de cierre, que debe ser estable.
+
+Para añadir una función: endpoint en `api/`, hook en `hooks/<dominio>/`, componente
+en `components/<dominio>/` y composición en la página.
 
 ## Interfaz
 

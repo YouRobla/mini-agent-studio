@@ -2,7 +2,7 @@ import type { Agent } from "../../types/agent.ts";
 import { AgentAvatar } from "./AgentAvatar.tsx";
 import { AgentQuickActions } from "./AgentQuickActions.tsx";
 import { ConsultAgentLink } from "./ConsultAgentLink.tsx";
-import { formatAgentDate } from "./formatAgentDate.ts";
+import { formatShortDate } from "../../utils/formatDate.ts";
 
 interface AgentRowProps {
   agent: Agent;
@@ -30,7 +30,7 @@ export function AgentRow({ agent, onEdit, onDelete }: AgentRowProps) {
         </p>
       </div>
       <span className="hidden shrink-0 text-xs text-base-content/60 sm:inline">
-        {formatAgentDate(agent.createdAt)}
+        {formatShortDate(agent.createdAt)}
       </span>
       <div className="flex shrink-0 items-center gap-1">
         <ConsultAgentLink agent={agent} />
