@@ -148,6 +148,18 @@ principio, con una sola pantalla, y lo incorporé cuando pasé a dos vistas.
   con Vite en otro puerto (5174) y con `127.0.0.1`, ya con el proxy de Vite.
 - **Seguridad de dependencias:** `npm audit` en backend y frontend, con 0 vulnerabilidades.
 - **Instalación limpia:** clonar el repositorio en otra carpeta y seguir el README.
+- **Cómo verifiqué el trabajo de los agentes delegados:**
+  - Cada encargo era cerrado: alcance, restricciones y evidencia obligatoria (build, lint,
+    `npm audit`, rutas en 200, contraste, recorrido en el navegador). Un build o un lint
+    fallido significaba que la tarea no estaba terminada.
+  - Los workers no hacían commits. Claude Code, como coordinador, revisaba el diff contra
+    la arquitectura acordada y repetía las pruebas contra el backend real, porque algunos
+    agentes probaban con la API simulada.
+  - Yo revisaba el resultado en el navegador y devolvía lo que no cumplía. Por ejemplo, el
+    botón «Cerrar» del aviso casi no se leía y se lo devolví a Codex; en la revisión de la
+    etapa 11 salieron el tema oscuro con 7 de 11 pares sin contraste suficiente y un
+    `AgentList` de 432 líneas, y se corrigieron antes de confirmar.
+  - Solo se hacía commit después de mi aprobación.
 - **Lo que revisé leyendo el código**, y pregunté hasta entenderlo:
   - Por qué había `useCallback` en todas las funciones de `AgentsPage`: no hacía falta y
     se quitó.
