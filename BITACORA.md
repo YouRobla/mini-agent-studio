@@ -1000,3 +1000,32 @@ de cada cambio con mis palabras)_
   «El agente no existe». Camino normal (consultar y eliminar) sin cambios. La extensión de
   Chrome registró un `DELETE` correcto como 503; con `curl` por el mismo proxy da 204: era
   un fallo de la herramienta de medida.
+
+---
+
+## 2026-11-13 · Etapa 34 — README ordenado según el §6 de la prueba
+
+- **Pedido mío:** que el README cumpla todo lo que pide la prueba y presentarlo mejor.
+- **Análisis (IA):** el README ya cubría el §6. Faltaba el primer paso de una instalación
+  limpia (`git clone`), y el diagrama y la demostración se podían ver mejor.
+- **Decisión mía:** clonar, diagrama Mermaid, capturas reales y `ai.module.ts` en el árbol.
+  Descartada la línea con el tiempo dedicado.
+- **Cambios (IA):**
+  - Índice al principio que lleva a cada punto del §6, y captura de la vista Consultar.
+  - Instalación en pasos numerados, empezando por `git clone`.
+  - «Demostración del flujo» con tres capturas: listado, datos incorrectos y backend
+    detenido. Las cuatro capturas están en `docs/capturas/` y se tomaron en un entorno
+    aislado (backend y Vite en otros puertos, base temporal).
+  - «Arquitectura» agrupa la estructura, el diagrama de componentes y el flujo de una
+    consulta. El diagrama ASCII pasa a Mermaid, que GitHub dibuja a partir del texto.
+  - Sección «Uso de IA» que enlaza `AI_USAGE.md` y esta bitácora.
+- **Corrección durante el cambio:** la primera versión del diagrama tenía 7 cajas en una
+  fila y en el ancho de GitHub el texto quedaba diminuto. Se redujo el frontend a una caja,
+  porque su detalle ya está en el árbol y en `frontend/README.md`.
+- **Revisión:** el diagrama se dibujó con Mermaid 11 en tema claro y oscuro sin errores; el
+  README se pasó por el renderizador de Markdown de GitHub (imágenes y tabla del paso 7
+  correctas).
+- **Hallazgo:** la barra lateral de GitHub sigue mostrando a `claude` como contribuidor,
+  aunque `main` ya no tiene ninguna línea `Co-Authored-By` y la API de contribuidores solo
+  devuelve a YouRobla. GitHub guardó esa lista del primer push, y los commits antiguos
+  siguen accesibles por su hash. Pendiente de decidir cómo quitarlo.
