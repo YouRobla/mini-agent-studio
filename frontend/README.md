@@ -270,8 +270,9 @@ backend está apagado), se trata como «sin conexión»:
   gestiona el foco y Escape, y al cerrar devuelve el foco al botón que lo abrió. Se monta
   al abrirse, así que cada apertura empieza limpia. Mientras guarda no se puede cerrar.
 - **Errores**: los de un formulario o diálogo se quedan dentro (junto al campo si el
-  servidor lo indica) y conservan lo escrito. Los de carga muestran `ErrorAlert` con
-  «Reintentar».
+  servidor lo indica) y conservan lo escrito. Los de carga muestran `ErrorAlert`: icono,
+  título («No se pudieron cargar los agentes»), explicación y «Reintentar», con el mismo
+  marco discontinuo que los estados vacíos.
 - **Avisos** (`ui/toast.tsx`, con Sonner): solo de éxito, abajo a la derecha, con el
   `alert` de daisyUI. Se cierran a los 4 s, la cuenta se pausa con el ratón encima y hay
   como máximo 3 a la vez. El de crear incluye el enlace «Probar agente».

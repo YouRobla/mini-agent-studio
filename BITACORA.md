@@ -808,3 +808,20 @@ de cada cambio con mis palabras)_
   «Probar agente» → consultar → respuesta) en `localhost:5173`, `localhost:5174` y
   `127.0.0.1`, sin peticiones `OPTIONS` y sin errores en consola. Con el backend apagado,
   el mensaje de conexión y «Reintentar».
+
+---
+
+## 2026-11-13 · Etapa 28 — Errores de carga más claros y visuales
+
+- **Pedido mío:** el error de carga era un bloque rojo con texto; quería algo más visual.
+  En Consultar, además, quedaba encajonado en el ancho del selector.
+- **Cambio (IA):** `ErrorAlert` pasa a icono en círculo, título que dice qué falló
+  (`title`, obligatorio: «No se pudieron cargar los agentes», «No se pudo cargar el
+  agente»), explicación y «Reintentar» con icono. Usa el marco discontinuo de los estados
+  vacíos y el color `error` solo en el icono y el borde. En Consultar, el ancho máximo
+  pasa del contenedor al `<select>`, así el error ocupa la tarjeta y el selector se ve
+  igual que antes.
+- **`AI_USAGE.md`:** decía que el proxy de Vite se había descartado; se corrige con la
+  decisión final y su motivo.
+- **Revisión:** build y lint en verde; capturas con el backend apagado en Agentes y
+  Consultar, en claro, oscuro y móvil, y con el backend en marcha (selector sin cambios).

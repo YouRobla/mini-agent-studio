@@ -65,7 +65,7 @@ decisiones de diseño las tomé yo, y en varias corregí lo que la IA proponía:
 | --- | --- | --- |
 | Validación en el backend | `class-validator`, porque "Zod no es lo natural en Nest" | Señalé que NestJS reciente soporta Zod de forma nativa. Se verificó (NestJS 12, `StandardSchemaValidationPipe`) y se cambió a Zod |
 | Peticiones en el frontend | `fetch` + `useState`, descartando TanStack Query | Usar TanStack Query, React Hook Form y Zod: tengo experiencia con ellas y cubren carga y errores |
-| Conexión frontend-backend | Proxy de Vite | Lo descarté por innecesario: CORS en el backend y una variable `VITE_API_URL` |
+| Conexión frontend-backend | Proxy de Vite | Al principio lo descarté (CORS en el backend y `VITE_API_URL`). Al final volví a él: con el puerto 5173 ocupado, Vite pasaba al 5174 y CORS bloqueaba la app (ver la etapa 27 de la bitácora) |
 | Persistencia | Archivo JSON | Pregunté por SQLite; se comprobó que Node lo trae integrado y se cambió |
 | ORM | — | Lo propuse yo por seguridad; tras analizarlo, lo descarté: las consultas parametrizadas evitan la inyección SQL y es una sola tabla |
 | Interfaz | CSS simple | Elegí daisyUI para tener un estándar visual mínimo |
