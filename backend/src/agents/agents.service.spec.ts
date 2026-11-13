@@ -130,4 +130,45 @@ describe('AgentsService (paginación, búsqueda y orden)', () => {
     expect(service.findById(created.id)).toEqual(created);
     expect(() => service.findById('no-existe')).toThrow(AgentNotFoundException);
   });
+
+  it('update reemplaza nombre e instrucciones y conserva id y createdAt', () => {
+    const created = service.create({ name: 'Viejo', instructions: 'Antes' });
+
+    const updated = service.update(created.id, {
+      name: 'Nuevo',
+      instructions: 'Después',
+    });
+
+    expect(updated).toEqual({
+      id: created.id,
+      name: 'Nuevo',
+      instructions: 'Después',
+      createdAt: created.createdAt,
+    });
+    expect(service.findById(created.id)).toEqual(updated);
+  });
+
+  it('update lanza AgentNotFoundException si el agente no existe', () => {
+    expect(() =>
+      service.update('no-existe', { name: 'X', instructions: 'Y' }),
+    ).toThrow(AgentNotFoundException);
+  });
+
+  it('remove elimina el agente', () => {
+    const created = service.create({
+      name: 'Temporal',
+      instructions: 'Borrar',
+    });
+
+    service.remove(created.id);
+
+    expect(() => service.findById(created.id)).toThrow(AgentNotFoundException);
+    expect(service.findAll(listAgentsQuerySchema.parse({})).meta.totalAll).toBe(
+      0,
+    );
+  });
+
+  it('remove lanza AgentNotFoundException si el agente no existe', () => {
+    expect(() => service.remove('no-existe')).toThrow(AgentNotFoundException);
+  });
 });

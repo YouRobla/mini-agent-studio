@@ -131,6 +131,20 @@ export class AgentsRepository implements OnModuleDestroy {
     return row ? toAgent(row) : undefined;
   }
 
+  /** Reemplaza nombre e instrucciones. Devuelve false si el agente no existe. */
+  update(agent: Agent): boolean {
+    const result = this.db
+      .prepare('UPDATE agents SET name = ?, instructions = ? WHERE id = ?')
+      .run(agent.name, agent.instructions, agent.id);
+    return Number(result.changes) > 0;
+  }
+
+  /** Elimina un agente. Devuelve false si no existía. */
+  delete(id: string): boolean {
+    const result = this.db.prepare('DELETE FROM agents WHERE id = ?').run(id);
+    return Number(result.changes) > 0;
+  }
+
   onModuleDestroy(): void {
     this.db.close();
   }

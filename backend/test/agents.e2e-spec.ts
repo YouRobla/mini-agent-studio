@@ -75,4 +75,87 @@ describe('Agents API (e2e)', () => {
       .expect(400);
     expect(invalidQuery.body.error).toBe('VALIDATION_ERROR');
   });
+
+  describe('PUT y DELETE /api/agents/:id', () => {
+    async function createAgent() {
+      const res = await request(app.getHttpServer())
+        .post('/api/agents')
+        .send({ name: 'Original', instructions: 'Instrucciones originales' })
+        .expect(201);
+      return res.body as {
+        id: string;
+        name: string;
+        instructions: string;
+        createdAt: string;
+      };
+    }
+
+    it('PUT actualiza el agente y conserva id y createdAt', async () => {
+      const created = await createAgent();
+
+      const res = await request(app.getHttpServer())
+        .put(`/api/agents/${created.id}`)
+        .send({ name: '  Editado  ', instructions: 'Instrucciones nuevas' })
+        .expect(200);
+
+      expect(res.body).toEqual({
+        id: created.id,
+        name: 'Editado',
+        instructions: 'Instrucciones nuevas',
+        createdAt: created.createdAt,
+      });
+
+      const detail = await request(app.getHttpServer())
+        .get(`/api/agents/${created.id}`)
+        .expect(200);
+      expect(detail.body).toEqual(res.body);
+    });
+
+    it('PUT con datos inválidos responde 400 con details', async () => {
+      const created = await createAgent();
+
+      const res = await request(app.getHttpServer())
+        .put(`/api/agents/${created.id}`)
+        .send({ name: '   ', instructions: 'Algo' })
+        .expect(400);
+
+      expect(res.body.error).toBe('VALIDATION_ERROR');
+      expect(res.body.details).toEqual([
+        { field: 'name', message: 'El nombre es obligatorio' },
+      ]);
+    });
+
+    it('PUT sobre un id inexistente responde 404', async () => {
+      const res = await request(app.getHttpServer())
+        .put('/api/agents/no-existe')
+        .send({ name: 'X', instructions: 'Y' })
+        .expect(404);
+      expect(res.body.error).toBe('AGENT_NOT_FOUND');
+    });
+
+    it('DELETE responde 204 sin cuerpo y el agente desaparece', async () => {
+      const created = await createAgent();
+      const server = app.getHttpServer();
+
+      const res = await request(server)
+        .delete(`/api/agents/${created.id}`)
+        .expect(204);
+      expect(res.text).toBe('');
+
+      await request(server).get(`/api/agents/${created.id}`).expect(404);
+
+      const list = await request(server)
+        .get('/api/agents?limit=100')
+        .expect(200);
+      const ids = (list.body.items as { id: string }[]).map((a) => a.id);
+      expect(ids).not.toContain(created.id);
+    });
+
+    it('DELETE sobre un id inexistente responde 404', async () => {
+      const res = await request(app.getHttpServer())
+        .delete('/api/agents/no-existe')
+        .expect(404);
+      expect(res.body.error).toBe('AGENT_NOT_FOUND');
+    });
+  });
 });

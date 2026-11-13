@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import type { Agent, PaginatedAgents, RunResult } from './agent.types.js';
@@ -40,6 +42,20 @@ export class AgentsController {
   @Get(':id')
   findOne(@Param('id') id: string): Agent {
     return this.agentsService.findById(id);
+  }
+
+  @Put(':id')
+  update(
+    @Param('id') id: string,
+    @Body({ schema: createAgentSchema }) body: CreateAgentInput,
+  ): Agent {
+    return this.agentsService.update(id, body);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  remove(@Param('id') id: string): void {
+    this.agentsService.remove(id);
   }
 
   // 200 y no 201: ejecutar una consulta no crea ningún recurso.

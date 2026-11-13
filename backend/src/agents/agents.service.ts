@@ -62,6 +62,25 @@ export class AgentsService {
     return agent;
   }
 
+  update(id: string, input: CreateAgentInput): Agent {
+    const current = this.findById(id);
+    const agent: Agent = {
+      ...current,
+      name: input.name,
+      instructions: input.instructions,
+    };
+    if (!this.agentsRepository.update(agent)) {
+      throw new AgentNotFoundException(id);
+    }
+    return agent;
+  }
+
+  remove(id: string): void {
+    if (!this.agentsRepository.delete(id)) {
+      throw new AgentNotFoundException(id);
+    }
+  }
+
   /** Ejecuta una consulta: une las instrucciones del agente con la consulta. */
   async run(agentId: string, input: RunAgentInput): Promise<RunResult> {
     const agent = this.agentsRepository.findById(agentId);
