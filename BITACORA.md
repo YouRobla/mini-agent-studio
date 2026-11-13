@@ -1146,3 +1146,23 @@ el sistema esté más presentable y pulido».
   29, así que no fue el motivo inicial para elegir NestJS (lo fue la separación en
   servicios y la inyección de dependencias); y los esquemas de Zod tienen las mismas
   reglas en los dos lados pero están copiados, no compartidos.
+
+---
+
+## 2026-11-13 · Etapa 36 — Diagrama en draw.io, §5 completo y comentarios limpios
+
+- **Diagrama (pedido mío):** el de Mermaid se veía pequeño y oscuro en GitHub. Pedí algo
+  más presentable, como draw.io. Ahora es `docs/arquitectura.drawio.svg`: GitHub lo
+  muestra como imagen y draw.io lo abre para editarlo, porque el archivo lleva dentro el
+  diagrama. Eso resuelve el motivo por el que se descartó Excalidraw en la etapa 32 (una
+  imagen que habría que redibujar). Tiene fondo propio, así que se lee en tema claro y
+  oscuro. draw.io no estaba instalado: la IA generó el SVG y el modelo de draw.io desde
+  las mismas posiciones y los validó como XML.
+- **§5 del PDF (pregunta mía):** `AI_USAGE.md` cubre los cuatro puntos. El tercero («qué
+  partes del código te ayudó a crear la IA y qué cambiaste tú») era general; se añade
+  una tabla por parte del código con quién la escribió y qué decidí yo.
+- **Comentarios (pedido mío):** de 186 comentarios, la mayoría explican el porqué y se
+  quedan. Se quitan los que repetían el nombre del componente o del tipo (9), uno de la
+  plantilla de Vite y uno duplicado en `AgentFormModal`; se corrigen dos: el de CORS en
+  `app.setup.ts` (de antes del proxy) y una frase mal redactada en `AgentDialogs`.
+- **Revisión:** build y lint en verde en las dos partes; 10 pruebas unitarias y 12 e2e.
