@@ -2,7 +2,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { ApiError } from "../api/client.ts";
 import { useRunAgent } from "./useAgents.ts";
-import { runAgentSchema, type RunAgentInput } from "../schemas/agent.schemas.ts";
+import {
+  runAgentSchema,
+  type RunAgentInput,
+} from "../schemas/agent.schemas.ts";
 
 export function useQueryForm(agentId: string) {
   const runAgent = useRunAgent(agentId);

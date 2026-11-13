@@ -161,16 +161,30 @@ export function AgentList({
                   ))}
                 </div>
               ) : (
-                <ul className="list divide-y divide-base-300/70">
-                  {items.map((agent) => (
-                    <AgentRow
-                      key={agent.id}
-                      agent={agent}
-                      onEdit={setEditingAgent}
-                      onDelete={setDeletingAgent}
-                    />
-                  ))}
-                </ul>
+                <div className="overflow-x-auto">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Agente</th>
+                        <th className="hidden md:table-cell">Instrucciones</th>
+                        <th className="hidden sm:table-cell">Creado</th>
+                        <th>
+                          <span className="sr-only">Acciones</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((agent) => (
+                        <AgentRow
+                          key={agent.id}
+                          agent={agent}
+                          onEdit={setEditingAgent}
+                          onDelete={setDeletingAgent}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           )}

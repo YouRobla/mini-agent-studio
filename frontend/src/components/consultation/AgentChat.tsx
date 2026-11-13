@@ -1,5 +1,6 @@
 import { errorMessage } from "../../api/client.ts";
 import { useQueryForm } from "../../hooks/useQueryForm.ts";
+import { AgentAvatar } from "../agents/AgentAvatar.tsx";
 import type { Agent } from "../../types/agent.ts";
 import { CHAT_HEIGHT } from "./chatLayout.ts";
 import { QueryForm } from "./QueryForm.tsx";
@@ -65,7 +66,7 @@ export function AgentChat({ agent }: { agent: Agent }) {
             <div className="chat-header mb-1 text-xs text-base-content/70">
               Tú
             </div>
-            <div className="chat-bubble chat-bubble-primary max-w-[85%] whitespace-pre-wrap [overflow-wrap:anywhere]">
+            <div className="chat-bubble chat-bubble-secondary max-w-[85%] whitespace-pre-wrap [overflow-wrap:anywhere]">
               {runAgent.variables.query}
             </div>
           </div>
@@ -73,10 +74,13 @@ export function AgentChat({ agent }: { agent: Agent }) {
 
         {(runAgent.isPending || runAgent.isSuccess) && (
           <div className="chat chat-start">
+            <div className="chat-image">
+              <AgentAvatar name={agent.name} />
+            </div>
             <div className="chat-header mb-1 text-xs text-base-content/70">
               Agente
             </div>
-            <div className="chat-bubble max-w-[85%] bg-primary/10 leading-relaxed whitespace-pre-wrap text-base-content [overflow-wrap:anywhere]">
+            <div className="chat-bubble max-w-[85%] leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">
               {runAgent.isPending ? (
                 <>
                   <span
@@ -89,6 +93,11 @@ export function AgentChat({ agent }: { agent: Agent }) {
                 runAgent.data?.response
               )}
             </div>
+            {runAgent.isSuccess && (
+              <div className="chat-footer mt-1 text-xs opacity-60">
+                Proveedor: {runAgent.data.provider}
+              </div>
+            )}
           </div>
         )}
 

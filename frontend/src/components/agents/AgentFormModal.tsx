@@ -35,7 +35,7 @@ export function AgentFormModal({
   return (
     <dialog
       ref={dialogRef}
-      className="modal"
+      className="modal modal-bottom sm:modal-middle"
       aria-labelledby="agent-form-title"
       aria-describedby="agent-form-description"
       onCancel={(event) => {

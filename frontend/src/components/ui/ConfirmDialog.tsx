@@ -37,7 +37,7 @@ export function ConfirmDialog({
   return (
     <dialog
       ref={dialogRef}
-      className="modal"
+      className="modal modal-bottom sm:modal-middle"
       aria-labelledby="confirm-dialog-title"
       aria-describedby="confirm-dialog-message"
       onCancel={(event) => {

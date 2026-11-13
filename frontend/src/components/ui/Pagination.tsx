@@ -70,7 +70,9 @@ export function Pagination({
               className="join-item btn btn-sm"
               disabled={!meta.hasPrevPage}
               onClick={() => onPageChange(meta.page - 1)}
-              onMouseEnter={() => meta.hasPrevPage && onPrefetch?.(meta.page - 1)}
+              onMouseEnter={() =>
+                meta.hasPrevPage && onPrefetch?.(meta.page - 1)
+              }
               onFocus={() => meta.hasPrevPage && onPrefetch?.(meta.page - 1)}
               aria-label="Página anterior"
             >
@@ -109,7 +111,9 @@ export function Pagination({
               className="join-item btn btn-sm"
               disabled={!meta.hasNextPage}
               onClick={() => onPageChange(meta.page + 1)}
-              onMouseEnter={() => meta.hasNextPage && onPrefetch?.(meta.page + 1)}
+              onMouseEnter={() =>
+                meta.hasNextPage && onPrefetch?.(meta.page + 1)
+              }
               onFocus={() => meta.hasNextPage && onPrefetch?.(meta.page + 1)}
               aria-label="Página siguiente"
             >

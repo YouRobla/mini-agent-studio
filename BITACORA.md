@@ -452,3 +452,25 @@ de cada cambio con mis palabras)_
 - **Revisión:** build y lint en verde; capturas de Agentes, modal y Consultar con
   respuesta en claro y oscuro, y Consultar en móvil (390 px, sin desbordamiento); consola
   sin errores.
+
+---
+
+## 2026-11-12 · Etapa 16 — Tema propio del theme generator y componentes nativos de daisyUI (cierre de la UI)
+
+- **Decisión mía:** el estilo seguía sin convencerme. Diseñé un tema en el theme generator
+  de daisyUI y pedí apoyarse más en componentes de daisyUI y menos en utilidades sueltas
+  de Tailwind. Con esto doy por cerrada la interfaz.
+- **Tema:** decodificado desde la URL del generador (el tema va comprimido en la propia
+  URL; no hubo que descargar nada). Fondos azul marino, primario verde esmeralda,
+  secundario violeta, campos en píldora, bordes de 2px.
+  - `studio-dark` es mi tema tal cual, salvo `primary-content`: el texto blanco sobre el
+    verde daba 3.46:1; con texto oscuro sube a 4.78:1.
+  - `studio-light` usa la misma paleta y forma con bases claras.
+  - Contraste: todos los pares de los dos temas por encima de 4.5:1.
+- **Componentes:** la vista en lista pasa a `table`; la inicial del agente a `avatar`; el
+  selector de Consultar a `fieldset`; las instrucciones a un `collapse` (desplegable
+  nativo); el chat usa `chat-image`, `chat-header`, `chat-footer` (proveedor) y la burbuja
+  violeta para mis mensajes; los modales usan `modal-bottom` en móvil y `modal-middle` en
+  escritorio.
+- **Revisión:** build y lint en verde; capturas de tarjetas, tabla, modal y Consultar en
+  claro y oscuro, y tabla en móvil (390 px, sin desbordamiento); consola sin errores.
