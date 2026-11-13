@@ -556,3 +556,48 @@ de cada cambio con mis palabras)_
   instancia aislada: paginación, orden y búsqueda en la URL (se conservan al recargar),
   página fuera de rango corregida, 404 dentro del panel, enlace directo a Consultar, y el
   recorrido completo de crear, editar, eliminar, consultar y errores; consola sin errores.
+
+---
+
+## 2026-11-12 · Etapa 20 — Auditoría y consolidación del frontend
+
+- **Motivo (mío):** el frontend me parecía demasiado complicado y sin una estructura
+  coherente entre componentes. Pedí una auditoría completa, buscar skills de TanStack y
+  React, y ordenar componentes, hooks y formularios.
+- **Auditoría (IA):** la base era sana (api → hooks → componentes, datos en TanStack
+  Query, filtros en la URL). El desorden estaba dentro de los componentes, por haberse
+  rehecho unas diez veces en un día entre cinco autores. Hallazgos medidos:
+  5 props que pasaban un hook entero (`ReturnType<typeof useX>`), el flujo editar/eliminar
+  escrito dos veces, el cableado de `<dialog>` duplicado, la alerta con «Reintentar»
+  copiada tres veces, 12 iconos SVG sueltos en 7 archivos y `useAgent` con `initialData`
+  sin marca de tiempo (daba por fresco 30 s un agente sin confirmarlo con el backend).
+- **Decisión (propuesta de la IA, aprobada por mí):** no cambiar otra vez las carpetas
+  (son las de mi proyecto de referencia) y consolidar con reglas fijas. Se descartó pasar
+  a `features/`: con una sola entidad crea fronteras artificiales.
+- **Skills:** instaladas `tanstack-query-best-practices` (deckardger) y
+  `vercel-composition-patterns` (Vercel) tras leer su contenido. Descartadas:
+  `react-composition-2026` (mismo contenido), `tanstack-query` genérica de 21 KB,
+  `bulletproof-react` (87 instalaciones, incluye un script y desaconseja su estructura a
+  este tamaño) y `react-hook-form` (innecesaria para dos formularios).
+- **Cambios:**
+  - `useAgentActions()` + `AgentActionsProvider`: único camino para crear, editar y
+    eliminar; guarda el diálogo abierto y avisa con un toast. Fuera las funciones pasadas
+    en cadena y los modales duplicados en `AgentList` y `AgentPanel`.
+  - `Modal` único en `ui/` (usado por el formulario y por `ConfirmDialog`), `ErrorAlert`
+    con reintento y todos los iconos en `ui/icons.tsx`.
+  - Cada formulario llama a su hook: `AgentFormModal` (absorbe `AgentForm`) y `QueryForm`.
+    `AgentChat` es el contenedor de la consulta; `ChatMessages` solo pinta.
+  - `AgentSelector` pide sus propias opciones; `AgentPanel` ya no recibe consultas por props.
+  - `Sidebar` separado del layout; avisos de 6 archivos a 3; fuera archivos diminutos.
+  - `useAgent` usa `placeholderData` y siempre confirma con el backend.
+- **Resultado medido:** de 52 a 49 archivos; las líneas quedan casi igual (2.762 → 2.754)
+  porque lo que se quitó duplicado se centralizó. Lo que cambia: 0 hooks pasados por
+  props, 1 solo cableado de `<dialog>`, 1 sola alerta con reintento, ningún SVG fuera de
+  `icons.tsx`, y el componente más grande baja de 184 a 127 líneas. La estimación inicial
+  de la IA («unos 40 archivos y cientos de líneas menos») fue optimista.
+- **Revisión:** build y lint en verde; sin archivos ni exportaciones sin uso; en una
+  instancia aislada con base temporal: recorrido completo (crear, editar, eliminar,
+  consultar, errores), rutas y estado en la URL, foco devuelto al botón al cerrar un
+  modal, confirmación del agente con el backend y borrado desde Consultar sin parpadeo.
+  Dos comprobaciones fallaron por sincronización de la prueba y pasaron al repetirlas con
+  esperas correctas. Consola sin errores.

@@ -93,13 +93,13 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 ├── frontend/                        Interfaz (React)
 │   └── src/
 │       ├── main.tsx                 Monta la caché de datos y el router
-│       ├── app/                     Rutas (createBrowserRouter), ruta raíz y caché
+│       ├── app/                     Rutas (createBrowserRouter) y ruta raíz
 │       ├── pages/                   AgentsPage, ConsultPage, NotFoundPage, ErrorPage
 │       ├── components/layout/       Panel: menú lateral, barra superior, logo y tema
-│       ├── components/agents/       Listado, tarjeta, fila, formulario, borrado, acciones
+│       ├── components/agents/       Listado, tarjeta, fila, formulario, borrado y acciones
 │       ├── components/consultation/ Contexto del agente, selector, chat y consulta
-│       ├── components/ui/           Toasts, diálogo, paginación, iconos, encabezado
-│       ├── hooks/agents/            Consultas, mutaciones, formulario y estado en la URL
+│       ├── components/ui/           Modal, confirmación, error, toasts, paginación, iconos
+│       ├── hooks/agents/            Consultas, mutaciones, formulario, acciones y URL
 │       ├── hooks/consultation/      Formulario de la consulta
 │       ├── api/                     Cliente HTTP: único lugar que conoce el backend
 │       ├── schemas/                 Validación de formularios (Zod)
@@ -115,7 +115,7 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 ```
 Navegador                         Backend (NestJS)
 ─────────                         ────────────────
-QueryPanel ──POST /api/agents/:id/run──▶ AgentsController
+AgentChat  ──POST /api/agents/:id/run──▶ AgentsController
    ▲                                          │  valida el cuerpo con Zod
    │                                          ▼
    │                                     AgentsService

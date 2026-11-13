@@ -12,6 +12,7 @@
 | Antigravity con Gemini 4 Hydrogen (worker en Orca) | Icono de la aplicación y favicon: exploró conceptos con su generador de imágenes y entregó el SVG final dibujado a mano |
 | Codex (worker en Orca, coordinado desde Claude Code) | Mejora de la interfaz: panel con navegación, dos vistas con React Router, skeletons y temas claro/oscuro |
 | Skills `nestjs-best-practices` y `daisyui` | Guías de referencia para NestJS y para los componentes de daisyUI 5 |
+| Skills `tanstack-query-best-practices` y `vercel-composition-patterns` | Reglas para la capa de datos (claves de caché, `placeholderData`, invalidación) y para componer componentes sin props booleanas ni UI acoplada al estado |
 | CLI `npx skills` | Búsqueda y evaluación de skills; se revisó su contenido antes de instalarlas |
 | Orca | _(completar: cómo lo usé)_ |
 
