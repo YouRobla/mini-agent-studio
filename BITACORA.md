@@ -779,3 +779,32 @@ de cada cambio con mis palabras)_
   (etapa 21) va aparte porque compila por sí solo; las etapas 22 a 25 van juntas porque
   tocan los mismos archivos, con el detalle en el mensaje; la documentación, en otro.
 - **Pendiente de decidir:** `Content-Type` solo con cuerpo y `aria-atomic`.
+
+---
+
+## 2026-11-13 · Etapa 27 — Proxy de Vite: sin CORS en desarrollo
+
+- **Problema encontrado (IA, comprobado con Playwright):** si el puerto 5173 está ocupado,
+  Vite arranca en silencio en el 5174. El backend solo permite `localhost:5173`, así que
+  el navegador bloquea todo por CORS y la app muestra «No se pudo conectar con el
+  servidor» con el backend en marcha. Le podía pasar al evaluador en el primer paso.
+  Además, cada GET llevaba `Content-Type: application/json` y provocaba una petición
+  `OPTIONS` (preflight) de más.
+- **Opciones estudiadas:** proxy de Vite (frontend); CORS con un patrón para `localhost`
+  en cualquier puerto (backend: arregla el puerto, pero mantiene el preflight y abre más
+  CORS); NestJS sirviendo el frontend compilado (un solo origen, pero más alcance);
+  Docker o nginx (excesivo).
+- **Decisión mía:** proxy de Vite, la forma estándar. El navegador pide `/api` al propio
+  Vite y este lo reenvía al backend; al ser el mismo origen, no hay CORS.
+- **Cambios (IA):**
+  - `vite.config.ts`: `server.proxy` de `/api` a `API_PROXY_TARGET` (por defecto
+    `http://localhost:3000`) con `changeOrigin`.
+  - `client.ts`: la API por defecto es `/api`; `Content-Type` solo con cuerpo; una
+    respuesta de error sin el formato del backend (el proxy da `502` sin cuerpo con el
+    backend apagado) se muestra como «No se pudo conectar con el servidor».
+  - El CORS del backend (`CORS_ORIGIN`) se queda para quien use `VITE_API_URL` directo.
+  - `aria-atomic` fuera de `ConsultMessages`: el lector de pantalla anuncia solo lo nuevo.
+- **Revisión:** build y lint en verde. Con Playwright, el flujo completo (crear →
+  «Probar agente» → consultar → respuesta) en `localhost:5173`, `localhost:5174` y
+  `127.0.0.1`, sin peticiones `OPTIONS` y sin errores en consola. Con el backend apagado,
+  el mensaje de conexión y «Reintentar».

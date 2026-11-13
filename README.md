@@ -33,7 +33,9 @@ npm install
 npm run dev
 ```
 
-Abre `http://localhost:5173` en el navegador.
+Abre `http://localhost:5173` en el navegador. Si ese puerto está ocupado, Vite usa el
+siguiente (5174…) y lo indica en la terminal; la aplicación funciona igual, porque el
+navegador pide la API al propio Vite (`/api`) y Vite la reenvía al backend.
 
 No hace falta crear ningún archivo `.env`: todos los valores tienen un valor por defecto.
 La base de datos se crea sola en `backend/data/agents.db` en el primer arranque.
@@ -43,9 +45,10 @@ La base de datos se crea sola en `backend/data/agents.db` en el primer arranque.
 | Variable | Dónde | Valor por defecto | Para qué |
 | --- | --- | --- | --- |
 | `PORT` | backend | `3000` | Puerto de la API |
-| `CORS_ORIGIN` | backend | `http://localhost:5173` | Origen del frontend permitido |
+| `CORS_ORIGIN` | backend | `http://localhost:5173` | Origen permitido si el navegador llama al backend directamente (`VITE_API_URL`) |
 | `DATABASE_PATH` | backend | `backend/data/agents.db` | Ruta del archivo SQLite |
-| `VITE_API_URL` | frontend | `http://localhost:3000/api` | Dirección de la API |
+| `API_PROXY_TARGET` | frontend | `http://localhost:3000` | Dónde reenvía `/api` el proxy de Vite. Cámbialo si cambias `PORT` |
+| `VITE_API_URL` | frontend | `/api` | Dirección de la API en el navegador; por defecto pasa por el proxy |
 
 Hay un `.env.example` en cada carpeta. Ninguna variable contiene secretos.
 
@@ -101,7 +104,7 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 │       ├── components/consult/      Selector, instrucciones y caja de consulta
 │       ├── components/ui/           Modal, confirmación, error, avisos, paginación, iconos
 │       ├── hooks/                   Datos (TanStack Query), filtros en la URL y debounce
-│       ├── api/                     Cliente HTTP: único lugar que conoce el backend
+│       ├── api/                     Cliente HTTP: peticiones y errores legibles
 │       ├── schemas/                 Validación de formularios (Zod)
 │       ├── types/                   Tipos del dominio
 │       ├── utils/                   Formato de fechas

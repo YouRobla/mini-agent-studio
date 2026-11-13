@@ -223,8 +223,21 @@ shadcn.
 
 ### fetch y `api/`: hablar con el backend
 
-Sin librería. `client.ts` es el único sitio que conoce la dirección del backend. Convierte
-cualquier fallo en un `ApiError` con un mensaje listo para mostrar:
+Sin librería. `client.ts` pide todo a `/api`, en el mismo origen que la página. En
+desarrollo, el **proxy de Vite** (`vite.config.ts`) reenvía esas peticiones al backend
+(`API_PROXY_TARGET`, por defecto `http://localhost:3000`):
+
+```
+Navegador ──/api/agents──▶ Vite (5173 o el puerto que le toque) ──▶ backend :3000
+           mismo origen:                 entre servidores: CORS no aplica,
+           sin CORS ni preflight         porque es una regla del navegador
+```
+
+Así no importa en qué puerto arranque Vite ni si se abre con `127.0.0.1`. `Content-Type:
+application/json` solo se envía cuando hay cuerpo (POST, PUT). `client.ts` convierte
+cualquier fallo en un `ApiError` con un mensaje listo para mostrar. Si la respuesta no
+trae el formato de error del backend (el proxy responde `502` sin cuerpo cuando el
+backend está apagado), se trata como «sin conexión»:
 
 - `errorMessage(error)`: texto para el usuario («No se pudo conectar con el servidor…»).
 - `fieldError(error, "name")`: el error que el servidor asignó a un campo concreto.
