@@ -32,7 +32,8 @@ export const ApiAgentNotFoundResponse = () =>
 
 export const ApiAiProviderErrorResponse = () =>
   ApiBadGatewayResponse({
-    description: 'El proveedor de IA falló al generar la respuesta',
+    description:
+      'El proveedor de IA falló. `error` dice por qué: AI_PROVIDER_AUTH_ERROR (clave de API inválida), AI_PROVIDER_RATE_LIMIT (demasiadas consultas) o AI_PROVIDER_ERROR (cualquier otro fallo).',
     standardSchema: errorResponseSchema,
     example: {
       statusCode: 502,
@@ -85,7 +86,10 @@ export const ApiRunBodyExamples = () =>
           query: 'Ahora hazlo más corto',
           history: [
             { role: 'user', content: 'Resume este texto: NestJS es…' },
-            { role: 'assistant', content: 'NestJS es un framework de Node.js…' },
+            {
+              role: 'assistant',
+              content: 'NestJS es un framework de Node.js…',
+            },
           ],
         },
       },

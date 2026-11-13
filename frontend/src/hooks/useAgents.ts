@@ -99,6 +99,16 @@ export function useAgent(agentId: string | undefined) {
   });
 }
 
+/**
+ * Vuelve a pedir todo lo que está en pantalla: listados, el agente abierto y el
+ * proveedor de IA de la barra. Tras perder la conexión, un solo «Reintentar»
+ * recupera la vista entera.
+ */
+export function useRetryAll() {
+  const queryClient = useQueryClient();
+  return () => queryClient.invalidateQueries();
+}
+
 // ── Escrituras ──────────────────────────────────────────────────────────────
 
 /** Crea un agente: guarda su detalle en caché y refresca los listados. */

@@ -14,7 +14,7 @@ import {
 } from "../components/consult/ConsultBox.tsx";
 import { ErrorAlert } from "../components/ui/ErrorAlert.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
-import { useAgent } from "../hooks/useAgents.ts";
+import { useAgent, useAgentOptions } from "../hooks/useAgents.ts";
 import { paths } from "../paths.ts";
 
 /**
@@ -30,6 +30,10 @@ export function ConsultPage() {
   const { data, isPending, isError, error, isFetching, refetch } =
     useAgent(agentId);
   const notFound = isError && isNotFound(error);
+  // Si tampoco cargó la lista de agentes (servidor caído), el selector ya muestra
+  // el error con su «Reintentar»: no se repite aquí. Es la misma consulta en caché,
+  // no una petición más.
+  const optionsFailed = useAgentOptions().isError;
   // Si el agente se eliminó fuera de esta pestaña, la caché conserva sus datos
   // anteriores. No se muestran, para no ofrecer acciones sobre un agente que ya
   // no existe.
@@ -72,7 +76,7 @@ export function ConsultPage() {
             </div>
           )}
 
-          {isError && !notFound && (
+          {isError && !notFound && !optionsFailed && (
             <ErrorAlert
               title="No se pudo cargar el agente"
               message={errorMessage(error)}
@@ -85,11 +89,10 @@ export function ConsultPage() {
         </div>
       </section>
 
-      {agent ? (
-        <ConsultBox key={agent.id} agent={agent} />
-      ) : (
-        <ConsultBoxPlaceholder />
-      )}
+      {agent && <ConsultBox key={agent.id} agent={agent} />}
+      {/* Invita a elegir solo si no hay agente en la URL o el elegido no existe;
+          si está cargando o falló, ya lo dice la tarjeta de arriba. */}
+      {!agent && (!agentId || notFound) && <ConsultBoxPlaceholder />}
 
       <AgentDialogs
         dialog={dialog}

@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { errorMessage } from "../../api/client.ts";
-import { useAgentOptions } from "../../hooks/useAgents.ts";
+import { useAgentOptions, useRetryAll } from "../../hooks/useAgents.ts";
 import { paths } from "../../paths.ts";
 import { ErrorAlert } from "../ui/ErrorAlert.tsx";
 
@@ -18,6 +18,7 @@ export function AgentSelector({
   onSelect,
 }: AgentSelectorProps) {
   const agents = useAgentOptions();
+  const retryAll = useRetryAll();
   const options = agents.data ?? [];
   const isListed = options.some((agent) => agent.id === agentId);
 
@@ -39,7 +40,7 @@ export function AgentSelector({
         <ErrorAlert
           title="No se pudieron cargar los agentes"
           message={errorMessage(agents.error)}
-          onRetry={() => agents.refetch()}
+          onRetry={() => retryAll()}
           retrying={agents.isFetching}
         />
       )}

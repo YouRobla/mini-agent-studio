@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { AI_PROVIDER } from '../ai/ai-provider.js';
 import type { AiProvider } from '../ai/ai-provider.js';
-import { AiProviderException } from '../ai/ai.exceptions.js';
+import { aiProviderErrorFor } from '../ai/ai.exceptions.js';
 import { Agent, PaginatedAgents, RunResult } from './agent.types.js';
 import { AgentNotFoundException } from './agents.exceptions.js';
 import { AgentsRepository } from './agents.repository.js';
@@ -97,7 +97,7 @@ export class AgentsService {
         `Falló el proveedor de IA "${this.aiProvider.name}"`,
         error instanceof Error ? error.stack : String(error),
       );
-      throw new AiProviderException();
+      throw aiProviderErrorFor(error);
     }
 
     return { agentId: agent.id, response, provider: this.aiProvider.name };
