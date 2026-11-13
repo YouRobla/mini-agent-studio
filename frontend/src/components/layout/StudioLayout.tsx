@@ -1,9 +1,14 @@
 import { useState } from "react";
-import { Link, NavLink, Outlet } from "react-router";
-import { AppLogo } from "./AppLogo.tsx";
+import { Link, Outlet } from "react-router";
+import { MenuIcon } from "../ui/icons.tsx";
+import { Sidebar } from "./Sidebar.tsx";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 
-/** Estructura de la app: menú lateral (`drawer` + `menu`), barra superior y contenido. */
+/**
+ * Estructura de la aplicación (`drawer` de daisyUI): menú lateral fijo en
+ * escritorio y desplegable en móvil, barra superior y, en el `<Outlet />`, la
+ * página de la ruta actual.
+ */
 export function StudioLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -41,16 +46,7 @@ export function StudioLayout() {
               }
             }}
           >
-            <svg
-              className="size-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              aria-hidden="true"
-            >
-              <path d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            <MenuIcon className="size-5" />
           </label>
           <Link
             to="/"
@@ -80,72 +76,7 @@ export function StudioLayout() {
           aria-label="Cerrar menú de navegación"
           className="drawer-overlay"
         />
-        <aside className="flex min-h-full w-64 flex-col border-r border-base-300 bg-base-100 p-4">
-          <div className="mb-6 flex items-center gap-3 px-2 py-2">
-            <span
-              className="flex size-10 items-center justify-center rounded-box bg-primary text-primary-content"
-              aria-hidden="true"
-            >
-              <AppLogo className="size-6" />
-            </span>
-            <div>
-              <p className="font-semibold">Tu estudio</p>
-              <p className="text-xs text-base-content/70">
-                Crea. Prueba. Ajusta.
-              </p>
-            </div>
-          </div>
-          <nav id="studio-navigation" aria-label="Navegación principal">
-            <ul className="menu w-full gap-2 p-0 [--menu-active-bg:var(--color-primary)] [--menu-active-fg:var(--color-primary-content)]">
-              <li className="menu-title px-3 text-xs tracking-wider">
-                ESPACIO DE TRABAJO
-              </li>
-              <li>
-                <NavLink
-                  to="/"
-                  end
-                  className={({ isActive }) => (isActive ? "menu-active" : "")}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <svg
-                    className="size-5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    aria-hidden="true"
-                  >
-                    <rect x="3" y="3" width="7" height="7" rx="2" />
-                    <rect x="14" y="3" width="7" height="7" rx="2" />
-                    <rect x="3" y="14" width="7" height="7" rx="2" />
-                    <rect x="14" y="14" width="7" height="7" rx="2" />
-                  </svg>
-                  Agentes
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/consultar"
-                  className={({ isActive }) => (isActive ? "menu-active" : "")}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <svg
-                    className="size-5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    aria-hidden="true"
-                  >
-                    <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-3 3V11.5A7.5 7.5 0 0 1 9.5 4h3a7.5 7.5 0 0 1 7.5 7.5Z" />
-                    <path d="M7 10h8M7 14h5" />
-                  </svg>
-                  Consultar
-                </NavLink>
-              </li>
-            </ul>
-          </nav>
-        </aside>
+        <Sidebar onNavigate={() => setMenuOpen(false)} />
       </div>
     </div>
   );

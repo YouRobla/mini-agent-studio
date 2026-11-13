@@ -1,43 +1,27 @@
-import { useState } from "react";
 import { useNavigate } from "react-router";
-import { ApiError, errorMessage } from "../../api/client.ts";
-import type {
-  useAgent,
-  useAgentOptions,
-} from "../../hooks/agents/useAgentQueries.ts";
-import { AgentFormModal } from "../agents/AgentFormModal.tsx";
-import { DeleteAgentDialog } from "../agents/DeleteAgentDialog.tsx";
-import { EditIcon, TrashIcon } from "../ui/icons.tsx";
-import { useToast } from "../ui/toast/useToast.ts";
-import { AgentDetails } from "./AgentDetails.tsx";
+import { errorMessage, isNotFound } from "../../api/client.ts";
+import { useAgent } from "../../hooks/agents/useAgentQueries.ts";
+import { formatShortDate } from "../../utils/formatDate.ts";
+import { AgentPanelActions } from "../agents/AgentActionButtons.tsx";
+import { ErrorAlert } from "../ui/ErrorAlert.tsx";
 import { AgentSelector } from "./AgentSelector.tsx";
 
-interface AgentPanelProps {
-  agentId: string | undefined;
-  agentOptions: ReturnType<typeof useAgentOptions>;
-  agentQuery: ReturnType<typeof useAgent>;
-}
-
 /**
- * Encabezado de contexto de Consultar: qué agente se está probando, con qué
- * instrucciones, y las acciones para editarlo o eliminarlo. Debajo va el chat.
+ * Encabezado de contexto de Consultar: qué agente se está probando, sus
+ * acciones y sus instrucciones (lo que un modelo real recibiría como mensaje
+ * de sistema), en un `collapse` que se puede plegar para dar sitio al chat.
  */
-export function AgentPanel({
-  agentId,
-  agentOptions,
-  agentQuery,
-}: AgentPanelProps) {
+export function AgentPanel({ agentId }: { agentId: string | undefined }) {
   const navigate = useNavigate();
-  const toast = useToast();
-  const [editing, setEditing] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-
-  const isNotFound =
-    agentQuery.isError &&
-    agentQuery.error instanceof ApiError &&
-    agentQuery.error.status === 404;
-  const hasLoadError = agentQuery.isError && !isNotFound;
-  const agent = agentId && agentQuery.isSuccess ? agentQuery.data : undefined;
+  const {
+    data: agent,
+    isPending,
+    isError,
+    error,
+    isFetching,
+    refetch,
+  } = useAgent(agentId);
+  const notFound = isError && isNotFound(error);
 
   return (
     <section
@@ -48,89 +32,51 @@ export function AgentPanel({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="w-full sm:max-w-sm">
             <AgentSelector
-              agents={agentOptions}
               agentId={agentId}
-              agentNotFound={isNotFound}
+              notFound={notFound}
               onSelect={(id) =>
                 navigate(`/consultar/${encodeURIComponent(id)}`)
               }
             />
           </div>
-          {agent && (
-            <div className="flex gap-2">
-              <button
-                type="button"
-                className="btn btn-sm flex-1 hover:bg-warning hover:text-warning-content focus-visible:bg-warning focus-visible:text-warning-content sm:flex-none"
-                onClick={() => setEditing(true)}
-              >
-                <EditIcon />
-                Editar
-              </button>
-              <button
-                type="button"
-                className="btn btn-sm btn-ghost flex-1 hover:bg-error hover:text-error-content focus-visible:bg-error focus-visible:text-error-content sm:flex-none"
-                onClick={() => setDeleting(true)}
-              >
-                <TrashIcon />
-                Eliminar
-              </button>
-            </div>
-          )}
+          {agent && <AgentPanelActions agent={agent} />}
         </div>
 
-        {agentId && agentQuery.isPending && (
-          <div
-            className="space-y-2 border-t border-base-300 pt-4"
-            role="status"
-            aria-label="Cargando agente"
-          >
+        {agentId && isPending && (
+          <div className="space-y-2" role="status" aria-label="Cargando agente">
             <div className="skeleton h-4 w-40" />
             <div className="skeleton h-4 w-full" />
-            <div className="skeleton h-4 w-2/3" />
           </div>
         )}
 
-        {hasLoadError && (
-          <div
-            role="alert"
-            className="alert alert-error alert-vertical sm:alert-horizontal"
+        {isError && !notFound && (
+          <ErrorAlert
+            message={errorMessage(error)}
+            onRetry={() => refetch()}
+            retrying={isFetching}
+          />
+        )}
+
+        {agent && (
+          <details
+            className="collapse collapse-arrow border border-base-300 bg-base-200"
+            open
           >
-            <span className="flex-1">{errorMessage(agentQuery.error)}</span>
-            <button
-              type="button"
-              className="btn btn-sm"
-              onClick={() => agentQuery.refetch()}
-              disabled={agentQuery.isFetching}
-            >
-              {agentQuery.isFetching ? "Reintentando…" : "Reintentar"}
-            </button>
-          </div>
+            <summary className="collapse-title text-sm font-semibold">
+              Instrucciones
+              <span className="ml-2 font-normal text-base-content/60">
+                {agent.instructions.length} caracteres · Creado el{" "}
+                {formatShortDate(agent.createdAt)}
+              </span>
+            </summary>
+            <div className="collapse-content">
+              <p className="max-h-40 overflow-y-auto text-sm leading-relaxed whitespace-pre-wrap text-base-content/80 [overflow-wrap:anywhere]">
+                {agent.instructions}
+              </p>
+            </div>
+          </details>
         )}
-
-        {agent && <AgentDetails agent={agent} />}
       </div>
-
-      {editing && agent && (
-        <AgentFormModal
-          agent={agent}
-          onClose={() => setEditing(false)}
-          onSaved={(saved) =>
-            toast.success(`Agente «${saved.name}» actualizado`)
-          }
-        />
-      )}
-
-      {deleting && agent && (
-        <DeleteAgentDialog
-          agent={agent}
-          onClose={() => setDeleting(false)}
-          onDeleted={(deleted) => {
-            setDeleting(false);
-            toast.success(`Agente «${deleted.name}» eliminado`);
-            navigate("/consultar");
-          }}
-        />
-      )}
     </section>
   );
 }

@@ -27,7 +27,7 @@ export function DeleteAgentDialog({
       onConfirm={() =>
         deleteAgent.mutate(agent.id, { onSuccess: () => onDeleted(agent) })
       }
-      onCancel={onClose}
+      onClose={onClose}
     />
   );
 }

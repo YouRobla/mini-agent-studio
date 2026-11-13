@@ -1,15 +1,16 @@
-import type { useQueryForm } from "../../hooks/consultation/useQueryForm.ts";
+import { useQueryForm } from "../../hooks/consultation/useQueryForm.ts";
+import type { RunAgentInput } from "../../schemas/agent.schemas.ts";
+import { SendIcon } from "../ui/icons.tsx";
 
 interface QueryFormProps {
-  form: ReturnType<typeof useQueryForm>;
+  isPending: boolean;
+  /** Envía la consulta. Si la promesa falla, el campo conserva el texto. */
+  onSend: (input: RunAgentInput) => Promise<unknown>;
 }
 
-/**
- * Campo de la consulta y botón de envío, fijos al pie del chat. Valida en el
- * cliente (consulta vacía) y muestra también el error que devuelva el servidor.
- */
-export function QueryForm({ form }: QueryFormProps) {
-  const { register, errors, onSubmit, runAgent } = form;
+/** Campo de la consulta y botón de envío, fijos al pie del chat. */
+export function QueryForm({ isPending, onSend }: QueryFormProps) {
+  const { register, queryError, onSubmit } = useQueryForm(onSend);
 
   return (
     <form
@@ -24,17 +25,17 @@ export function QueryForm({ form }: QueryFormProps) {
         <textarea
           id="agent-query"
           rows={2}
-          className={`textarea min-w-0 flex-1 resize-none ${errors.query ? "textarea-error" : ""}`}
+          className={`textarea min-w-0 flex-1 resize-none ${queryError ? "textarea-error" : ""}`}
           placeholder="Escribe tu consulta…"
-          readOnly={runAgent.isPending}
-          aria-invalid={Boolean(errors.query)}
+          readOnly={isPending}
+          aria-invalid={Boolean(queryError)}
           aria-describedby={
-            errors.query ? "agent-query-error" : "agent-query-hint"
+            queryError ? "agent-query-error" : "agent-query-hint"
           }
           onKeyDown={(event) => {
             if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
               event.preventDefault();
-              event.currentTarget.form?.requestSubmit();
+              if (!isPending) event.currentTarget.form?.requestSubmit();
             }
           }}
           {...register("query")}
@@ -42,38 +43,29 @@ export function QueryForm({ form }: QueryFormProps) {
         <button
           type="submit"
           className="btn btn-primary max-sm:btn-square"
-          disabled={runAgent.isPending}
+          disabled={isPending}
         >
-          {runAgent.isPending ? (
+          {isPending ? (
             <span
               className="loading loading-spinner loading-sm"
               aria-hidden="true"
             />
           ) : (
-            <svg
-              className="size-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              aria-hidden="true"
-            >
-              <path d="m3 3 18 9-18 9 4-9-4-9Zm4 9h14" />
-            </svg>
+            <SendIcon />
           )}
           {/* En móvil solo se ve el icono; el texto sigue siendo el nombre accesible. */}
           <span className="sr-only sm:not-sr-only">
-            {runAgent.isPending ? "Enviando…" : "Enviar consulta"}
+            {isPending ? "Enviando…" : "Enviar consulta"}
           </span>
         </button>
       </div>
-      {errors.query ? (
+      {queryError ? (
         <p
           id="agent-query-error"
           role="alert"
           className="mt-1.5 text-sm text-error"
         >
-          {errors.query.message}
+          {queryError}
         </p>
       ) : (
         <p

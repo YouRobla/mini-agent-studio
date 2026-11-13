@@ -1,17 +1,11 @@
 import type { Agent } from "../../types/agent.ts";
 import { AgentAvatar } from "./AgentAvatar.tsx";
-import { AgentQuickActions } from "./AgentQuickActions.tsx";
+import { AgentQuickActions } from "./AgentActionButtons.tsx";
 import { ConsultAgentLink } from "./ConsultAgentLink.tsx";
 import { formatShortDate } from "../../utils/formatDate.ts";
 
-interface AgentCardProps {
-  agent: Agent;
-  onEdit: (agent: Agent) => void;
-  onDelete: (agent: Agent) => void;
-}
-
 /** Agente en la vista de tarjetas (`card` de daisyUI). */
-export function AgentCard({ agent, onEdit, onDelete }: AgentCardProps) {
+export function AgentCard({ agent }: { agent: Agent }) {
   return (
     <article className="card card-border bg-base-100 transition-colors hover:border-base-content/30">
       <div className="card-body gap-3 p-4">
@@ -25,11 +19,7 @@ export function AgentCard({ agent, onEdit, onDelete }: AgentCardProps) {
               {formatShortDate(agent.createdAt)}
             </p>
           </div>
-          <AgentQuickActions
-            agent={agent}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
+          <AgentQuickActions agent={agent} />
         </div>
 
         <p

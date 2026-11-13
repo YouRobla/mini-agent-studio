@@ -1,18 +1,28 @@
-import { errorMessage } from "../../api/client.ts";
-import { useQueryForm } from "../../hooks/consultation/useQueryForm.ts";
-import { AgentAvatar } from "../agents/AgentAvatar.tsx";
+import { errorMessage, fieldError } from "../../api/client.ts";
+import { useRunAgent } from "../../hooks/agents/useAgentMutations.ts";
 import type { Agent } from "../../types/agent.ts";
-import { CHAT_HEIGHT } from "./chatLayout.ts";
+import { ChatMessages } from "./ChatMessages.tsx";
 import { QueryForm } from "./QueryForm.tsx";
 
 /**
- * Conversación con el agente: cabecera, mensajes (con su propio scroll) y el
- * formulario fijo abajo. Muestra la última consulta y su respuesta, la espera
- * mientras el backend responde y cualquier error en un mensaje legible.
+ * Alto del chat: lo que queda de pantalla bajo la barra, el encabezado y el
+ * contexto del agente, con un mínimo para pantallas bajas y un máximo para las
+ * muy altas.
+ */
+const CHAT_HEIGHT = "h-[clamp(24rem,calc(100dvh-26rem),48rem)]";
+
+/**
+ * Conversación con un agente. Es el contenedor: ejecuta la consulta contra el
+ * backend y reparte su estado entre los mensajes y el formulario. Muestra la
+ * última consulta y su respuesta; no guarda historial.
  */
 export function AgentChat({ agent }: { agent: Agent }) {
-  const form = useQueryForm(agent.id);
-  const { runAgent, showGeneralError } = form;
+  const run = useRunAgent(agent.id);
+  // Un error de validación de la consulta ya se muestra junto al campo.
+  const error =
+    run.isError && !fieldError(run.error, "query")
+      ? errorMessage(run.error)
+      : null;
 
   return (
     <section
@@ -23,92 +33,43 @@ export function AgentChat({ agent }: { agent: Agent }) {
         <h2 id="chat-title" className="font-semibold">
           Conversación
         </h2>
-        {!runAgent.isIdle && !runAgent.isPending && (
+        {!run.isIdle && !run.isPending && (
           <button
             type="button"
             className="btn btn-ghost btn-xs"
-            onClick={() => runAgent.reset()}
+            onClick={() => run.reset()}
           >
             Limpiar chat
           </button>
         )}
       </div>
 
-      <div
-        aria-live="polite"
-        aria-atomic="true"
-        aria-label="Mensajes de la consulta"
-        tabIndex={0}
-        className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5"
-      >
-        {runAgent.isIdle && (
-          <div className="flex h-full flex-col items-center justify-center px-3 text-center">
-            <svg
-              className="mb-3 size-8 text-base-content/50"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              aria-hidden="true"
-            >
-              <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-2 2V11.5A8.5 8.5 0 0 1 10.5 3h2a8.5 8.5 0 0 1 8.5 8.5Z" />
-              <path d="M7 9h9M7 13h6" />
-            </svg>
-            <p className="font-medium">Inicia la conversación</p>
-            <p className="mt-1.5 max-w-xs text-sm text-base-content/70">
-              Escribe tu consulta abajo; la respuesta aparecerá aquí.
-            </p>
-          </div>
-        )}
+      <ChatMessages
+        agentName={agent.name}
+        query={run.variables?.query}
+        isPending={run.isPending}
+        result={run.data}
+        error={error}
+      />
 
-        {runAgent.variables && !runAgent.isIdle && (
-          <div className="chat chat-end">
-            <div className="chat-header mb-1 text-xs text-base-content/70">
-              Tú
-            </div>
-            <div className="chat-bubble chat-bubble-primary max-w-[85%] whitespace-pre-wrap [overflow-wrap:anywhere]">
-              {runAgent.variables.query}
-            </div>
-          </div>
-        )}
+      <QueryForm
+        isPending={run.isPending}
+        onSend={(input) => run.mutateAsync(input)}
+      />
+    </section>
+  );
+}
 
-        {(runAgent.isPending || runAgent.isSuccess) && (
-          <div className="chat chat-start">
-            <div className="chat-image">
-              <AgentAvatar name={agent.name} />
-            </div>
-            <div className="chat-header mb-1 text-xs text-base-content/70">
-              Agente
-            </div>
-            <div className="chat-bubble max-w-[85%] leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">
-              {runAgent.isPending ? (
-                <>
-                  <span
-                    className="loading loading-dots loading-sm"
-                    aria-hidden="true"
-                  />
-                  <span className="sr-only">Generando respuesta…</span>
-                </>
-              ) : (
-                runAgent.data?.response
-              )}
-            </div>
-            {runAgent.isSuccess && (
-              <div className="chat-footer mt-1 text-xs opacity-60">
-                Proveedor: {runAgent.data.provider}
-              </div>
-            )}
-          </div>
-        )}
-
-        {showGeneralError && (
-          <div role="alert" className="alert alert-error alert-soft">
-            {errorMessage(runAgent.error)}
-          </div>
-        )}
-      </div>
-
-      <QueryForm form={form} />
+/** Hueco del chat cuando todavía no hay un agente elegido. */
+export function ChatPlaceholder() {
+  return (
+    <section
+      className={`card card-border min-w-0 items-center justify-center bg-base-100 px-6 text-center ${CHAT_HEIGHT}`}
+    >
+      <h2 className="font-semibold">Elige un agente para empezar</h2>
+      <p className="mt-2 max-w-sm text-sm text-base-content/70">
+        Selecciónalo arriba; aquí podrás escribirle y ver su respuesta.
+      </p>
     </section>
   );
 }

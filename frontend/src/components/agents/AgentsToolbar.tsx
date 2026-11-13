@@ -1,4 +1,5 @@
 import type { AgentSort } from "../../types/agent.ts";
+import { GridIcon, ListIcon, SearchIcon } from "../ui/icons.tsx";
 
 export type AgentView = "grid" | "list";
 
@@ -23,17 +24,7 @@ export function AgentsToolbar({
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
       <label className="input input-sm w-full sm:w-60">
-        <svg
-          className="size-4 shrink-0 text-base-content/55"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          aria-hidden="true"
-        >
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-3.5-3.5" />
-        </svg>
+        <SearchIcon className="size-4 shrink-0 text-base-content/55" />
         <input
           type="search"
           className="grow"
@@ -81,19 +72,7 @@ export function AgentsToolbar({
             title="Vista en cuadrícula"
             onClick={() => onViewChange("grid")}
           >
-            <svg
-              className="size-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              aria-hidden="true"
-            >
-              <rect x="3" y="3" width="7" height="7" rx="1.5" />
-              <rect x="14" y="3" width="7" height="7" rx="1.5" />
-              <rect x="3" y="14" width="7" height="7" rx="1.5" />
-              <rect x="14" y="14" width="7" height="7" rx="1.5" />
-            </svg>
+            <GridIcon />
           </button>
           <button
             type="button"
@@ -105,16 +84,7 @@ export function AgentsToolbar({
             title="Vista en lista compacta"
             onClick={() => onViewChange("list")}
           >
-            <svg
-              className="size-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              aria-hidden="true"
-            >
-              <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
-            </svg>
+            <ListIcon />
           </button>
         </div>
       </div>

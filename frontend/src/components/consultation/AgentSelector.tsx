@@ -1,71 +1,71 @@
 import { Link } from "react-router";
 import { errorMessage } from "../../api/client.ts";
-import type { useAgentOptions } from "../../hooks/agents/useAgentQueries.ts";
-import { AgentsSkeleton } from "../agents/AgentsSkeleton.tsx";
+import { useAgentOptions } from "../../hooks/agents/useAgentQueries.ts";
+import { ErrorAlert } from "../ui/ErrorAlert.tsx";
 
 interface AgentSelectorProps {
-  agents: ReturnType<typeof useAgentOptions>;
   agentId: string | undefined;
-  agentNotFound: boolean;
+  /** El id de la URL no corresponde a ningún agente. */
+  notFound: boolean;
   onSelect: (agentId: string) => void;
 }
 
 /** Selector del agente a consultar, con sus estados de carga, error y lista vacía. */
 export function AgentSelector({
-  agents,
   agentId,
-  agentNotFound,
+  notFound,
   onSelect,
 }: AgentSelectorProps) {
-  const list = agents.data ?? [];
-  const hasSelectedInOptions = list.some((agent) => agent.id === agentId);
+  const agents = useAgentOptions();
+  const options = agents.data ?? [];
+  const isListed = options.some((agent) => agent.id === agentId);
 
   return (
     <fieldset className="fieldset min-w-0 p-0">
       <label className="fieldset-legend pt-0" htmlFor="agent-selector">
         Agente para esta consulta
       </label>
-      {agents.isPending && <AgentsSkeleton selector />}
-      {agents.isError && (
+
+      {agents.isPending && (
         <div
-          role="alert"
-          className="alert alert-error alert-vertical sm:alert-horizontal"
-        >
-          <span className="flex-1">{errorMessage(agents.error)}</span>
-          <button
-            type="button"
-            className="btn btn-sm"
-            onClick={() => agents.refetch()}
-            disabled={agents.isFetching}
-          >
-            {agents.isFetching ? "Reintentando…" : "Reintentar"}
-          </button>
-        </div>
+          className="skeleton h-10 w-full"
+          role="status"
+          aria-label="Cargando agentes"
+        />
       )}
+
+      {agents.isError && (
+        <ErrorAlert
+          message={errorMessage(agents.error)}
+          onRetry={() => agents.refetch()}
+          retrying={agents.isFetching}
+        />
+      )}
+
       {agents.isSuccess && (
         <>
           <select
             id="agent-selector"
             className="select w-full"
-            disabled={list.length === 0}
-            value={hasSelectedInOptions && agentId ? agentId : ""}
+            disabled={options.length === 0}
+            value={isListed && agentId ? agentId : ""}
             onChange={(event) => onSelect(event.target.value)}
           >
             <option value="" disabled>
               Selecciona un agente
             </option>
-            {list.map((agent) => (
+            {options.map((agent) => (
               <option key={agent.id} value={agent.id}>
                 {agent.name}
               </option>
             ))}
           </select>
-          {agentId && agentNotFound && (
+          {notFound && (
             <div role="alert" className="alert alert-warning mt-2">
               El agente no existe. Elige otro agente en el selector.
             </div>
           )}
-          {list.length === 0 && (
+          {options.length === 0 && (
             <p className="mt-1.5 text-sm text-base-content/70">
               Todavía no hay agentes disponibles.{" "}
               <Link to="/" className="link">

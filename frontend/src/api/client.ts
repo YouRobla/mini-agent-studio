@@ -16,7 +16,7 @@ interface ApiErrorBody {
 }
 
 /** Error de la API con un mensaje listo para mostrar al usuario. */
-export class ApiError extends Error {
+class ApiError extends Error {
   readonly status: number;
   readonly code: string;
   readonly details: ApiErrorDetail[];
@@ -74,4 +74,15 @@ export function errorMessage(error: unknown): string {
   return error instanceof ApiError
     ? error.message
     : "Ocurrió un error inesperado. Inténtalo de nuevo.";
+}
+
+/** true si el servidor respondió que el recurso no existe (404). */
+export function isNotFound(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404;
+}
+
+/** Mensaje del servidor para un campo concreto, si el error lo trae. */
+export function fieldError(error: unknown, field: string): string | undefined {
+  if (!(error instanceof ApiError)) return undefined;
+  return error.details.find((detail) => detail.field === field)?.message;
 }

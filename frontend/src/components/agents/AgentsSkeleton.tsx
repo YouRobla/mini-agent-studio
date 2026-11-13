@@ -1,31 +1,16 @@
-interface AgentsSkeletonProps {
-  selector?: boolean;
-  view?: "grid" | "list";
-  count?: number;
-}
+/** Agentes por página: el esqueleto ocupa lo mismo que el listado ya cargado. */
+const PLACEHOLDERS = 6;
 
-/** Esqueletos de carga del listado (tarjetas o filas) y del selector de agentes. */
-export function AgentsSkeleton({
-  selector = false,
-  view = "grid",
-  count = 6,
-}: AgentsSkeletonProps) {
+/** Esqueleto de carga del listado, con la misma forma que la vista elegida. */
+export function AgentsSkeleton({ view }: { view: "grid" | "list" }) {
   return (
-    <div
-      role="status"
-      aria-label={
-        selector ? "Cargando selector de agentes" : "Cargando agentes"
-      }
-      aria-busy="true"
-    >
-      {selector ? (
-        <div className="skeleton h-10 w-full" />
-      ) : view === "grid" ? (
+    <div role="status" aria-label="Cargando agentes" aria-busy="true">
+      {view === "grid" ? (
         <div
           className="grid grid-cols-1 gap-3.5 md:grid-cols-2 xl:grid-cols-3"
           aria-hidden="true"
         >
-          {Array.from({ length: count }, (_, index) => (
+          {Array.from({ length: PLACEHOLDERS }, (_, index) => (
             <div key={index} className="card card-border bg-base-100">
               <div className="card-body gap-3 p-4">
                 <div className="flex items-center gap-3">
@@ -49,7 +34,7 @@ export function AgentsSkeleton({
         </div>
       ) : (
         <div className="space-y-2" aria-hidden="true">
-          {Array.from({ length: count }, (_, index) => (
+          {Array.from({ length: PLACEHOLDERS }, (_, index) => (
             <div key={index} className="flex items-center gap-3 py-2.5">
               <div className="skeleton size-9 shrink-0 rounded-field" />
               <div className="flex-1 space-y-1.5">

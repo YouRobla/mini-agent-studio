@@ -4,13 +4,18 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { getAgent, listAgents } from "../../api/agents.ts";
-import { ApiError } from "../../api/client.ts";
-import type {
-  Agent,
-  ListAgentsParams,
-  PaginatedAgents,
-} from "../../types/agent.ts";
-import { agentKeys } from "./agentKeys.ts";
+import { isNotFound } from "../../api/client.ts";
+import type { ListAgentsParams, PaginatedAgents } from "../../types/agent.ts";
+
+/**
+ * Claves de caché de TanStack Query para los agentes. Al invalidar `lists` se
+ * refrescan a la vez todos los listados y el selector de Consultar.
+ */
+export const agentKeys = {
+  lists: ["agents", "list"] as const,
+  list: (params: ListAgentsParams) => ["agents", "list", params] as const,
+  detail: (id: string) => ["agents", "detail", id] as const,
+};
 
 /** Agentes por página en el listado. */
 const PAGE_SIZE = 6;
@@ -48,8 +53,9 @@ export function useAgentOptions() {
 }
 
 /**
- * Un agente por id. Si ya está en algún listado en caché, se muestra al
- * instante mientras se confirma con el backend. Un 404 no se reintenta.
+ * Un agente por id. Si ya está en algún listado en caché se muestra al instante
+ * como dato provisional (`placeholderData`), pero siempre se confirma con el
+ * backend: así un agente eliminado no aparece como válido. Un 404 no se reintenta.
  */
 export function useAgent(agentId: string | undefined) {
   const queryClient = useQueryClient();
@@ -58,18 +64,11 @@ export function useAgent(agentId: string | undefined) {
     queryKey: agentKeys.detail(agentId ?? ""),
     queryFn: () => getAgent(agentId!),
     enabled: Boolean(agentId),
-    retry: (failureCount, error) =>
-      !(error instanceof ApiError && error.status === 404) && failureCount < 1,
-    initialData: (): Agent | undefined => {
-      if (!agentId) return undefined;
-      const cachedLists = queryClient.getQueriesData<PaginatedAgents>({
-        queryKey: agentKeys.lists,
-      });
-      for (const [, data] of cachedLists) {
-        const match = data?.items.find((agent) => agent.id === agentId);
-        if (match) return match;
-      }
-      return undefined;
-    },
+    retry: (failureCount, error) => !isNotFound(error) && failureCount < 1,
+    placeholderData: () =>
+      queryClient
+        .getQueriesData<PaginatedAgents>({ queryKey: agentKeys.lists })
+        .flatMap(([, list]) => list?.items ?? [])
+        .find((agent) => agent.id === agentId),
   });
 }

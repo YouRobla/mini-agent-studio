@@ -1,22 +1,23 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
-import { ToastContext } from "./ToastContext.ts";
-import { ToastViewport } from "./ToastViewport.tsx";
-import type {
-  ToastAction,
-  ToastApi,
-  ToastItemData,
-  ToastKind,
-} from "./toast.types.ts";
+import { ToastItem } from "./ToastItem.tsx";
+import {
+  ToastContext,
+  type ToastAction,
+  type ToastApi,
+  type ToastData,
+  type ToastKind,
+} from "./useToast.ts";
 
 /** Máximo de avisos a la vez: al llegar uno nuevo sale el más antiguo. */
 const MAX_VISIBLE = 3;
 
 /**
- * Guarda la lista de avisos y expone `useToast()` a toda la aplicación.
- * La animación de entrada es la del componente `toast` de daisyUI.
+ * Guarda los avisos y los pinta abajo a la derecha (`toast` de daisyUI).
+ * `show` y `dismiss` usan `useCallback` porque el temporizador de cada aviso
+ * depende de ellas: si cambiaran en cada render, el aviso nunca caducaría.
  */
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<ToastItemData[]>([]);
+  const [toasts, setToasts] = useState<ToastData[]>([]);
   const nextId = useRef(1);
 
   const show = useCallback(
@@ -43,7 +44,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext value={api}>
       {children}
-      <ToastViewport toasts={toasts} onDismiss={dismiss} />
+      {toasts.length > 0 && (
+        <div className="toast toast-end toast-bottom z-50">
+          {toasts.map((toast) => (
+            <ToastItem key={toast.id} toast={toast} onDismiss={dismiss} />
+          ))}
+        </div>
+      )}
     </ToastContext>
   );
 }

@@ -1,94 +1,76 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import { Modal } from "./Modal.tsx";
 
 interface ConfirmDialogProps {
   title: string;
   message: string;
   confirmLabel: string;
-  cancelLabel?: string;
   isPending: boolean;
-  /** Mensaje de error que se muestra dentro del diálogo si la acción falla. */
+  /** Error de la acción; se muestra dentro del diálogo para poder reintentar. */
   error?: string | null;
   onConfirm: () => void;
-  /** Se llama cuando el diálogo se cierra (Cancelar, Escape o fondo). */
-  onCancel: () => void;
+  onClose: () => void;
 }
 
 /**
- * Confirmación de una acción destructiva. Se abre al montarse (el padre lo
- * renderiza solo mientras hace falta) y no conoce qué se está confirmando.
+ * Confirmación de una acción destructiva. No sabe qué se confirma: recibe los
+ * textos y la acción. Mientras la acción está en curso no se puede cerrar.
  */
 export function ConfirmDialog({
   title,
   message,
   confirmLabel,
-  cancelLabel = "Cancelar",
   isPending,
   error,
   onConfirm,
-  onCancel,
+  onClose,
 }: ConfirmDialogProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (dialog && !dialog.open) dialog.showModal();
-  }, []);
+  const dialog = useRef<HTMLDialogElement>(null);
 
   return (
-    <dialog
-      ref={dialogRef}
-      className="modal modal-bottom sm:modal-middle"
-      aria-labelledby="confirm-dialog-title"
-      aria-describedby="confirm-dialog-message"
-      onCancel={(event) => {
-        if (isPending) event.preventDefault();
-      }}
-      onClose={onCancel}
+    <Modal
+      ref={dialog}
+      labelledBy="confirm-title"
+      describedBy="confirm-message"
+      locked={isPending}
+      onClose={onClose}
+      size="max-w-md"
     >
-      <div className="modal-box w-full max-w-md">
-        <h2 id="confirm-dialog-title" className="text-lg font-semibold">
-          {title}
-        </h2>
-        <p
-          id="confirm-dialog-message"
-          className="mt-2 text-sm text-base-content/80 [overflow-wrap:anywhere]"
-        >
-          {message}
-        </p>
+      <h2 id="confirm-title" className="text-lg font-semibold">
+        {title}
+      </h2>
+      <p
+        id="confirm-message"
+        className="mt-2 text-sm text-base-content/80 [overflow-wrap:anywhere]"
+      >
+        {message}
+      </p>
 
-        {error && (
-          <div role="alert" className="alert alert-error alert-soft mt-4">
-            {error}
-          </div>
-        )}
-
-        <div className="modal-action">
-          <button
-            type="button"
-            className="btn"
-            disabled={isPending}
-            onClick={() => dialogRef.current?.close()}
-          >
-            {cancelLabel}
-          </button>
-          <button
-            type="button"
-            className="btn btn-error"
-            disabled={isPending}
-            onClick={onConfirm}
-          >
-            {isPending && (
-              <span className="loading loading-spinner loading-sm" />
-            )}
-            {confirmLabel}
-          </button>
+      {error && (
+        <div role="alert" className="alert alert-error alert-soft mt-4">
+          {error}
         </div>
-      </div>
-      <form method="dialog" className="modal-backdrop">
-        <button disabled={isPending} aria-label="Cerrar confirmación">
-          Cerrar
+      )}
+
+      <div className="modal-action">
+        <button
+          type="button"
+          className="btn"
+          disabled={isPending}
+          onClick={() => dialog.current?.close()}
+        >
+          Cancelar
         </button>
-      </form>
-    </dialog>
+        <button
+          type="button"
+          className="btn btn-error"
+          disabled={isPending}
+          onClick={onConfirm}
+        >
+          {isPending && <span className="loading loading-spinner loading-sm" />}
+          {confirmLabel}
+        </button>
+      </div>
+    </Modal>
   );
 }

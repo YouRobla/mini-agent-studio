@@ -1,25 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
-import type { ToastItemData, ToastKind } from "./toast.types.ts";
+import { ErrorIcon, InfoIcon, SuccessIcon } from "../icons.tsx";
+import type { ToastData, ToastKind } from "./useToast.ts";
 
 /** Tiempo que permanece visible un aviso. */
 const DURATION_MS = 4000;
 
-const ALERT_CLASS: Record<ToastKind, string> = {
-  success: "alert-success",
-  error: "alert-error",
-  info: "alert-info",
-};
-
-/** Trazos de los iconos (mismo estilo que los iconos de la documentación de daisyUI). */
-const ICON_PATH: Record<ToastKind, string> = {
-  success: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
-  error: "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z",
-  info: "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+const STYLE: Record<ToastKind, { alert: string; Icon: typeof SuccessIcon }> = {
+  success: { alert: "alert-success", Icon: SuccessIcon },
+  error: { alert: "alert-error", Icon: ErrorIcon },
+  info: { alert: "alert-info", Icon: InfoIcon },
 };
 
 interface ToastItemProps {
-  toast: ToastItemData;
+  toast: ToastData;
   onDismiss: (id: number) => void;
 }
 
@@ -30,6 +24,7 @@ interface ToastItemProps {
  */
 export function ToastItem({ toast, onDismiss }: ToastItemProps) {
   const { id, kind, message, action } = toast;
+  const { alert, Icon } = STYLE[kind];
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const paused = hovered || focused;
@@ -41,17 +36,14 @@ export function ToastItem({ toast, onDismiss }: ToastItemProps) {
     const timer = window.setTimeout(() => onDismiss(id), remaining.current);
     return () => {
       window.clearTimeout(timer);
-      remaining.current = Math.max(
-        0,
-        remaining.current - (Date.now() - startedAt),
-      );
+      remaining.current -= Date.now() - startedAt;
     };
   }, [paused, id, onDismiss]);
 
   return (
     <div
       role={kind === "error" ? "alert" : "status"}
-      className={`alert ${ALERT_CLASS[kind]}`}
+      className={`alert ${alert}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setFocused(true)}
@@ -61,19 +53,7 @@ export function ToastItem({ toast, onDismiss }: ToastItemProps) {
         }
       }}
     >
-      <svg
-        className="size-6 shrink-0 stroke-current"
-        fill="none"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d={ICON_PATH[kind]}
-        />
-      </svg>
+      <Icon className="size-6 shrink-0" />
       <span>{message}</span>
       <div className="flex gap-1">
         {action && (

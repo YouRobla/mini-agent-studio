@@ -9,7 +9,7 @@ import type {
   RunAgentInput,
   UpdateAgentInput,
 } from "../../schemas/agent.schemas.ts";
-import { agentKeys } from "./agentKeys.ts";
+import { agentKeys } from "./useAgentQueries.ts";
 
 /** Crea un agente: guarda su detalle en caché y refresca los listados. */
 export function useCreateAgent() {

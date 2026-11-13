@@ -1,51 +1,29 @@
-import { useState } from "react";
-import { AgentFormModal } from "../components/agents/AgentFormModal.tsx";
+import { NewAgentButton } from "../components/agents/AgentActionButtons.tsx";
+import { AgentActionsProvider } from "../components/agents/AgentActionsProvider.tsx";
 import { AgentList } from "../components/agents/AgentList.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
-import { useToast } from "../components/ui/toast/useToast.ts";
 import { useAgentsListParams } from "../hooks/agents/useAgentsListParams.ts";
 
 /**
- * Vista Agentes: encabezado, listado y modal para crear. El estado del listado
- * (página, orden y búsqueda) lo gestiona `useAgentsListParams` en la URL.
+ * Vista Agentes: crear, listar, editar y eliminar. Al crear un agente se vuelve
+ * a la primera página sin filtros, donde aparece por ser el más reciente.
  */
 export function AgentsPage() {
-  const [creating, setCreating] = useState(false);
   const { resetFilters } = useAgentsListParams();
-  const toast = useToast();
 
   return (
-    <div className="space-y-3.5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <PageHeader
-          eyebrow="Tu espacio de trabajo"
-          title="Agentes"
-          description="Organiza tus asistentes, busca por rol y pon sus instrucciones a prueba."
-        />
-        <button
-          type="button"
-          className="btn btn-primary shrink-0"
-          onClick={() => setCreating(true)}
-        >
-          <span aria-hidden="true">+</span> Nuevo agente
-        </button>
+    <AgentActionsProvider onCreated={resetFilters}>
+      <div className="space-y-3.5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <PageHeader
+            eyebrow="Tu espacio de trabajo"
+            title="Agentes"
+            description="Organiza tus asistentes, busca por rol y pon sus instrucciones a prueba."
+          />
+          <NewAgentButton />
+        </div>
+        <AgentList />
       </div>
-
-      <AgentList onRequestCreate={() => setCreating(true)} />
-
-      {creating && (
-        <AgentFormModal
-          onClose={() => setCreating(false)}
-          onSaved={(agent) => {
-            toast.success(`Agente «${agent.name}» creado correctamente.`, {
-              label: "Probar agente",
-              to: `/consultar/${encodeURIComponent(agent.id)}`,
-            });
-            // El agente nuevo es el más reciente: volver a la primera página sin filtros.
-            resetFilters();
-          }}
-        />
-      )}
-    </div>
+    </AgentActionsProvider>
   );
 }
