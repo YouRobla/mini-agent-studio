@@ -3,10 +3,12 @@
 # La vía principal sigue siendo la del README (npm install en cada carpeta).
 
 services:
-  backend:
-    build: ./backend
+  app:
+    build: .
+    ports:
+      - "8080:3000"
     env_file:
-      # Opcional: AI_PROVIDER y las claves de IA. Sin él, modo simulado.
+      # Opcional: IA real (AI_PROVIDER y su clave). Sin él, modo simulado.
       - path: ./backend/.env
         required: false
     environment:
@@ -14,26 +16,8 @@ services:
       PORT: "3000"
       DATABASE_PATH: /app/data/agents.db
     volumes:
-      # Los agentes sobreviven a reiniciar o reconstruir el contenedor.
+      # La base de datos sobrevive a reiniciar o reconstruir el contenedor.
       - agents-data:/app/data
-    read_only: true
-    tmpfs:
-      - /tmp
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-    restart: unless-stopped
-
-  frontend:
-    build: ./frontend
-    ports:
-      - "8080:80"
-    depends_on:
-      backend:
-        condition: service_healthy
-    security_opt:
-      - no-new-privileges:true
     restart: unless-stopped
 
 volumes:

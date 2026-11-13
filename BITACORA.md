@@ -1480,3 +1480,35 @@ el sistema esté más presentable y pulido».
   lista con negritas y bloque de código con formato, en 7,5 s, en claro y en oscuro.
   Captura nueva `docs/capturas/05-openai.png` en el README, tomada con un agente temporal
   que se borró después.
+
+---
+
+## 2026-11-13 · Etapa 48 — Docker en un solo contenedor
+
+- **Motivo (mío):** la arquitectura de Docker me parecía complicada. Pregunté por qué
+  nginx, si no podía ir todo en uno, si tenía volumen para no perder la base de datos y
+  si simplificarla restaba puntos.
+- **Explicación (IA):** nginx servía el frontend compilado, reenviaba `/api` y devolvía
+  `index.html` en las rutas de React Router. Es la arquitectura clásica para escalar cada
+  parte, pero aquí era más de lo necesario: dos imágenes, dos Dockerfile y un
+  `nginx.conf`. El volumen ya existía y estaba comprobado. No resta puntos: el PDF no
+  pide Docker (§4 pide instrucciones reproducibles, que da `npm install`) y valora la
+  claridad (§9).
+- **Decisión mía:** un solo contenedor.
+- **Cambios (IA):**
+  - `backend/src/frontend.setup.ts`: NestJS sirve los archivos del frontend con
+    `useStaticAssets` (ya incluido en NestJS, sin dependencias) y devuelve `index.html` en
+    las rutas que no son de la API. Solo se activa con `FRONTEND_DIST`, que fija el
+    Dockerfile; en desarrollo no cambia nada.
+  - Un `Dockerfile` en la raíz con tres fases (compilar el frontend, compilar el backend e
+    imagen final con solo lo necesario) y un `docker-compose.yml` con un servicio, el
+    puerto 8080, el `.env` opcional y el volumen `agents-data`.
+  - Fuera nginx, los dos Dockerfile, su `nginx.conf` y las opciones de seguridad
+    avanzadas (`read_only`, `tmpfs`, `cap_drop`). Se mantienen las que sé explicar:
+    versiones exactas, usuario sin privilegios y comprobación de salud.
+- **Puertos:** con npm, página en 5173 y API en 3000; con Docker, todo en 8080.
+- **Revisión:** lint, tipos, 22 pruebas unitarias y 15 e2e. En Docker (con una red
+  temporal por las 28 redes sin usar de mi equipo): página, `/consultar/abc`, API,
+  Swagger y favicon en 200; una ruta inexistente de la API da 404 en JSON, no la página;
+  crear un agente, reiniciar el contenedor y que siga; consulta real con OpenAI; usuario
+  `node`. Todo lo de la prueba se borró después.

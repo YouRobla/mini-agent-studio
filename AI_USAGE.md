@@ -153,6 +153,7 @@ La IA generó el código del backend y del frontend siguiendo el diseño acordad
 | Carpetas por responsabilidad, modal, `theme-controller`, Consultar | Codex (`gpt-6-astra`), dirigido por mí | La estructura de mi proyecto anterior, el modal, el tema nativo y la distribución de Consultar |
 | Consolidaciones, proxy de Vite, Sonner, `queryOptions`, errores | Claude Code (Opus 5.5) | Cada cambio tras pedir un análisis y aprobarlo; mantuve `window.location.search` cuando la IA quiso revertirlo |
 | Chat de varios turnos, fábrica de proveedores, adaptadores de Claude y OpenAI, errores del proveedor | Claude Code (Opus 5.5) | Pedí el chat continuo y poder cambiar entre Claude y ChatGPT; elegí los modelos ligeros (Claude Haiku 5.5 y `gpt-6.1-terra`); descarté runonweb y un modelo en el navegador porque el PDF pide que responda el backend; pedí mostrar el Markdown de las respuestas con formato |
+| Docker (un solo contenedor) | Claude Code (Opus 5.5) | Docker como segunda vía (etapa 2); al ver dos contenedores con nginx, lo simplifiqué a uno solo, porque para esta prueba era más de lo necesario |
 | Icono y favicon | Worker Antigravity (`gemini-4-hydrogen-xhigh`) | Delegarlo al modelo con generación de imágenes; cambiar la estrella por un robot de chat porque no comunicaba nada; el lápiz blanco por estética |
 decisiones de diseño las tomé yo, y en varias corregí lo que la IA proponía:
 
@@ -186,6 +187,9 @@ principio, con una sola pantalla, y lo incorporé cuando pasé a dos vistas.
   derecha con pausa al pasar el ratón, idea de mi proyecto anterior.
 - **Cuando sentí que el frontend se había complicado**, pedí un análisis sincero de
   sobreingeniería y lo reorganizamos hasta que entendí cada pieza.
+- **Lo mismo con Docker:** la primera versión tenía dos contenedores (nginx y Node) y
+  opciones de seguridad que no sabría defender. Pedí que me explicara por qué nginx y la
+  simplifiqué a un solo contenedor, con el volumen para que no se pierda la base de datos.
 
 ## Cómo comprobé que funciona
 
@@ -207,8 +211,9 @@ principio, con una sola pantalla, y lo incorporé cuando pasé a dos vistas.
 - **Markdown seguro:** una respuesta simulada con `<script>` e `<img onerror>` se muestra
   como texto, sin crear esos elementos ni ejecutar nada; y una respuesta real de OpenAI
   con tabla, lista y código se ve con formato en los dos temas.
-- **Docker:** `docker compose up --build`, crear un agente, reiniciar el contenedor del
-  backend y comprobar que sigue, y una consulta real desde el contenedor.
+- **Docker:** `docker compose up --build` con un solo contenedor en el puerto 8080: la
+  página, una ruta del frontend, la API, Swagger y un 404 de la API en JSON; crear un
+  agente, reiniciar el contenedor y comprobar que sigue (volumen); y una consulta real.
 - **Cómo verifiqué el trabajo de los agentes delegados:**
   - Cada encargo era cerrado: alcance, restricciones y evidencia obligatoria (build, lint,
     `npm audit`, rutas en 200, contraste, recorrido en el navegador). Un build o un lint

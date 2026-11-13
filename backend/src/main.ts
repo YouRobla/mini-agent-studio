@@ -5,6 +5,7 @@ import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module.js';
 import { configureApp } from './app.setup.js';
+import { serveFrontend } from './frontend.setup.js';
 import { setupSwagger, SWAGGER_PATH } from './swagger.setup.js';
 
 // Lee backend/.env si existe, con la función integrada de Node (sin dotenv).
@@ -16,6 +17,8 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   configureApp(app);
   setupSwagger(app);
+  // Solo en Docker: este mismo servidor sirve también el frontend compilado.
+  if (process.env.FRONTEND_DIST) serveFrontend(app, process.env.FRONTEND_DIST);
 
   // Al parar con Ctrl+C, Nest avisa a los módulos para que cierren la base de datos.
   app.enableShutdownHooks();
