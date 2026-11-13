@@ -601,3 +601,181 @@ de cada cambio con mis palabras)_
   modal, confirmación del agente con el backend y borrado desde Consultar sin parpadeo.
   Dos comprobaciones fallaron por sincronización de la prueba y pasaron al repetirlas con
   esperas correctas. Consola sin errores.
+
+---
+
+## 2026-11-12 · Etapa 21 — Revisión de sobreingeniería y tema nativo de daisyUI
+
+- **Motivo (mío):** sentía que el frontend estaba demasiado complicado para lo que pide
+  el PDF y que no entendía el orden de los componentes. Pedí un análisis sincero.
+- **Análisis (IA):** el código es correcto, pero desproporcionado: unas 2.750 líneas en
+  50 archivos para un formulario, una lista, un selector y una consulta. Más de un tercio
+  son funciones no pedidas, y la composición mezcla props y contexto, lo que obliga a abrir
+  5 archivos para seguir un clic en «Editar». Hay un mismo concepto con cuatro nombres
+  (consult, run, query, chat).
+- **Decisión mía:** se quedan la búsqueda con debounce (evita una petición por letra) y
+  editar/eliminar. El tema se limpia siguiendo la skill de daisyUI.
+- **Cambio (IA, autorizado por mí):** el tema pasa a ser solo CSS de daisyUI. Al cargar
+  se usa el del sistema (`prefersdark`); el `theme-controller` del `swap` tiene como
+  `value` el tema contrario y daisyUI lo aplica mientras está marcado. Se eliminan el
+  estado de React, `localStorage`, `data-theme` y el script de `index.html`, y también el
+  CSS propio de foco (la regla 7 de la skill: no escribir CSS que daisyUI ya resuelve).
+  Se mantiene `prefers-reduced-motion` por accesibilidad.
+- **Descartado:** conservar el tema elegido al recargar. Necesita el script de
+  `index.html` y `localStorage`, que daisyUI no cubre; ahora se vuelve al tema del sistema.
+- **Revisión:** build y lint en verde; con Playwright, con el sistema en claro y en
+  oscuro, la casilla cambia al tema contrario y vuelve con la barra espaciadora; consola
+  sin errores.
+
+---
+
+## 2026-11-13 · Etapa 22 — Composición «quien muestra, pide; la página coordina» y guía del frontend
+
+- **Motivo (mío):** no entendía el orden de los componentes ni qué hacía cada cosa. Pedí
+  organizar primero y una guía de cada librería. La paginación, el orden y la búsqueda se
+  quedan, pero el frontend solo debe pedirlos al backend con filtros.
+- **Corrección de una decisión anterior (propuesta de la IA, aprobada por mí):** en la
+  etapa 20 la IA introdujo `AgentActionsProvider` + `useAgentActions` (contexto) siguiendo
+  la skill `vercel-composition-patterns`, que está pensada para librerías de componentes.
+  En una app de dos pantallas escondía las dependencias: seguir un clic en «Editar»
+  obligaba a abrir 7 archivos. Se sustituye por `useState` en la página + `AgentDialogs`
+  (componente normal) + props `onEdit` / `onDelete`.
+- **Regla nueva:** quien muestra datos del servidor llama a su hook de TanStack Query; la
+  página coordina lo que comparten sus secciones (el diálogo abierto); el resto solo pinta
+  y avisa por props. La IA propuso al principio subir todos los datos a la página; lo
+  descartó porque obligaba a pasar resultados de `useQuery` por props (lo que la etapa 20
+  ya había quitado).
+- **Cambios:**
+  - Nombres con un solo vocabulario: `consultation/` → `consult/`; `AgentChat` →
+    `ConsultBox`, `ChatMessages` → `ConsultMessages`, `QueryForm` → `ConsultForm`,
+    `AgentPanel` → `AgentInstructions` (el selector y las acciones suben a `ConsultPage`),
+    `AgentQuickActions` + `AgentPanelActions` → `AgentActions` con `variant`,
+    `RootLayout` + `StudioLayout` → `AppLayout`, `app/router.tsx` → `router.tsx`.
+  - Hooks: `useAgentQueries` + `useAgentMutations` → `hooks/useAgents.ts`. Los hooks de
+    formulario de un solo uso (`useAgentForm`, `useQueryForm`) vuelven a su componente con
+    el `useForm` dentro.
+  - Filtros: el frontend ya no fija el tamaño de página (lo decide el backend), no recorta
+    la búsqueda y no corrige la página fuera de rango con un `useEffect`; muestra lo que
+    responde el backend («No hay agentes en esta página» + «Ir a la página 1»).
+  - `useAgent` sin `placeholderData` sacado de los listados: siempre lo pide al backend.
+  - Avisos: fuera `error` e `info`, que nadie usaba. Se conserva la pausa al pasar el
+    ratón (idea mía de un proyecto anterior).
+- **Defecto encontrado en la revisión (ya existía antes):** limpiar la búsqueda y ordenar
+  en menos de 100 ms devolvía la búsqueda a la URL, porque `useAgentsListParams` partía de
+  los parámetros del último render. Ahora parte de `window.location.search`.
+- **Resultado medido:** de 49 a 44 archivos TS y de 2.754 a 2.682 líneas. La IA había
+  estimado unas 300 líneas menos; la ganancia real está en la lectura, no en el tamaño.
+- **Guía:** `frontend/README.md` reescrito: mapa de carpetas, vocabulario, reglas de
+  composición con el árbol de cada página, qué hace cada librería y dónde vive, dónde va
+  cada estado y cómo añadir algo nuevo.
+- **Revisión:** build y lint en verde; Playwright con backend y base temporales, 27
+  comprobaciones: crear (con validación), aviso y «Probar agente», paginación, página
+  fuera de rango, búsqueda con una sola petición, orden, vista en lista, editar y eliminar
+  desde el listado y desde Consultar, consulta vacía y con respuesta, agente inexistente,
+  404 y consola sin errores. Con el backend detenido, mensaje legible y «Reintentar».
+  Dos fallos de la prueba (lectura antes de llegar los datos y un texto no exacto) se
+  corrigieron en la prueba, no en la aplicación.
+
+---
+
+## 2026-11-13 · Etapa 23 — `useAgentsListParams` se mantiene y los avisos pasan a Sonner
+
+- **Duda mía sobre `window.location.search`** en `useAgentsListParams`. La IA dijo
+  primero que no corregía ningún fallo actual y propuso revertir; al revisar la etapa 22
+  se corrigió: limpiar la búsqueda y ordenar seguido sí devolvía la búsqueda a la URL.
+  **Decisión mía:** se mantiene. Es una sola línea y corrige un fallo comprobado.
+- **Análisis (IA) contra las skills de composición y TanStack Query:** se cumplen. Sin
+  props booleanas que cambien el comportamiento, datos pedidos donde se muestran, claves
+  de caché con fábrica y mutaciones que invalidan los listados. Quedan detalles menores
+  pendientes de aprobar (`AgentsSkeleton` con el tipo `AgentView`, `onSubmit` directo en
+  `AgentFormModal`, variantes de `AgentActions` y `AgentsEmptyState`).
+- **Motivo (mío):** el sistema de avisos me parecía demasiado código: 3 archivos y unas
+  150 líneas (contexto, proveedor, temporizador con pausa) para un solo componente que
+  lo usa.
+- **Análisis (IA):** el `toast` de daisyUI es solo una clase de posición; no tiene
+  JavaScript ni plugin, así que la cola y el temporizador siempre van aparte.
+- **Decisión mía:** usar **Sonner** (el paquete `sonner` solo; pregunté si hacía falta
+  shadcn y no: shadcn solo lo envuelve). Versión 2.0.8, sin dependencias propias,
+  `npm audit` con 0 vulnerabilidades.
+- **Cambio (IA, autorizado por mí):** se borra `ui/toast/` (`ToastProvider`, `ToastItem`,
+  `useToast`). `<Toaster />` en `AppLayout` y `showSuccess()` en `ui/toast.tsx`, que pinta
+  el aviso con `toast.custom()` y el `alert` de daisyUI para que siga el tema activo.
+- **Descartado:** los estilos propios de Sonner (su tema sigue al sistema, no al
+  `theme-controller` de daisyUI) y quitar los avisos (se perdía «Probar agente»).
+- **Diferencia aceptada:** Sonner pausa la cuenta con el ratón encima, pero no con el
+  foco del teclado dentro del aviso.
+- **Revisión:** build y lint en verde. Con Playwright: el aviso sigue visible tras 5 s
+  con el ratón encima y se cierra al salir; «Probar agente» abre Consultar y cierra el
+  aviso; se ve bien en claro, oscuro y móvil; consola sin errores. Los agentes de prueba
+  se borraron.
+- **Ajuste de aspecto (pedido mío):** el verde de `alert-success` no casaba con la paleta
+  violeta. El aviso pasa a `base-100` con borde y sombra, y el icono y «Probar agente» en
+  `primary`, igual que el resto de la interfaz. Se quita el botón ✕: el aviso se cierra
+  solo a los 4 s o al pulsar la acción. Comprobado con Playwright en claro, oscuro y móvil.
+
+---
+
+## 2026-11-13 · Etapa 24 — Enlaces en un solo sitio y listado más declarativo
+
+- **Propuesta (IA), aprobada por mí (puntos 1 y 2 de la revisión de arquitectura):**
+  - **`paths.ts`:** `/consultar/${encodeURIComponent(id)}` estaba escrito a mano en tres
+    archivos y `"/"` en cinco. Ahora `paths.agents` y `paths.consult(id?)`; los usan
+    `ConsultAgentLink`, `AgentDialogs`, `ConsultPage`, `AgentSelector`, `Sidebar`,
+    `AppLayout`, `NotFoundPage` y `ErrorPage`. `router.tsx` sigue declarando las rutas.
+  - **`AgentList`:** los cuatro bloques `{cond && …}` (cargando, error, vacío,
+    resultados) pasan a una función `content()` con `return` temprano: se lee de arriba
+    abajo y solo uno puede verse a la vez.
+- **Descartado (IA):** carpetas por funcionalidad (`features/`), Suspense con
+  `useSuspenseQuery` (choca con `keepPreviousData` en la paginación) y loaders de React
+  Router (duplican TanStack Query). La arquitectura por capas se mantiene.
+- **Revisión:** build y lint en verde. Con Playwright: listado y paginación, página 2,
+  búsqueda sin resultados y limpiar, vista en lista, página fuera de rango, «Consultar»
+  desde la tarjeta y desde el menú, y vuelta desde el 404; consola sin errores.
+
+---
+
+## 2026-11-13 · Etapa 25 — `queryOptions`, variantes explícitas y limpieza
+
+- **Aprobado por mí** (puntos 3, 4 y 5 de la revisión de arquitectura), para que el
+  código sea más declarativo.
+- **`queryOptions` (TanStack Query v5):** `agentKeys` pasa a `agentQueries`, donde cada
+  dato junta su clave y su función (`list(params)`, `detail(id)`). Los hooks extienden
+  ese objeto con sus ajustes y las mutaciones usan su `.queryKey`, de modo que
+  `setQueryData` comprueba en TypeScript que guarda un `Agent`. Los parámetros del
+  selector de Consultar pasan a la constante `OPTIONS_PARAMS`.
+- **Variantes explícitas (skill de composición, `patterns-explicit-variants`):**
+  `AgentActions variant=…` → `AgentIconActions` y `AgentLabelActions`;
+  `AgentsEmptyState variant=…` → `AgentsEmptyState` y `AgentsNoResults`. Cada uno pinta
+  una sola cosa y quien los usa elige cuál.
+- **Limpieza:** `AgentsSkeleton` usa el tipo `AgentView`.
+- **Corrección durante el cambio:** la IA propuso `onSubmit={handleSubmit(save)}` en
+  `AgentFormModal`, pero el lint (`react/refs`) avisa porque así `handleSubmit(save)` se
+  llama durante el render y `save` usa un ref. Se vuelve a la función envolvente y se
+  deja un comentario explicando por qué.
+- **Revisión de `hooks/`:** tres archivos con una responsabilidad cada uno (datos del
+  servidor, filtros en la URL, debounce genérico). No se reorganiza.
+- **Revisión:** build y lint en verde. Con Playwright: listado, sin resultados, página
+  fuera de rango, crear, editar desde la tarjeta, abrir Consultar sin pedir otra vez el
+  detalle (sale de la caché que llenó `setQueryData`), consulta, eliminar desde
+  Consultar (desaparece del selector) y 404 del detalle; consola sin errores. Los
+  agentes de prueba se borraron.
+
+---
+
+## 2026-11-13 · Etapa 26 — Auditoría de entrega: `.nvmrc`, documentación y commits
+
+- **Motivo (mío):** pedí una auditoría sincera del frontend «como un senior que me va a
+  entrevistar», con el PDF de la prueba como referencia.
+- **Veredicto (IA):** el código está bien; los riesgos están en la entrega y el alcance.
+  1. `.nvmrc` estaba borrado sin commitear, aunque el README lo cita en la instalación.
+  2. Las etapas 21 a 25 seguían sin commit: el evaluador solo ve el repositorio.
+  3. La documentación no mencionaba Sonner y el tamaño del paquete en `vite.config.ts`
+     estaba desactualizado.
+  También señaló `Content-Type` en los GET (provoca una petición CORS `OPTIONS` de más),
+  `aria-atomic` en los mensajes de la consulta y el alcance frente a las 3–4 h del PDF:
+  no añadir más funciones y tener preparada la justificación de los extras.
+- **Cambios (IA, autorizados por mí):** `.nvmrc` restaurado (26.13.1), Sonner en la tabla
+  de tecnologías del README y tamaño del paquete al día. Commits: el tema solo con CSS
+  (etapa 21) va aparte porque compila por sí solo; las etapas 22 a 25 van juntas porque
+  tocan los mismos archivos, con el detalle en el mensaje; la documentación, en otro.
+- **Pendiente de decidir:** `Content-Type` solo con cuerpo y `aria-atomic`.

@@ -69,7 +69,8 @@ Hay un `.env.example` en cada carpeta. Ninguna variable contiene secretos.
 7. Para ver el manejo de errores: guarda un agente con los campos vacíos, envía una
    consulta vacía, abre `/consultar/no-existe`, o detén el backend y recarga la página.
 
-El botón de sol y luna de la barra superior alterna entre el tema claro y el oscuro.
+El botón de sol y luna de la barra superior alterna entre el tema claro y el oscuro
+(al cargar se usa el tema del sistema).
 
 ## Estructura del proyecto
 
@@ -93,14 +94,13 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 ├── frontend/                        Interfaz (React)
 │   └── src/
 │       ├── main.tsx                 Monta la caché de datos y el router
-│       ├── app/                     Rutas (createBrowserRouter) y ruta raíz
+│       ├── router.tsx               Rutas (createBrowserRouter)
 │       ├── pages/                   AgentsPage, ConsultPage, NotFoundPage, ErrorPage
-│       ├── components/layout/       Panel: menú lateral, barra superior, logo y tema
-│       ├── components/agents/       Listado, tarjeta, fila, formulario, borrado y acciones
-│       ├── components/consultation/ Contexto del agente, selector, chat y consulta
-│       ├── components/ui/           Modal, confirmación, error, toasts, paginación, iconos
-│       ├── hooks/agents/            Consultas, mutaciones, formulario, acciones y URL
-│       ├── hooks/consultation/      Formulario de la consulta
+│       ├── components/layout/       AppLayout (panel y avisos), menú lateral, logo y tema
+│       ├── components/agents/       Listado, tarjeta, fila, acciones, formulario y diálogos
+│       ├── components/consult/      Selector, instrucciones y caja de consulta
+│       ├── components/ui/           Modal, confirmación, error, avisos, paginación, iconos
+│       ├── hooks/                   Datos (TanStack Query), filtros en la URL y debounce
 │       ├── api/                     Cliente HTTP: único lugar que conoce el backend
 │       ├── schemas/                 Validación de formularios (Zod)
 │       ├── types/                   Tipos del dominio
@@ -115,7 +115,7 @@ El botón de sol y luna de la barra superior alterna entre el tema claro y el os
 ```
 Navegador                         Backend (NestJS)
 ─────────                         ────────────────
-AgentChat  ──POST /api/agents/:id/run──▶ AgentsController
+ConsultBox ──POST /api/agents/:id/run──▶ AgentsController
    ▲                                          │  valida el cuerpo con Zod
    │                                          ▼
    │                                     AgentsService
@@ -127,7 +127,7 @@ AgentChat  ──POST /api/agents/:id/run──▶ AgentsController
    └────────── respuesta o error ◀────────────┘
 ```
 
-1. El usuario escribe la consulta y pulsa **Ejecutar**. El frontend valida que no esté
+1. El usuario escribe la consulta y pulsa **Enviar consulta**. El frontend valida que no esté
    vacía y envía `POST /api/agents/:id/run`.
 2. El controlador recibe la petición; el pipe global valida el cuerpo.
 3. El servicio busca el agente en el repositorio. Si no existe, responde `404`.
@@ -305,6 +305,7 @@ Las pruebas usan una base SQLite en memoria y no tocan `backend/data/`.
 | React Router | Dos vistas (Agentes y Consultar); el agente elegido vive en la URL, así que no hace falta estado global |
 | TanStack Query | Gestiona los estados de carga y error de cada petición y refresca el listado al crear un agente |
 | React Hook Form + Zod | Validación de formularios con el error junto a cada campo |
+| Sonner | Avisos de éxito (cola, cierre a los 4 s, pausa con el ratón) sin mantener un sistema propio; se pintan con el `alert` de daisyUI y siguen el tema |
 | Tailwind CSS 4 + daisyUI 5 | Estándar visual consistente con poco código; es solo CSS y se compila localmente. Dos temas propios (claro y oscuro) con contraste AA (4.5:1 como mínimo) |
 | NestJS 12 | Su inyección de dependencias hace explícita la separación entre controlador, lógica, persistencia y proveedor de IA |
 | Zod en el backend | NestJS 12 lo valida de forma nativa (`StandardSchemaValidationPipe`), sin clases DTO |
