@@ -2,7 +2,7 @@ interface AppLogoProps {
   className?: string;
 }
 
-/** Logotipo de la aplicación: núcleo de IA rodeado por un nodo agente en órbita. */
+/** Logotipo de la aplicación: robot amigable con globo de chat y antena. */
 export function AppLogo({ className }: AppLogoProps) {
   return (
     <svg
@@ -11,16 +11,27 @@ export function AppLogo({ className }: AppLogoProps) {
       fill="none"
       aria-hidden="true"
     >
+      <circle cx="12" cy="2.8" r="1.5" fill="currentColor" />
       <path
-        d="M20.89 9.62A9.2 9.2 0 1 1 14.38 3.11"
+        d="M12 4.3V6.5"
         stroke="currentColor"
-        strokeWidth="1.9"
+        strokeWidth="2"
         strokeLinecap="round"
       />
-      <circle cx="18.5" cy="5.5" r="2.1" fill="currentColor" />
       <path
-        d="M12 6.2Q13.4 10.6 17.8 12Q13.4 13.4 12 17.8Q10.6 13.4 6.2 12Q10.6 10.6 12 6.2Z"
-        fill="currentColor"
+        d="M6.2 6.5h11.6A3.2 3.2 0 0 1 21 9.7v5.6a3.2 3.2 0 0 1-3.2 3.2h-7.6l-4 3v-3A3.2 3.2 0 0 1 3 15.3V9.7a3.2 3.2 0 0 1 3.2-3.2Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="9" cy="10.8" r="1.45" fill="currentColor" />
+      <circle cx="15" cy="10.8" r="1.45" fill="currentColor" />
+      <path
+        d="M9.4 14.4a3.6 3.6 0 0 0 5.2 0"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
       />
     </svg>
   );
