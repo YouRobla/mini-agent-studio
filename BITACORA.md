@@ -1402,3 +1402,24 @@ el sistema esté más presentable y pulido».
   (base en `backend/data/agents.db`), seleccionarlo en el selector y recibir la
   respuesta, consulta vacía, agente inexistente y backend detenido con «Reintentar».
   Consola sin errores inesperados.
+
+---
+
+## 2026-11-13 · Etapa 45 — Prueba real con OpenAI y modelo `gpt-6.1-terra`
+
+- **Pedido mío:** probar la integración con mi cuenta de OpenAI y usar un modelo ligero,
+  del nivel de Haiku, para respuestas simples: GPT-6.1 Terra.
+- **Cómo se eligió el modelo (IA):** sin adivinar el nombre. Con mi clave se pidió a la
+  API la lista de modelos disponibles (consulta gratuita, solo se imprimieron los
+  nombres) y apareció `gpt-6.1-terra`. Pasa a ser el modelo por defecto de OpenAI en la
+  fábrica, en lugar de `gpt-5.5`, que era de una generación anterior.
+- **La clave:** la puse yo en `backend/.env`; la IA solo comprobó los nombres de las
+  variables y que Git ignora el archivo, sin leer el valor.
+- **Prueba real (desde la interfaz, con un agente temporal que se borró después):**
+  etiqueta «OpenAI · gpt-6.1-terra»; primer mensaje resumido en 3,3 s; segundo mensaje
+  «¿Qué te pedí en el mensaje anterior?» → «Me pediste resumir un texto sobre NestJS.»,
+  así que el historial funciona con la API real. Sin errores en consola.
+- **Documentación revisada:** README (variables, pruebas, diagrama), Swagger y
+  `AI_USAGE.md` al día; se añaden a `AI_USAGE.md` la fila del trabajo del LLM, la prueba
+  real y dos hallazgos en la tabla de errores (el `.env` que no se leía y los errores
+  repetidos con el servidor caído).

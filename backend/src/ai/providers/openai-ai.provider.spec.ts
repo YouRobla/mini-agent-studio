@@ -28,11 +28,11 @@ describe('OpenAiProvider', () => {
       status: 'completed',
       output_text: 'Más corto.',
     });
-    const provider = new OpenAiProvider(client, 'gpt-5.5');
+    const provider = new OpenAiProvider(client, 'gpt-6.1-terra');
 
     await expect(provider.generate(request)).resolves.toBe('Más corto.');
     expect(create).toHaveBeenCalledWith({
-      model: 'gpt-5.5',
+      model: 'gpt-6.1-terra',
       instructions: 'Eres un asistente que resume textos',
       input: [
         { role: 'user', content: 'Resume esto' },
@@ -44,7 +44,7 @@ describe('OpenAiProvider', () => {
 
   it('trata una respuesta sin texto como fallo del proveedor', async () => {
     const { client } = fakeClient({ status: 'incomplete', output_text: '' });
-    const provider = new OpenAiProvider(client, 'gpt-5.5');
+    const provider = new OpenAiProvider(client, 'gpt-6.1-terra');
 
     await expect(provider.generate(request)).rejects.toThrow('incomplete');
   });

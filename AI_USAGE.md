@@ -152,6 +152,7 @@ La IA generó el código del backend y del frontend siguiendo el diseño acordad
 | Panel con dos vistas, React Router, temas | Worker Codex (`gpt-6.1-sol`) | El panel, el theme generator; devolví el contraste del botón «Cerrar» |
 | Carpetas por responsabilidad, modal, `theme-controller`, Consultar | Codex (`gpt-6-astra`), dirigido por mí | La estructura de mi proyecto anterior, el modal, el tema nativo y la distribución de Consultar |
 | Consolidaciones, proxy de Vite, Sonner, `queryOptions`, errores | Claude Code (Opus 5.5) | Cada cambio tras pedir un análisis y aprobarlo; mantuve `window.location.search` cuando la IA quiso revertirlo |
+| Chat de varios turnos, fábrica de proveedores, adaptadores de Claude y OpenAI, errores del proveedor | Claude Code (Opus 5.5) | Pedí el chat continuo y poder cambiar entre Claude y ChatGPT; elegí los modelos ligeros (Claude Haiku 5.5 y `gpt-6.1-terra`); descarté runonweb y un modelo en el navegador porque el PDF pide que responda el backend |
 | Icono y favicon | Worker Antigravity (`gemini-4-hydrogen-xhigh`) | Delegarlo al modelo con generación de imágenes; cambiar la estrella por un robot de chat porque no comunicaba nada; el lápiz blanco por estética |
 decisiones de diseño las tomé yo, y en varias corregí lo que la IA proponía:
 
@@ -197,7 +198,12 @@ principio, con una sola pantalla, y lo incorporé cuando pasé a dos vistas.
 - **CORS:** petición `OPTIONS` desde el origen del frontend; más tarde, el flujo completo
   con Vite en otro puerto (5174) y con `127.0.0.1`, ya con el proxy de Vite.
 - **Seguridad de dependencias:** `npm audit` en backend y frontend, con 0 vulnerabilidades.
-- **Instalación limpia:** clonar el repositorio en otra carpeta y seguir el README.
+- **Instalación limpia:** clonar el repositorio desde GitHub en otra carpeta y seguir el
+  README tal cual, con el escenario completo del §8 (etapa 44).
+- **Proveedores de IA reales:** con mi clave de OpenAI, dos mensajes reales con
+  `gpt-6.1-terra`; el segundo («¿qué te pedí antes?») recordó el primero. Con claves
+  inválidas de Claude y de OpenAI, el chat explica que la clave fue rechazada. El modelo se
+  eligió de la lista que devuelve la API con mi clave, no de memoria.
 - **Cómo verifiqué el trabajo de los agentes delegados:**
   - Cada encargo era cerrado: alcance, restricciones y evidencia obligatoria (build, lint,
     `npm audit`, rutas en 200, contraste, recorrido en el navegador). Un build o un lint
@@ -257,5 +263,7 @@ principio, con una sola pantalla, y lo incorporé cuando pasé a dos vistas.
 | Con el puerto 5173 ocupado, Vite pasaba al 5174 y CORS bloqueaba la app con un mensaje falso de «sin conexión». Venía de mi decisión inicial de no usar proxy | Prueba en el navegador con Vite en otro puerto | Proxy de Vite: mismo origen, sin CORS, en cualquier puerto |
 | Buscar «INGLÉS» no encontraba «inglés» y «Ángel» se ordenaba después de la Z | Pregunté «¿estás seguro de que no hay nada más?» y se probaron casos límite contra el servidor | Función `normalize_text` en SQLite y una prueba que lo cubre |
 | Las estimaciones de la IA en las reorganizaciones («unas 300 líneas menos») | Se midió antes y después | Optimistas: la mejora real fue la legibilidad, no el tamaño; queda registrado |
+| El backend nunca leía `backend/.env`, aunque el README decía que se podía configurar ahí | Al preparar el LLM real, revisando cómo llegaba la clave | `process.loadEnvFile` de Node, sin dependencias, y una prueba con un `.env` real |
+| Con el servidor caído, Consultar mostraba dos errores iguales y un «Elige un agente» falso; con una clave inválida decía «Inténtalo de nuevo» | Lo vi yo en el navegador y pedí reproducirlo | Un solo error con un «Reintentar» que recupera todo, y un mensaje que dice que la clave fue rechazada |
 
 El registro completo, etapa por etapa, está en `BITACORA.md`.

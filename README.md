@@ -77,7 +77,7 @@ La base de datos se crea sola en `backend/data/agents.db` en el primer arranque.
 | `AI_PROVIDER` | backend | `mock` | Proveedor de IA: `mock` (simulado), `anthropic` (Claude) u `openai` |
 | `ANTHROPIC_API_KEY` | backend | — | Clave de la API de Claude; obligatoria con `AI_PROVIDER=anthropic` |
 | `OPENAI_API_KEY` | backend | — | Clave de la API de OpenAI; obligatoria con `AI_PROVIDER=openai` |
-| `AI_MODEL` | backend | `claude-haiku-5-5` / `gpt-5.5` | Modelo del proveedor real (por defecto, según el proveedor) |
+| `AI_MODEL` | backend | `claude-haiku-5-5` / `gpt-6.1-terra` | Modelo del proveedor real (por defecto, según el proveedor) |
 | `API_PROXY_TARGET` | frontend | `http://localhost:3000` | Dónde reenvía `/api` el proxy de Vite. Cámbialo si cambias `PORT` |
 | `VITE_API_URL` | frontend | `/api` | Dirección de la API en el navegador; por defecto pasa por el proxy |
 

@@ -8,8 +8,8 @@ import { OpenAiProvider } from './providers/openai-ai.provider.js';
 /** Modelo de Claude si no se indica otro en AI_MODEL: el más barato. */
 export const DEFAULT_ANTHROPIC_MODEL = 'claude-haiku-5-5';
 
-/** Modelo de OpenAI si no se indica otro en AI_MODEL: el de la documentación de su SDK. */
-export const DEFAULT_OPENAI_MODEL = 'gpt-5.5';
+/** Modelo de OpenAI si no se indica otro en AI_MODEL: el rápido y ligero, como Haiku en Claude. */
+export const DEFAULT_OPENAI_MODEL = 'gpt-6.1-terra';
 
 /** Lee una variable obligatoria o explica qué falta, para que el servidor no arranque a medias. */
 function requireEnv(
