@@ -23,9 +23,17 @@ export function AgentSelector({
 
   return (
     <fieldset className="fieldset min-w-0 p-0">
-      <label className="fieldset-legend pt-0" htmlFor="agent-selector">
-        Agente para esta consulta
-      </label>
+      <div className="flex items-center gap-2">
+        <label className="fieldset-legend me-0 pt-0" htmlFor="agent-selector">
+          Agente para esta consulta
+        </label>
+        <span
+          className="badge badge-outline badge-sm"
+          title="Las respuestas las genera un proveedor de IA simulado"
+        >
+          Modo simulado
+        </span>
+      </div>
 
       {agents.isPending && (
         <div

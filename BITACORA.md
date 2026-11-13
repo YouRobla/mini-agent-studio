@@ -1212,3 +1212,20 @@ el sistema esté más presentable y pulido».
   respondió la IA y qué decidí; frase de los commits corregida; el tiempo explicado (lo
   obligatorio a la 1 h 40 min de empezar); 7 casos nuevos en la tabla de errores; sección
   «Qué haría distinto»; y «Cómo leer esta bitácora» con las 8 decisiones clave.
+
+---
+
+## 2026-11-13 · Etapa 38 — «Modo simulado» junto al agente
+
+- **Pedido mío:** la etiqueta «Modo simulado» estaba en la barra superior; la quería
+  arriba, junto al agente de la vista Consultar, que es donde importa.
+- **Cambio (IA):** el badge sale de `AppLayout` y pasa a la leyenda del selector en
+  `AgentSelector`. La leyenda de daisyUI (`fieldset-legend`) trae `margin-inline-end:
+  auto`, que lo empujaba a la derecha; se anula con `me-0` (comprobado midiendo el estilo
+  calculado, no a ojo). El badge queda fuera del `<label>`, así que el nombre accesible del
+  selector sigue siendo «Agente para esta consulta».
+- **Pregunta mía:** ¿hace falta que el backend maneje el modo simulado? Hoy no: el backend
+  ya elige el proveedor en `ai.module.ts` y devuelve `provider` en cada respuesta; el badge
+  es un texto fijo. Con un LLM real sí hará falta que el backend diga cuál está activo.
+- **Revisión:** build y lint en verde; capturas en escritorio y móvil.
+- **Pendiente:** las capturas de `docs/capturas/` todavía muestran el badge en la barra.
