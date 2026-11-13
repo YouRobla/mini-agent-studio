@@ -12,6 +12,18 @@
       "sourceType": "github",
       "skillPath": "skills/nestjs-best-practices/SKILL.md",
       "computedHash": "15dfabf74412bab8e6232cbe111b56048aac496d2f151a08995f305475d82fad"
+    },
+    "tanstack-query-best-practices": {
+      "source": "DeckardGer/tanstack-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tanstack-query/SKILL.md",
+      "computedHash": "7e22c25af6f7dd31ab76fb5b1415afe9f49caf613581c04ed04e0e8591ea704a"
+    },
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/composition-patterns/SKILL.md",
+      "computedHash": "f711ed8b16162eaa712abbcdbbae6c926f86c57e60127735fecc3ad0dd85b3fa"
     }
   }
 }
