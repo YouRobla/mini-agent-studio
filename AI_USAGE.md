@@ -103,6 +103,18 @@ lo que se podía y no se podía tocar, y la evidencia obligatoria para darla por
 ## Qué hizo la IA y qué decidí o cambié yo
 
 La IA generó el código del backend y del frontend siguiendo el diseño acordado. Las
+
+| Parte del código | La escribió | Lo que decidí o cambié yo |
+| --- | --- | --- |
+| Backend base: módulos, SQLite, validación con Zod, filtro de errores, mock | Claude Code (Fable 5.2) | NestJS, Zod nativo en lugar de `class-validator`, SQLite en lugar de JSON, sin ORM |
+| Paginado, búsqueda y orden del backend, con sus pruebas | Antigravity CLI (Gemini 4 Argon) | Lo pedí yo para gestionar mejor el listado |
+| Editar y eliminar (backend y frontend) | Worker Claude Sonnet 5.5 | Completar el extra del PDF y el aviso abajo a la derecha de mi proyecto anterior |
+| Swagger, búsqueda sin tildes, módulo de base de datos | Claude Code (Fable 5.2) | Documentar con Swagger; la reorganización del backend comparada con mi proyecto Express |
+| Frontend base: formulario, listado y consulta | Claude Code (Fable 5.2) | TanStack Query, React Hook Form y Zod |
+| Panel con dos vistas, React Router, temas | Worker Codex (`gpt-6.1-sol`) | El panel, el theme generator; devolví el contraste del botón «Cerrar» |
+| Carpetas por responsabilidad, modal, `theme-controller`, Consultar | Codex (`gpt-6-astra`), dirigido por mí | La estructura de mi proyecto anterior, el modal, el tema nativo y la distribución de Consultar |
+| Consolidaciones, proxy de Vite, Sonner, `queryOptions`, errores | Claude Code (Opus 5.5) | Cada cambio tras pedir un análisis y aprobarlo; mantuve `window.location.search` cuando la IA quiso revertirlo |
+| Icono y favicon | Worker Antigravity (`gemini-4-hydrogen-xhigh`) | Delegarlo al modelo con generación de imágenes; el lápiz blanco por estética |
 decisiones de diseño las tomé yo, y en varias corregí lo que la IA proponía:
 
 | Tema | Propuesta de la IA | Mi decisión |
