@@ -9,6 +9,7 @@
 | --- | --- |
 | Claude Code (modelo Claude Fable 5.2) | Análisis de requisitos, propuesta de arquitectura, generación del código, pruebas manuales y documentación |
 | Subagente Claude Sonnet | Revisión independiente del plan contra el enunciado, antes de escribir código |
+| Codex (worker en Orca, coordinado desde Claude Code) | Mejora de la interfaz: panel con navegación, dos vistas con React Router, skeletons y temas claro/oscuro |
 | Skills `nestjs-best-practices` y `daisyui` | Guías de referencia para NestJS y para los componentes de daisyUI 5 |
 | CLI `npx skills` | Búsqueda y evaluación de skills; se revisó su contenido antes de instalarlas |
 | Orca | _(completar: cómo lo usé)_ |
@@ -40,7 +41,15 @@ mi aprobación:
 > elementos sin respaldo en el PDF que añadan riesgo, y riesgos frente al escenario de
 > evaluación. Da un veredicto.
 
-**3. Decisión de persistencia con criterio:**
+**3. Encargo cerrado a otro agente (Codex):** especificación con el objetivo, las rutas,
+lo que se podía y no se podía tocar, y la evidencia obligatoria para darla por terminada:
+
+> Solo edita `frontend/`. No añadas otras dependencias. Mantén todo el manejo de errores
+> actual. Sin CDN ni fuentes externas. No hagas commits. Un build o lint fallido significa
+> que la tarea NO está terminada. Entrega: build, lint, `npm audit`, rutas en 200, archivos
+> modificados y los pares de contraste de los dos temas.
+
+**4. Decisión de persistencia con criterio:**
 
 > De manera crítica y objetiva, ¿cuál escogerías para el alcance principal que pide el
 > documento, teniendo en cuenta los extras?
@@ -59,6 +68,7 @@ decisiones de diseño las tomé yo, y en varias corregí lo que la IA proponía:
 | ORM | — | Lo propuse yo por seguridad; tras analizarlo, lo descarté: las consultas parametrizadas evitan la inyección SQL y es una sola tabla |
 | Interfaz | CSS simple | Elegí daisyUI para tener un estándar visual mínimo |
 | Ubicación del repositorio | Subcarpeta nueva | Usar la carpeta actual como repositorio |
+| Presentación de la interfaz | Una sola pantalla con tres tarjetas, sin React Router | Pedí un panel con dos vistas, navegación, skeletons y tema claro/oscuro; con dos vistas, React Router ya tiene un uso real |
 
 Ideas mías que descarté tras analizarlas con la IA: monorepo con Zod compartido, editor
 visual de nodos, tipos de agente preseleccionables, Zustand y React Router.
@@ -89,6 +99,8 @@ _(completar: cambios que hice a mano en el código después de revisarlo)_
 | Mensaje con mala concordancia: "Las instrucciones es obligatorio" | Prueba con `curl` | Se reescribieron los mensajes |
 | Se subió por error un archivo de caché (`.tsbuildinfo`) | Revisando `git status` | Se añadió a `.gitignore` y se quitó del repositorio |
 | El botón "Seleccionar" ocupaba casi todo el ancho | Captura en el navegador | Se corrigió con la clase `list-col-grow` de daisyUI |
+| El tema oscuro que diseñé tenía 7 de 11 pares de color por debajo del contraste mínimo 4.5:1 | Cálculo de contraste de los colores OKLCH durante la revisión | Texto oscuro sobre los colores vivos; mínimo actual 5.11:1 |
+| El worker de Codex dejó el botón "Cerrar" del aviso de éxito casi ilegible (texto oscuro sobre verde) | Revisión visual en el navegador antes de confirmar | Se le devolvió la corrección; pasó a un botón con contraste 13.85:1 |
 | El revisor (Sonnet) sugirió sustituir NestJS por Express | Revisión del plan | Descartado: mantuve NestJS y lo justifico en el README |
 | Reglas por palabras clave para simular inteligencia en el mock | Discusión de diseño | Descartado: darían respuestas falsas; el mock muestra lo que se enviaría al modelo |
 

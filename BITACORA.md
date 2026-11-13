@@ -262,3 +262,89 @@ Tailwind CSS 4 + daisyUI 5 · NestJS 12 + Zod (pipe nativo) · archivo JSON · p
   `AI_USAGE.md`.
 - **Pendiente (decisión mía):** renombrar la carpeta local, crear el repositorio remoto,
   y las fases 2 y 3.
+
+---
+
+## 2026-11-12 · Etapa 10 — Mejora de UI/UX delegada a un worker de Codex
+
+- **Decisión mía:** la interfaz de una sola pantalla se veía muy simple. Pedí un panel con
+  menú de navegación, dos vistas con React Router, skeletons de carga y un conmutador de
+  tema claro/oscuro con dos temas propios generados con el formato del theme generator
+  de daisyUI.
+- **Cambio respecto a una decisión anterior:** en la etapa 5 descartamos React Router
+  porque había una sola pantalla. Ahora hay dos vistas (Agentes y Consultar), así que el
+  enrutador tiene un uso real. La selección del agente pasa a vivir en la URL
+  (`/consultar/:agentId`), y el único estado compartido nuevo es el tema.
+- **Herramienta:** Orca, con un worker de Codex lanzado por Claude Code como coordinador.
+  Codex lee la skill de daisyUI desde `.agents/skills/daisyui`.
+- **Encargo:** especificación cerrada con alcance (solo `frontend/`), restricciones (sin
+  dependencias extra salvo `react-router`, sin CDN, textos en español, conservar todo el
+  manejo de errores), y evidencia obligatoria (build, lint, `npm audit`, rutas en 200,
+  contraste de los temas). El worker no hace commits: reviso y confirmo yo.
+- **Resultado del worker:** panel con `drawer` y `menu` (vista activa con `NavLink`),
+  `navbar` con badge "Modo simulado" y conmutador `swap` sol/luna; vistas `/` (Agentes) y
+  `/consultar/:agentId?` (Consultar, con `select` de agente); aviso de éxito con "Probar
+  agente"; skeletons en listado y selector; estados vacíos y página 404. Tema en un
+  contexto (`src/theme/`), guardado en `localStorage` con try/catch, preferencia del
+  sistema por defecto y script en `index.html` contra el parpadeo. Temas `studio-light` y
+  `studio-dark` en OKLCH, con todos los pares de texto por encima de 4.5:1 (calculado
+  por el worker). Única dependencia nueva: `react-router` 8.5.1.
+- **Evidencia del worker:** build y lint sin errores, `npm audit` 0, rutas en 200, pruebas
+  con Playwright (validaciones, crear, consultar, agente inexistente, 404, móvil de 320 a
+  1440 px sin desbordamiento, backend caído y reintento, tema persistente, consola limpia).
+- **Mi revisión en el navegador:** cambio de tema y persistencia al recargar, "Consultar"
+  desde el listado con el agente elegido en la URL, consulta con respuesta, creación con
+  aviso y contador actualizado, consola sin errores.
+- **Defecto que encontré:** el botón "Cerrar" del aviso verde casi no se leía (texto
+  oscuro sobre verde oscuro, `btn-ghost`). Se lo devolví al worker; lo cambió a `btn btn-sm`
+  (contraste 13.85:1 en claro y 15.49:1 en oscuro) y confirmó que no había otros casos.
+- **Pendiente de decidir:** la etiqueta "Modo simulado" aparece dos veces en escritorio.
+
+---
+
+## 2026-11-12 · Etapa 11 — Mejoras propias de UX y ampliación del listado (trabajo mío)
+
+Cambios hechos por mí, después de la entrega del worker de Codex, aplicando principios de
+UX/UI para que la aplicación sea más presentable. _(completar: herramientas usadas y motivo
+de cada cambio con mis palabras)_
+
+**Frontend**
+
+- Reorganización por responsabilidades: `app/` (proveedores y rutas), `pages/`,
+  `components/agents/`, `components/consultation/`, `components/layout/`, `components/ui/`,
+  `hooks/` (datos y formularios), `types/`.
+- Creación de agentes en un modal (`dialog` de daisyUI) con botón "Nuevo agente".
+- Listado con búsqueda (con retardo de 250 ms), orden, vista de tarjetas o lista,
+  paginación y modal de detalle. Filtros y página guardados en la URL.
+- Vista Consultar en dos columnas: ficha del agente y chat, con "Limpiar chat" y atajo
+  Ctrl + Enter.
+- Tema con el `theme-controller` de daisyUI (sin contexto de React) y temas propios
+  `coffee-light` y `coffee`.
+
+**Backend**
+
+- `GET /api/agents` pasa a devolver `{ items, meta }` con paginación (`page`, `limit`),
+  búsqueda (`search`, con los comodines de LIKE escapados) y orden (`recent`, `oldest`,
+  `name`), validados con Zod.
+- Nuevo `GET /api/agents/:id`.
+- Primeras pruebas automatizadas: 5 unitarias del servicio y 1 e2e de la API con
+  Supertest (Vitest).
+
+**Revisión (Claude Code)**
+
+- Build, lint, pruebas (6/6) y `npm audit` (0) en verde.
+- Escenario del evaluador recorrido con Playwright: validación del formulario vacío,
+  creación, persistencia tras reiniciar el backend, consulta vacía, respuesta del mock,
+  agente inexistente, tema persistente, backend caído y móvil a 375 px sin desbordamiento.
+  Consola sin errores.
+- Hallazgos de la revisión, todos corregidos después con mi aprobación:
+  - Tema oscuro con 7 de 11 pares de color por debajo de 4.5:1 (error 3.37, success 2.33,
+    primary 4.26). Texto oscuro sobre los colores vivos y primario aclarado a 66 %;
+    mínimo actual 5.11:1.
+  - README con el contrato antiguo de `GET /api/agents` y sin la sección de pruebas.
+  - `frontend/README.md` con el nombre de la carpeta y una referencia a otro proyecto.
+  - `AgentList.tsx` de 432 líneas: dividido en barra de herramientas, tarjeta, fila,
+    estados vacíos, avatar y enlace de consulta (queda en 189 líneas).
+  - Formato de 2 archivos del backend; `.playwright-mcp/` añadido a `.gitignore`;
+    `frontend/UI_UX_REPORT.md` (informe obsoleto del worker) retirado del repositorio.
+  - Todo el trabajo de las etapas 10 y 11 quedó en commits separados por tema.

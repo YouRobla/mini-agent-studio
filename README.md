@@ -52,14 +52,18 @@ Hay un `.env.example` en cada carpeta. Ninguna variable contiene secretos.
 ## Demostración del flujo
 
 1. Arranca backend y frontend sin configurar nada.
-2. En **Nuevo agente**, escribe el nombre "Asistente de resúmenes" y las instrucciones
-   "Eres un asistente que resume textos". Pulsa **Guardar agente**.
-3. El agente aparece en **Agentes guardados** y queda seleccionado.
+2. En la vista **Agentes**, pulsa **Nuevo agente**. Escribe el nombre "Asistente de
+   resúmenes" y las instrucciones "Eres un asistente que resume textos". Pulsa
+   **Guardar agente**.
+3. Aparece un aviso de confirmación y el agente se muestra en **Agentes guardados**.
 4. Detén el backend (`Ctrl+C`), vuelve a ejecutar `npm run start` y recarga la página:
    el agente sigue en el listado.
-5. Selecciónalo, escribe una consulta y pulsa **Ejecutar**: la respuesta aparece debajo.
-6. Para ver el manejo de errores: guarda un agente con los campos vacíos, ejecuta una
-   consulta vacía, o detén el backend y pulsa **Ejecutar**.
+5. Pulsa **Consultar** junto al agente (o **Probar agente** en el aviso). Se abre la vista
+   **Consultar** con ese agente elegido; escribe una consulta y pulsa **Enviar consulta**.
+6. Para ver el manejo de errores: guarda un agente con los campos vacíos, envía una
+   consulta vacía, abre `/consultar/no-existe`, o detén el backend y recarga la página.
+
+El botón de sol y luna de la barra superior alterna entre el tema claro y el oscuro.
 
 ## Estructura del proyecto
 
@@ -70,21 +74,30 @@ Hay un `.env.example` en cada carpeta. Ninguna variable contiene secretos.
 │   │   ├── app.setup.ts             Configuración global: prefijo, CORS, validación, errores
 │   │   ├── agents/
 │   │   │   ├── agents.controller.ts Rutas HTTP
-│   │   │   ├── agents.service.ts    Lógica: crear, listar, ejecutar
+│   │   │   ├── agents.service.ts    Lógica: crear, listar, buscar, ejecutar
 │   │   │   ├── agents.repository.ts PERSISTENCIA (SQLite)
-│   │   │   └── agents.schemas.ts    Reglas de validación (Zod)
+│   │   │   ├── agents.schemas.ts    Reglas de validación (Zod)
+│   │   │   └── agents.service.spec.ts Pruebas unitarias del servicio
 │   │   ├── ai/
 │   │   │   ├── ai-provider.ts       Contrato del proveedor de IA
 │   │   │   └── mock-ai.provider.ts  ADAPTADOR DE IA simulado
 │   │   └── common/                  Excepciones y filtro global de errores
+│   ├── test/                        Prueba e2e de la API (Supertest)
 │   └── data/                        Archivo de la base de datos (no se sube a Git)
 ├── frontend/                        Interfaz (React)
 │   └── src/
-│       ├── App.tsx                  La única pantalla
+│       ├── App.tsx                  Composición de proveedores y rutas
+│       ├── app/                     AppProviders y AppRoutes (React Router)
+│       ├── pages/                   AgentsPage, ConsultPage, NotFoundPage
+│       ├── components/layout/       Panel: menú lateral, barra superior, botón de tema
+│       ├── components/agents/       Modal de creación, listado, tarjeta, fila, detalle
+│       ├── components/consultation/ Selector, ficha del agente, chat y formulario
+│       ├── components/ui/           Piezas compartidas: encabezado, aviso, paginación
 │       ├── api/                     Cliente HTTP: único lugar que conoce el backend
-│       ├── hooks/                   Peticiones con TanStack Query
+│       ├── hooks/                   TanStack Query y lógica de formularios
+│       ├── types/                   Tipos de dominio Agent y RunResult
 │       ├── schemas/                 Validación de formularios (Zod)
-│       └── components/              AgentForm, AgentList, QueryPanel
+│       └── index.css                Tailwind, daisyUI y los temas coffee-light / coffee
 ├── AI_USAGE.md                      Uso de IA durante el desarrollo
 └── BITACORA.md                      Registro del proceso y de las decisiones
 ```
@@ -132,8 +145,18 @@ Todos bajo el prefijo `/api`.
 | Método | Ruta | Descripción | Respuesta |
 | --- | --- | --- | --- |
 | `POST` | `/api/agents` | Crea un agente | `201` con el agente |
-| `GET` | `/api/agents` | Lista los agentes, del más reciente al más antiguo | `200` con la lista |
+| `GET` | `/api/agents` | Lista los agentes, paginados, con búsqueda y orden | `200` con `{ items, meta }` |
+| `GET` | `/api/agents/:id` | Devuelve un agente | `200` con el agente, `404` si no existe |
 | `POST` | `/api/agents/:id/run` | Ejecuta una consulta sobre un agente | `200` con la respuesta |
+
+Parámetros opcionales de `GET /api/agents`:
+
+| Parámetro | Valores | Por defecto |
+| --- | --- | --- |
+| `page` | Entero desde 1 | `1` |
+| `limit` | Entero de 1 a 100 | `6` |
+| `search` | Texto, máximo 100 caracteres; busca en nombre e instrucciones | vacío |
+| `sort` | `recent`, `oldest` o `name` | `recent` |
 
 ### Ejemplo: crear un agente
 
@@ -151,6 +174,36 @@ curl -X POST http://localhost:3000/api/agents \
   "createdAt": "2026-11-12T23:51:48.959Z"
 }
 ```
+
+### Ejemplo: listar agentes
+
+```bash
+curl "http://localhost:3000/api/agents?page=1&limit=6&search=resum&sort=recent"
+```
+
+```json
+{
+  "items": [
+    {
+      "id": "1c4c8e63-2f0e-4c24-aad6-57b31dfdc208",
+      "name": "Asistente de resúmenes",
+      "instructions": "Eres un asistente que resume textos",
+      "createdAt": "2026-11-12T23:51:48.959Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 6,
+    "total": 1,
+    "totalAll": 3,
+    "totalPages": 1,
+    "hasNextPage": false,
+    "hasPrevPage": false
+  }
+}
+```
+
+`total` cuenta los agentes que coinciden con la búsqueda; `totalAll`, todos los guardados.
 
 ### Ejemplo: ejecutar una consulta
 
@@ -189,28 +242,41 @@ Los espacios al inicio y al final se recortan. Todos los errores tienen el mismo
 
 | Código | `error` | Cuándo |
 | --- | --- | --- |
-| `400` | `VALIDATION_ERROR` | Faltan campos o superan el máximo (`details` indica cuáles) |
+| `400` | `VALIDATION_ERROR` | Faltan campos, superan el máximo o un parámetro de consulta no es válido (`details` indica cuáles) |
 | `400` | `BAD_REQUEST` | El cuerpo no es JSON válido |
 | `404` | `AGENT_NOT_FOUND` | El agente no existe |
 | `502` | `AI_PROVIDER_ERROR` | El proveedor de IA falló |
 | `500` | `INTERNAL_ERROR` | Cualquier otro fallo; el servidor sigue en marcha |
+
+## Pruebas
+
+```bash
+cd backend
+npm test          # pruebas unitarias del servicio (paginación, búsqueda, orden, detalle)
+npm run test:e2e  # prueba de la API completa con Supertest
+```
+
+Las pruebas usan una base SQLite en memoria y no tocan `backend/data/`.
 
 ## Tecnologías y razones
 
 | Tecnología | Razón |
 | --- | --- |
 | React + TypeScript + Vite | Stack que domino; arranque inmediato y tipado de extremo a extremo |
+| React Router | Dos vistas (Agentes y Consultar); el agente elegido vive en la URL, así que no hace falta estado global |
 | TanStack Query | Gestiona los estados de carga y error de cada petición y refresca el listado al crear un agente |
 | React Hook Form + Zod | Validación de formularios con el error junto a cada campo |
-| Tailwind CSS 4 + daisyUI 5 | Estándar visual consistente con poco código; es solo CSS y se compila localmente |
+| Tailwind CSS 4 + daisyUI 5 | Estándar visual consistente con poco código; es solo CSS y se compila localmente. Dos temas propios (claro y oscuro) con contraste AA (4.5:1 como mínimo) |
 | NestJS 12 | Su inyección de dependencias hace explícita la separación entre controlador, lógica, persistencia y proveedor de IA |
 | Zod en el backend | NestJS 12 lo valida de forma nativa (`StandardSchemaValidationPipe`), sin clases DTO |
 | SQLite (`node:sqlite`) | Persistencia real con escritura segura, sin instalar dependencias ni un servidor |
+| Vitest + Supertest | Vienen con el proyecto de NestJS 12; prueban el servicio y la API sin levantar el servidor |
 
-Decisiones tomadas a propósito para no añadir complejidad: sin ORM (una tabla y tres
-consultas parametrizadas), sin enrutador ni estado global en el frontend (una sola
-pantalla), sin monorepo con paquetes compartidos. El razonamiento completo está en
-`BITACORA.md`.
+Decisiones tomadas a propósito para no añadir complejidad: sin ORM (una tabla y unas
+pocas consultas parametrizadas), sin librería de estado global en el frontend (el estado
+del servidor vive en TanStack Query, la selección y los filtros en la URL, y el tema lo
+aplica el `theme-controller` de daisyUI), sin monorepo con paquetes compartidos. El
+razonamiento completo está en `BITACORA.md`.
 
 ## Limitaciones conocidas
 
@@ -218,8 +284,11 @@ pantalla), sin monorepo con paquetes compartidos. El razonamiento completo está
 - No se guarda el historial de consultas; la respuesta se pierde al recargar la página.
 - Los agentes no se pueden editar ni eliminar.
 - El modo mock no genera respuestas reales: muestra lo que se enviaría al modelo.
-- No hay pruebas automatizadas todavía.
-- La selección del agente es estado de la interfaz y no sobrevive a una recarga.
+- Las pruebas cubren el backend; el frontend no tiene pruebas automatizadas.
+- El selector de la vista Consultar carga como máximo 100 agentes. Un agente fuera de esa
+  lista se puede consultar igualmente desde el listado, porque se busca por su id.
+- El frontend se sirve con el servidor de desarrollo de Vite; no hay configuración para
+  servirlo compilado en producción.
 
 ## Mejoras con más tiempo
 
@@ -228,6 +297,6 @@ pantalla), sin monorepo con paquetes compartidos. El razonamiento completo está
 2. **Esquemas de validación compartidos** entre frontend y backend en un paquete común,
    para tener una sola fuente de reglas.
 
-Otras: historial de conversaciones por agente, editar y eliminar agentes, pruebas e2e de
-la API, ejecución con Docker Compose y, a más largo plazo, un editor visual de flujos
+Otras: historial de conversaciones por agente, editar y eliminar agentes, pruebas del
+frontend, ejecución con Docker Compose y, a más largo plazo, un editor visual de flujos
 para agentes con varios pasos.
