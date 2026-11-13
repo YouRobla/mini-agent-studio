@@ -499,3 +499,6 @@ de cada cambio con mis palabras)_
 - **Revisión:** build y lint en verde; recorrido completo en una instancia aislada con base
   temporal (crear con toast, editar, eliminar con confirmación, Consultar, error de red);
   capturas en claro y oscuro; consola sin errores.
+- **Ajuste final:** vuelve el resaltado al pasar el ratón por las tarjetas (el borde se
+  oscurece), que se había perdido en la etapa 16, y la fila de la lista usa el mismo
+  criterio (fondo gris claro al pasar el ratón).

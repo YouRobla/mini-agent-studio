@@ -16,7 +16,7 @@ interface AgentRowProps {
  */
 export function AgentRow({ agent, onEdit, onDelete }: AgentRowProps) {
   return (
-    <li className="list-row items-center gap-3 px-1 py-3">
+    <li className="list-row items-center gap-3 px-1 py-3 transition-colors hover:bg-base-200">
       <AgentAvatar name={agent.name} />
       <div className="list-col-grow min-w-0">
         <p className="truncate text-sm font-semibold" title={agent.name}>

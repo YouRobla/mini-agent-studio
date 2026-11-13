@@ -13,7 +13,7 @@ interface AgentCardProps {
 /** Agente en la vista de tarjetas (`card` de daisyUI). */
 export function AgentCard({ agent, onEdit, onDelete }: AgentCardProps) {
   return (
-    <article className="card card-border bg-base-100">
+    <article className="card card-border bg-base-100 transition-colors hover:border-base-content/30">
       <div className="card-body gap-3 p-4">
         <div className="flex items-start gap-3">
           <AgentAvatar name={agent.name} />
