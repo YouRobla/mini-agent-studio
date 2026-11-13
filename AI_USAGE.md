@@ -63,42 +63,80 @@ mi aprobación:
 2. Definición del alcance y de los casos de aceptación.
 3. Decisión de stack y arquitectura, cuestionando cada librería.
 4. Contrato de la API antes de escribir código.
-5. Implementación por commits pequeños, probando cada uno.
+5. Implementación en commits por tema; cada parte se probó (con `curl` y en el
+   navegador) antes de confirmarla.
+
+**Sobre el tiempo:** lo obligatorio quedó completo a las 18:57 del primer día, 1 h 40 min
+después de empezar el análisis (commits 1 a 11, con el README y este documento). Todo lo
+posterior son extras del §9 (editar y eliminar, prueba automatizada) y pulido, hecho a
+sabiendas de que el PDF sugiere 3–4 horas.
 
 ## Ejemplos de prompts
 
-**1. Análisis de requisitos (antes de elegir stack):**
+Todos son míos, citados con la ortografía corregida. Debajo de cada uno: qué buscaba, qué
+respondió la IA y qué decidí.
+
+**1. Entender antes de construir:**
 
 > Actúa como analista de requisitos y arquitecto. Analiza exhaustivamente el documento y
 > ayúdame a establecer las bases del proyecto antes de seleccionar el stack, diseñar la
 > arquitectura o escribir código. Distingue siempre entre lo explícitamente solicitado, lo
 > que se infiere razonablemente y lo que propones como mejora. No escribas código todavía.
 
-**2. Revisión independiente con otro modelo:**
+- **Buscaba:** no empezar a programar sin saber qué se evalúa.
+- **La IA:** un análisis con 11 requisitos funcionales y 20 casos de aceptación.
+- **Decidí:** aprobarlo y pedir una revisión independiente con otro modelo (Sonnet).
 
-> Eres un revisor técnico independiente. Lee el PDF y valida este plan. Tu trabajo es
-> encontrar errores, omisiones y sobreingeniería, no confirmar. Indica requisitos omitidos,
-> elementos sin respaldo en el PDF que añadan riesgo, y riesgos frente al escenario de
-> evaluación. Da un veredicto.
+**2. Corregir a la IA con lo que sé:**
 
-**3. Encargo cerrado a otro agente (Codex):** especificación con el objetivo, las rutas,
-lo que se podía y no se podía tocar, y la evidencia obligatoria para darla por terminada:
+> Veo que con Zod, NestJS en las últimas versiones lo soporta de forma nativa; por eso te
+> pregunto si sería mejor mantener Zod, o usar lo clásico frente a lo actual, solo para
+> este proyecto.
 
-> Solo edita `frontend/`. No añadas otras dependencias. Mantén todo el manejo de errores
-> actual. Sin CDN ni fuentes externas. No hagas commits. Un build o lint fallido significa
-> que la tarea NO está terminada. Entrega: build, lint, `npm audit`, rutas en 200, archivos
-> modificados y los pares de contraste de los dos temas.
+- **Buscaba:** validar con la forma actual del framework.
+- **La IA:** había dicho que en NestJS lo idiomático era `class-validator`. Al verificarlo
+  en las notas de la versión 12, confirmó el `StandardSchemaValidationPipe` nativo.
+- **Decidí:** Zod en el backend y en el frontend, con las mismas reglas.
 
-**4. Dirigiendo yo a Codex, sin Claude de por medio:**
+**3. Seguridad frente a sobreingeniería:**
+
+> Para aplicar un ORM no sé si sea de más; más que nada por la seguridad, la inyección
+> SQL y el manejo de las queries, porque sé por experiencia que si no están bien hechas
+> pasa eso. Busca documentos, fuentes, el estándar para NestJS, o sería sobreingeniería:
+> analízalo con criterio real, basado en el documento y en los alcances.
+
+Y a continuación: *«De manera crítica y objetiva, ¿cuál escogerías para el alcance
+principal, teniendo en cuenta los extras?»*
+
+- **Buscaba:** decidir con fuentes, no con opiniones.
+- **La IA:** la inyección se evita con consultas parametrizadas, con o sin ORM; Drizzle
+  solo soporta `node:sqlite` en beta y TypeORM necesita un driver nativo.
+- **Decidí:** SQLite integrado en Node, sin ORM, con sentencias preparadas; el ORM queda
+  como mejora si el modelo crece.
+
+**4. Dirigir yo a otro agente con una referencia propia (Codex):**
 
 > Necesito que me ayudes a pulir, organizar y mejorar la presentación y la
 > componentización de mi proyecto de React. Quiero imitar la arquitectura de frontend de
 > mi otro proyecto, no a esa escala, pero sí hay cosas que me gustaría ordenar.
 
-**5. Decisión de persistencia con criterio:**
+- **Buscaba:** una estructura que ya domino, proporcionada a este tamaño.
+- **Codex:** carpetas por responsabilidad, formularios en hooks, modal de creación y tema
+  nativo de daisyUI.
+- **Decidí:** quedármela como base; más tarde la simplifiqué (prompt 5).
 
-> De manera crítica y objetiva, ¿cuál escogerías para el alcance principal que pide el
-> documento, teniendo en cuenta los extras?
+**5. Autocrítica del alcance:**
+
+> Quiero que hagas un análisis sincero de sobreingeniería, componentización, arquitectura
+> y diseño del frontend. Siento que lo compliqué: apliqué mucha complejidad, creé
+> diálogos o no nombré bien. Quiero volver a organizarlo de manera clara, pero siento que
+> es mucho lo que he hecho para lo que me solicitan.
+
+- **Buscaba:** que alguien me dijera si me había pasado.
+- **La IA:** unas 2.750 líneas en 50 archivos para un formulario, una lista, un selector y
+  una consulta; un contexto que obligaba a abrir 7 archivos para seguir un clic.
+- **Decidí:** quedarme con la búsqueda y con editar y eliminar, quitar el contexto y
+  reorganizar con una regla simple: «quien muestra, pide; la página coordina».
 
 ## Qué hizo la IA y qué decidí o cambié yo
 
@@ -184,6 +222,18 @@ principio, con una sola pantalla, y lo incorporé cuando pasé a dos vistas.
   - En el backend, la comparación con mi proyecto Express (`Sistema-de-Notas-Backend`),
     para entender por qué NestJS organiza por funcionalidad.
 
+## Qué haría distinto
+
+- **Fijar la arquitectura antes de delegar la interfaz.** La repartí entre varios agentes
+  (Codex, Antigravity, Sonnet, Claude) antes de cerrar la estructura del frontend. Se
+  rehízo unas diez veces entre cinco autores y luego hubo que consolidarla (etapas 20–22).
+  Hoy fijaría primero las carpetas y las reglas de composición, y después delegaría.
+- **Probar siempre contra el backend real.** Algunos agentes comprobaban su trabajo con la
+  API simulada; los fallos de integración solo aparecían al revisarlo con el servidor en
+  marcha.
+- **Registrar quién hizo qué desde el principio.** La bitácora tuvo huecos hasta que la
+  audité contra las sesiones reales (etapa 35); es más fácil anotarlo en el momento.
+
 ## Errores y recomendaciones de la IA corregidos o descartados
 
 | Qué pasó | Cómo se detectó | Qué se hizo |
@@ -200,5 +250,12 @@ principio, con una sola pantalla, y lo incorporé cuando pasé a dos vistas.
 | El revisor (Sonnet) sugirió sustituir NestJS por Express | Revisión del plan | Descartado: mantuve NestJS y lo justifico en el README |
 | La IA propuso convertir los esquemas Zod a mano (`z.toJSONSchema`) para Swagger | Le pedí verificarlo en la documentación; leyó el código de `@nestjs/swagger` 12 y generó el documento | No hacía falta: Swagger 12 lee los esquemas de `@Body({ schema })` directamente. Se usó esa vía |
 | Reglas por palabras clave para simular inteligencia en el mock | Discusión de diseño | Descartado: darían respuestas falsas; el mock muestra lo que se enviaría al modelo |
+| La IA puso `useCallback` en todas las funciones de `AgentsPage` | Pregunté qué hacía cada uno; ningún hijo usaba `React.memo` | Se quitaron: no aportaban nada |
+| La IA metió un contexto (`AgentActionsProvider`) siguiendo una skill pensada para librerías de componentes | Seguir un clic en «Editar» obligaba a abrir 7 archivos | Se sustituyó por estado en la página y props |
+| La IA propuso revertir `window.location.search` en `useAgentsListParams` por «innecesario» | Pregunté en qué caso servía; la propia bitácora tenía el fallo reproducido | Lo mantuve: sin él, limpiar la búsqueda y ordenar seguido devolvía la búsqueda |
+| La IA «simplificó» `onSubmit={handleSubmit(save)}` | El lint (regla de refs) lo marcó | Se volvió a la forma anterior y se dejó un comentario con el motivo |
+| Con el puerto 5173 ocupado, Vite pasaba al 5174 y CORS bloqueaba la app con un mensaje falso de «sin conexión». Venía de mi decisión inicial de no usar proxy | Prueba en el navegador con Vite en otro puerto | Proxy de Vite: mismo origen, sin CORS, en cualquier puerto |
+| Buscar «INGLÉS» no encontraba «inglés» y «Ángel» se ordenaba después de la Z | Pregunté «¿estás seguro de que no hay nada más?» y se probaron casos límite contra el servidor | Función `normalize_text` en SQLite y una prueba que lo cubre |
+| Las estimaciones de la IA en las reorganizaciones («unas 300 líneas menos») | Se midió antes y después | Optimistas: la mejora real fue la legibilidad, no el tamaño; queda registrado |
 
 El registro completo, etapa por etapa, está en `BITACORA.md`.

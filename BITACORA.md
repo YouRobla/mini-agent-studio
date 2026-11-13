@@ -6,6 +6,29 @@ y qué recomendaciones corregí o descarté.
 
 Formato de cada entrada: fecha · etapa · prompt (resumido) · resultado · qué validé / corregí / descarté.
 
+## Cómo leer esta bitácora
+
+Es el registro completo, etapa por etapa (36 en total). Para una lectura rápida:
+
+- **Lo obligatorio** quedó en las etapas 1–9 (análisis, stack, backend, frontend y
+  documentación); el resto son extras del §9 y pulido.
+- **Quién hizo qué**, con modelos y horas: etapa 35.
+- **Las etapas 13–17** son iteraciones de la interfaz (probé un tema verde del generador
+  y volví al violeta); la versión que se queda es la de la etapa 17.
+
+### Las 8 decisiones clave
+
+| # | Decisión | De quién | Etapa |
+| --- | --- | --- | --- |
+| 1 | Dos carpetas independientes; NestJS por capas (controlador → servicio → repositorio) y el proveedor de IA detrás de una interfaz | Propuesta de la IA, NestJS idea mía, aprobada por mí | 3, 7 |
+| 2 | Zod nativo de NestJS 12 en lugar de `class-validator` | Corrección mía a la IA | 4 |
+| 3 | TanStack Query, React Hook Form y Zod en el frontend | Mía, contra el descarte de la IA | 6 |
+| 4 | SQLite integrado en Node, sin ORM | Pregunta mía, decidida con fuentes | 7 |
+| 5 | Mock honesto: muestra lo que se enviaría al modelo, sin fingir inteligencia | Acordada; descarté las reglas por palabras clave | 8 |
+| 6 | Panel con dos vistas y React Router; el agente elegido vive en la URL | Mía | 10 |
+| 7 | Consolidación tras un análisis de sobreingeniería: «quien muestra, pide; la página coordina» | Pedido mío; regla propuesta por la IA | 20–22 |
+| 8 | Proxy de Vite para que CORS no rompa la app si cambia el puerto | Problema hallado por la IA; decisión mía | 27 |
+
 ---
 
 ## 2026-11-12 · Etapa 1 — Análisis de requisitos
@@ -1166,3 +1189,26 @@ el sistema esté más presentable y pulido».
   plantilla de Vite y uno duplicado en `AgentFormModal`; se corrigen dos: el de CORS en
   `app.setup.ts` (de antes del proxy) y una frase mal redactada en `AgentDialogs`.
 - **Revisión:** build y lint en verde en las dos partes; 10 pruebas unitarias y 12 e2e.
+
+---
+
+## 2026-11-13 · Etapa 37 — `AI_USAGE.md` revisado como lo haría un evaluador
+
+- **Pedido mío:** una auditoría crítica de la bitácora y de `AI_USAGE.md`, como si la IA
+  ya fuera quien corrige la prueba, y mejores ejemplos de prompts.
+- **Reclamos (IA):**
+  1. Dos de los cinco ejemplos de prompts los había redactado Claude como coordinador, no
+     yo (la revisión independiente y el encargo a Codex).
+  2. «Commits pequeños, probando cada uno» no casaba con Git: los 11 primeros se
+     confirmaron entre las 18:48 y las 18:57.
+  3. El tiempo dedicado supera las 3–4 h del PDF y no se explicaba.
+  4. La tabla de errores no tenía los casos que mejor muestran criterio.
+  5. La bitácora no tenía resumen y las iteraciones de la interfaz podían leerse como
+     indecisión.
+  6. Faltaba una reflexión sobre qué haría distinto.
+- **Decisión mía:** aplicar los seis.
+- **Cambios (IA):** cinco prompts míos verificados en las sesiones (análisis, Zod, ORM,
+  dirección de Codex y autocrítica de sobreingeniería), cada uno con qué buscaba, qué
+  respondió la IA y qué decidí; frase de los commits corregida; el tiempo explicado (lo
+  obligatorio a la 1 h 40 min de empezar); 7 casos nuevos en la tabla de errores; sección
+  «Qué haría distinto»; y «Cómo leer esta bitácora» con las 8 decisiones clave.
