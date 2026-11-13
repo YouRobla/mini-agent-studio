@@ -1441,10 +1441,6 @@ el sistema esté más presentable y pulido».
   - SQLite en el volumen `agents-data`. Frontend compilado y servido por nginx, que
     reenvía `/api` al backend y devuelve `index.html` en las rutas de React Router.
   - `backend/.env` es opcional (`required: false`): con él, IA real; sin él, simulado.
-- **Problema de mi equipo, no del proyecto:** Docker no podía crear la red («all
-  predefined address pools have been fully subnetted»): tenía 28 redes sin usar de otros
-  proyectos. La IA no ejecutó `docker network prune` sin mi permiso; para la prueba usó
-  una red temporal propia, fuera del repositorio, y la borró al terminar.
 - **Revisión:** imágenes construidas (backend 430 MB, frontend 95 MB). En el puerto
   8080: página, Swagger y rutas del frontend en 200; crear un agente, reiniciar el
   contenedor del backend y que siga ahí; consulta real con OpenAI desde el contenedor;
@@ -1507,8 +1503,8 @@ el sistema esté más presentable y pulido».
     avanzadas (`read_only`, `tmpfs`, `cap_drop`). Se mantienen las que sé explicar:
     versiones exactas, usuario sin privilegios y comprobación de salud.
 - **Puertos:** con npm, página en 5173 y API en 3000; con Docker, todo en 8080.
-- **Revisión:** lint, tipos, 22 pruebas unitarias y 15 e2e. En Docker (con una red
-  temporal por las 28 redes sin usar de mi equipo): página, `/consultar/abc`, API,
+- **Revisión:** lint, tipos, 22 pruebas unitarias y 15 e2e. En Docker:
+  página, `/consultar/abc`, API,
   Swagger y favicon en 200; una ruta inexistente de la API da 404 en JSON, no la página;
   crear un agente, reiniciar el contenedor y que siga; consulta real con OpenAI; usuario
   `node`. Todo lo de la prueba se borró después.
@@ -1670,10 +1666,6 @@ el sistema esté más presentable y pulido».
   `healthy`; página, ruta del frontend, Swagger y API; crear y consultar en mock; 429
   en la undécima petición; persistencia después de reiniciar. Se usó un proyecto y
   volumen de prueba, puerto 18080 y sin cargar el `.env` personal.
-- **Incidencia del equipo:** Docker tiene agotados sus rangos automáticos por redes de
-  otros proyectos. El primer arranque falló por ello; la comprobación usó un override
-  temporal con una subred libre (`10.254.253.0/24`). No se borraron redes ajenas ni se
-  fijó esa subred particular en el compose del repositorio.
 - **npm real:** `npm run start` y Vite en puertos aislados, SQLite en memoria y mock;
   página, ruta del frontend, estado, Swagger, creación y consulta a través del proxy.
   En el navegador, respuesta visible y peticiones de API al mismo origen.
