@@ -927,3 +927,76 @@ de cada cambio con mis palabras)_
   API. En el servidor en marcha: `/api/docs-json` con los ejemplos en las tres rutas con
   cuerpo, sin `X-Powered-By`, y los agentes guardados siguen ahí.
 - **Sin verificar:** el cierre de la base al pulsar Ctrl+C no se probó a mano.
+
+---
+
+## 2026-11-13 · Etapa 32 — Auditoría contra el PDF y repositorio público
+
+- **Pedido mío:** analizar el estado del frontend y del backend frente al PDF y decidir
+  qué falta.
+- **Verificación (IA):** 10 pruebas unitarias y 12 e2e, build, lint y `npm audit` (0
+  vulnerabilidades) en las dos partes. Instalación limpia desde un `git clone` con Node
+  24.22.3 y 26.13.1: crear «Asistente de resúmenes», reiniciar el backend y comprobar que
+  el agente sigue. El cierre con Ctrl+C, que quedó sin verificar en la etapa 31, se
+  comprobó: el servidor se detiene y el siguiente arranque abre la base sin problemas.
+- **Veredicto (IA):** lo obligatorio está completo. Faltaba la entrega: no había
+  repositorio remoto y `AI_USAGE.md` seguía como borrador, con apartados por completar y
+  una contradicción (React Router figuraba como descartado).
+- **Decisiones mías:**
+  - Repositorio público: https://github.com/YouRobla/mini-agent-studio
+  - Mantener mi correo personal en los commits. La IA propuso el correo `noreply` de
+    GitHub; lo descarté.
+  - Quitar de los 45 commits la línea `Co-Authored-By` de Claude. Como ya estaban
+    subidos, se reescribieron los mensajes y se subieron con `--force-with-lease`. Autor,
+    fechas y contenido no cambian (comprobado comparando antes y después). El uso de IA
+    sigue documentado en este archivo y en `AI_USAGE.md`.
+  - Diagrama del README con Mermaid y capturas reales de la app (siguiente etapa).
+    Descartado Excalidraw: es una imagen que hay que redibujar cuando cambia el código.
+- **Problema encontrado (IA):** el push por SSH falló porque la clave pide frase de
+  contraseña y la sesión de la IA no tiene agente SSH. Se subió por HTTPS con las
+  credenciales de `gh` solo para ese comando; el remoto sigue siendo SSH.
+- **Pregunta mía:** ¿el frontend muestra bien todo lo que responde el backend? La IA
+  cruzó cada respuesta y cada error con la interfaz y lo comprobó con `curl` (etapa 33).
+
+---
+
+## 2026-11-13 · Etapa 33 — Errores del backend que el frontend no mostraba bien
+
+- **Pregunta mía:** ¿el frontend muestra bien todo lo que responde el backend? ¿Sería un
+  error que el backend envíe cosas que la interfaz nunca muestra, o que se queden en la
+  consola? Y si TanStack Query actualiza la caché, ¿cuándo podría pasar el caso 2?
+- **Análisis (IA):** no es un error que haya campos que no se muestran (`agentId`,
+  `statusCode`, el código `error`): son para programas. Lo sería perder información que la
+  persona necesita. La app no escribe errores en la consola y TanStack Query tampoco
+  (comprobado en su código, 5.107.1). Las escrituras nunca se repiten solas (`retry: 0`
+  por defecto en las mutaciones). Se encontraron tres fallos, dos confirmados con `curl`:
+  1. Una búsqueda de más de 100 caracteres mostraba «Los datos enviados no son válidos»
+     sin el motivo, que el backend sí enviaba en `details`.
+  2. Eliminar, editar o consultar un agente borrado fuera de la pestaña mostraba
+     `No existe un agente con el id "…"`, el reintento fallaba siempre y el agente seguía
+     en pantalla. La caché solo conoce lo que pasa en su pestaña: no se entera de un
+     borrado hecho desde otra pestaña, desde Swagger o con `curl` hasta que vuelve a pedir
+     los datos (frescos 30 s; se refrescan al volver a la pestaña o al montar la vista).
+  3. Las lecturas repetían también los 4xx (`retry: 1` global), con un segundo de espera
+     y la misma respuesta.
+- **Decisión mía:** aplicar los tres arreglos.
+- **Cambios (IA):**
+  - `client.ts`: `errorMessage` muestra los `details` si los hay y un texto propio para
+    `AGENT_NOT_FOUND`; nuevo `isRetryable` (sin conexión o `5xx`).
+  - `main.tsx`: las lecturas solo se reintentan si `isRetryable`. Se quita el caso especial
+    del 404 en `useAgent`.
+  - `AgentsToolbar`: `maxLength` de 100 en el buscador (`SEARCH_MAX_LENGTH`).
+  - `useAgents.ts`: eliminar trata el 404 como «ya no existía» (lo buscado ya se cumple) y
+    refresca el listado; editar y consultar, ante un 404, invalidan todo lo de agentes
+    (`agentQueries.all()`).
+  - `AgentDialogs`: aviso «El agente «X» ya se había eliminado». `AgentFormModal`: guardar
+    se desactiva si el agente ya no existe. `ConsultPage`: no muestra los datos en caché
+    de un agente que ya no existe.
+  - `frontend/README.md`: reintentos, 404 fuera de la pestaña y `isRetryable`.
+- **Revisión:** build y lint en verde. En el navegador, con un backend y un Vite aislados
+  (base temporal, sin tocar los datos reales) y borrando agentes con `curl`:
+  búsqueda larga → el motivo y una sola petición; eliminar → «ya se había eliminado» y el
+  listado sin él; editar → mensaje claro y «Guardar cambios» desactivado; consultar →
+  «El agente no existe». Camino normal (consultar y eliminar) sin cambios. La extensión de
+  Chrome registró un `DELETE` correcto como 503; con `curl` por el mismo proxy da 204: era
+  un fallo de la herramienta de medida.
