@@ -522,3 +522,6 @@ de cada cambio con mis palabras)_
 - **Mi revisión:** imagen del favicon a 16, 32 y 180 px sobre fondo claro y oscuro;
   los tres iconos se sirven con su tipo correcto y están enlazados en `index.html`;
   logo del menú en los dos temas; build y lint en verde.
+- **Decisión mía sobre el lápiz:** al pasar el ratón, el icono de editar queda en blanco
+  sobre el amarillo. La IA avisó de que ese par da 1.78:1 (un icono necesita 3:1) y
+  decidí mantenerlo así por estética.

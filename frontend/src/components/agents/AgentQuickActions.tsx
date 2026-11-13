@@ -24,7 +24,7 @@ export function AgentQuickActions({
       <div className="tooltip" data-tip="Editar">
         <button
           type="button"
-          className="btn btn-ghost btn-xs btn-square hover:bg-warning hover:text-warning-content focus-visible:bg-warning focus-visible:text-warning-content"
+          className="btn btn-ghost btn-xs btn-square hover:bg-warning hover:text-white focus-visible:bg-warning focus-visible:text-white"
           aria-label={`Editar ${agent.name}`}
           onClick={() => onEdit(agent)}
         >
