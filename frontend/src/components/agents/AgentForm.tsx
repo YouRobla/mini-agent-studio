@@ -1,57 +1,20 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import type { Agent } from "../api/agents.ts";
-import { ApiError, errorMessage } from "../api/client.ts";
-import { useCreateAgent } from "../hooks/useAgents.ts";
-import {
-  createAgentSchema,
-  type CreateAgentInput,
-} from "../schemas/agent.schemas.ts";
+import { errorMessage } from "../../api/client.ts";
+import type { useAgentForm } from "../../hooks/useAgentForm.ts";
 
 interface AgentFormProps {
-  onCreated: (agent: Agent) => void;
+  form: ReturnType<typeof useAgentForm>;
+  onCancel: () => void;
 }
 
-export function AgentForm({ onCreated }: AgentFormProps) {
-  const createAgent = useCreateAgent();
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setError,
-    formState: { errors },
-  } = useForm<CreateAgentInput>({
-    resolver: zodResolver(createAgentSchema),
-    defaultValues: { name: "", instructions: "" },
-  });
-
-  const onSubmit = handleSubmit((values) => {
-    createAgent.mutate(values, {
-      onSuccess: (agent) => {
-        reset();
-        onCreated(agent);
-      },
-      onError: (error) => {
-        // Si el servidor rechaza un campo, el mensaje aparece junto a ese campo.
-        if (error instanceof ApiError) {
-          for (const detail of error.details) {
-            if (detail.field === "name" || detail.field === "instructions") {
-              setError(detail.field, { message: detail.message });
-            }
-          }
-        }
-      },
-    });
-  });
-
-  // El error general se muestra solo si no se pudo asignar a un campo concreto.
-  const hasFieldErrors = Boolean(errors.name || errors.instructions);
-  const showGeneralError = createAgent.isError && !hasFieldErrors;
+export function AgentForm({ form, onCancel }: AgentFormProps) {
+  const { register, errors, onSubmit, createAgent, showGeneralError } = form;
 
   return (
-    <section className="card card-border bg-base-100">
-      <form className="card-body" onSubmit={onSubmit} noValidate>
-        <h2 className="card-title">Nuevo agente</h2>
+      <form className="space-y-4" onSubmit={onSubmit} noValidate>
+        <h2 id="create-agent-title" className="text-xl font-semibold">Nuevo agente</h2>
+        <p id="create-agent-description" className="text-sm text-base-content/70">
+          Define cómo quieres que se comporte tu asistente.
+        </p>
 
         <fieldset className="fieldset">
           <label className="fieldset-legend" htmlFor="agent-name">
@@ -59,6 +22,7 @@ export function AgentForm({ onCreated }: AgentFormProps) {
           </label>
           <input
             id="agent-name"
+            autoFocus
             type="text"
             className={`input w-full ${errors.name ? "input-error" : ""}`}
             placeholder="Asistente de resúmenes"
@@ -79,7 +43,7 @@ export function AgentForm({ onCreated }: AgentFormProps) {
           </label>
           <textarea
             id="agent-instructions"
-            rows={4}
+            rows={7}
             className={`textarea w-full ${errors.instructions ? "textarea-error" : ""}`}
             placeholder="Eres un asistente que resume textos"
             aria-invalid={Boolean(errors.instructions)}
@@ -101,10 +65,13 @@ export function AgentForm({ onCreated }: AgentFormProps) {
           </div>
         )}
 
-        <div className="card-actions justify-end">
+        <div className="modal-action">
+          <button type="button" className="btn" onClick={onCancel} disabled={createAgent.isPending}>
+            Cancelar
+          </button>
           <button
             type="submit"
-            className="btn btn-neutral"
+            className="btn btn-primary"
             disabled={createAgent.isPending}
           >
             {createAgent.isPending && (
@@ -114,6 +81,5 @@ export function AgentForm({ onCreated }: AgentFormProps) {
           </button>
         </div>
       </form>
-    </section>
   );
 }

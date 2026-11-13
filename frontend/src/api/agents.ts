@@ -1,25 +1,30 @@
 import type {
+  Agent,
+  ListAgentsParams,
+  PaginatedAgents,
+  RunResult,
+} from "../types/agent.ts";
+import type {
   CreateAgentInput,
   RunAgentInput,
 } from "../schemas/agent.schemas.ts";
 import { request } from "./client.ts";
 
-export interface Agent {
-  id: string;
-  name: string;
-  instructions: string;
-  createdAt: string;
+export function listAgents(
+  params: Partial<ListAgentsParams> = {},
+): Promise<PaginatedAgents> {
+  const query = new URLSearchParams();
+  if (params.page !== undefined) query.set("page", String(params.page));
+  if (params.limit !== undefined) query.set("limit", String(params.limit));
+  if (params.search) query.set("search", params.search);
+  if (params.sort) query.set("sort", params.sort);
+
+  const suffix = query.size > 0 ? `?${query.toString()}` : "";
+  return request<PaginatedAgents>(`/agents${suffix}`);
 }
 
-/** Resultado de ejecutar una consulta sobre un agente. */
-export interface RunResult {
-  agentId: string;
-  response: string;
-  provider: string;
-}
-
-export function listAgents(): Promise<Agent[]> {
-  return request<Agent[]>("/agents");
+export function getAgent(agentId: string): Promise<Agent> {
+  return request<Agent>(`/agents/${encodeURIComponent(agentId)}`);
 }
 
 export function createAgent(input: CreateAgentInput): Promise<Agent> {

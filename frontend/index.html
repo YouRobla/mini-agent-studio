@@ -4,6 +4,24 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (() => {
+        let theme;
+        try {
+          theme = localStorage.getItem("studio-theme");
+        } catch {}
+        if (theme !== "light" && theme !== "dark") {
+          theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+        }
+        document.documentElement.dataset.theme = theme === "dark" ? "coffee" : "coffee-light";
+      })();
+    </script>
+    <meta
+      name="description"
+      content="Crea agentes con instrucciones propias y prueba sus respuestas en un espacio de trabajo sencillo."
+    />
     <title>Mini Agent Studio</title>
   </head>
   <body>

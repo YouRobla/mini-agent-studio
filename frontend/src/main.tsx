@@ -1,20 +1,10 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
 import App from "./App.tsx";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    // Un solo reintento: si el backend está caído, el error se muestra pronto.
-    queries: { retry: 1 },
-  },
-});
+import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
+    <App />
   </StrictMode>,
 );
