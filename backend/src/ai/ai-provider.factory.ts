@@ -4,14 +4,9 @@ import type { AiProvider } from './ai-provider.js';
 import { AnthropicAiProvider } from './providers/anthropic-ai.provider.js';
 import { MockAiProvider } from './providers/mock-ai.provider.js';
 import { OpenAiProvider } from './providers/openai-ai.provider.js';
+import { AI_CLIENT_OPTIONS } from './ai.request.js';
 
 /** Modelo de Claude si no se indica otro en AI_MODEL: el más barato. */
-/**
- * Espera máxima por respuesta del proveedor y un reintento (los SDK esperan 10 min
- * por defecto). Dos intentos de 45 s caben en los 120 s del proxy de nginx.
- */
-const CLIENT_OPTIONS = { timeout: 45_000, maxRetries: 1 };
-
 export const DEFAULT_ANTHROPIC_MODEL = 'claude-haiku-5-5';
 
 /** Modelo de OpenAI si no se indica otro en AI_MODEL: el rápido y ligero, como Haiku en Claude. */
@@ -49,14 +44,14 @@ export function createAiProvider(
     case 'anthropic': {
       const apiKey = requireEnv(env, 'ANTHROPIC_API_KEY', provider);
       return new AnthropicAiProvider(
-        new Anthropic({ apiKey, ...CLIENT_OPTIONS }),
+        new Anthropic({ apiKey, ...AI_CLIENT_OPTIONS }),
         model || DEFAULT_ANTHROPIC_MODEL,
       );
     }
     case 'openai': {
       const apiKey = requireEnv(env, 'OPENAI_API_KEY', provider);
       return new OpenAiProvider(
-        new OpenAI({ apiKey, ...CLIENT_OPTIONS }),
+        new OpenAI({ apiKey, ...AI_CLIENT_OPTIONS }),
         model || DEFAULT_OPENAI_MODEL,
       );
     }

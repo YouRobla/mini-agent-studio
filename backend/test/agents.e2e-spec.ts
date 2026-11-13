@@ -1,3 +1,5 @@
+import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
@@ -235,6 +237,20 @@ describe('Agents API (e2e)', () => {
       .get('/api/docs-json')
       .expect(200);
 
+    for (const path of Object.values(res.body.paths) as Record<
+      string,
+      { responses: Record<string, { description: string }> }
+    >[]) {
+      for (const operation of Object.values(path)) {
+        expect(operation.responses['429']).toBeDefined();
+      }
+    }
+    expect(
+      res.body.paths['/api/agents/{id}/run'].post.responses['429'].description,
+    ).toContain('10 peticiones');
+    expect(
+      res.body.paths['/api/agents/{id}/run'].post.responses['502'].description,
+    ).toContain('AI_PROVIDER_TIMEOUT');
     expect(Object.keys(res.body.paths)).toEqual([
       '/api/agents',
       '/api/agents/{id}',
@@ -334,11 +350,13 @@ describe('Agents API (e2e)', () => {
 describe('Agents API (e2e) con el proveedor de IA caído', () => {
   let app: NestExpressApplication;
 
+  let providerError: Error = new Error('sin conexión');
+
   // Se sustituye el proveedor real por uno que siempre falla.
   const failingProvider: AiProvider = {
     name: 'roto',
     model: null,
-    generate: () => Promise.reject(new Error('sin conexión')),
+    generate: () => Promise.reject(providerError),
   };
 
   beforeAll(async () => {
@@ -381,4 +399,30 @@ describe('Agents API (e2e) con el proveedor de IA caído', () => {
 
     await request(server).get('/api/agents').expect(200);
   });
+  it.each([
+    new OpenAI.APIConnectionTimeoutError(),
+    new Anthropic.APIConnectionTimeoutError(),
+    new DOMException('detalle interno del plazo', 'TimeoutError'),
+  ])(
+    'POST /run explica el tiempo agotado sin filtrar detalles ($name)',
+    async (cause) => {
+      providerError = cause;
+      const server = app.getHttpServer();
+      const created = await request(server)
+        .post('/api/agents')
+        .send({ name: 'Timeout', instructions: 'Responde' })
+        .expect(201);
+      const res = await request(server)
+        .post(`/api/agents/${created.body.id}/run`)
+        .send({ query: 'Hola' })
+        .expect(502);
+      expect(res.body).toEqual({
+        statusCode: 502,
+        error: 'AI_PROVIDER_TIMEOUT',
+        message:
+          'El proveedor de IA tardó demasiado en responder. Inténtalo de nuevo.',
+      });
+      await request(server).get('/api/ai/status').expect(200);
+    },
+  );
 });

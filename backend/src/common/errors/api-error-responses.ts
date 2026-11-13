@@ -1,6 +1,7 @@
 import {
   ApiBadRequestResponse,
   ApiInternalServerErrorResponse,
+  ApiTooManyRequestsResponse,
 } from '@nestjs/swagger';
 import { errorResponseSchema } from './error-response.schema.js';
 
@@ -29,5 +30,22 @@ export const ApiUnexpectedErrorResponse = () =>
       statusCode: 500,
       error: 'INTERNAL_ERROR',
       message: 'Ocurrió un error inesperado en el servidor',
+    },
+  });
+
+export const ApiRateLimitErrorResponse = (limit = 100) =>
+  ApiTooManyRequestsResponse({
+    description: `Límite de ${limit} peticiones por minuto por IP y ruta. En /run se comparte entre todos los agentes.`,
+    standardSchema: errorResponseSchema,
+    headers: {
+      'Retry-After': {
+        description: 'Segundos que hay que esperar antes de reintentar',
+        schema: { type: 'integer' },
+      },
+    },
+    example: {
+      statusCode: 429,
+      error: 'TOO_MANY_REQUESTS',
+      message: 'Demasiadas peticiones. Espera un momento e inténtalo de nuevo.',
     },
   });

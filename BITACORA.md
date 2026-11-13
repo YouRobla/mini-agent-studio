@@ -1632,4 +1632,64 @@ el sistema esté más presentable y pulido».
   esperaban 10 minutos por defecto: ahora 45 s y un reintento.
 - **Revisión:** lint, tipos, 22 pruebas unitarias y 15 e2e; con el servidor en marcha, 10
   consultas reciben su respuesta y la 11.ª recibe 429.
-- **Pendiente:** una prueba e2e del 429, el 429 en Swagger y el README.
+- **Pendiente al cerrar esta etapa:** una prueba e2e del 429, el 429 en Swagger y el
+  README. Resuelto en la etapa 54.
+
+---
+
+## 2026-11-13 · Etapa 54 — Cierre de los pendientes y verificación final
+
+- **Pedido mío:** completar los cinco pendientes de la etapa 53 y dar un veredicto
+  final basado en comprobaciones. Codex hizo esta revisión y los cambios.
+- **429 automatizado:** pruebas e2e con la configuración real: diez consultas válidas
+  compartidas entre dos agentes, rechazo de la undécima sin llamar al proveedor,
+  `Retry-After`, independencia entre IP y el límite general de 100. Las consultas
+  inválidas también cuentan. La primera ejecución agotó el tiempo del test por las
+  pausas de 500 ms del mock; la prueba del límite sustituye solo esa respuesta por una
+  inmediata y conserva el guard real.
+- **Documentación:** 429 en todas las operaciones de Swagger, cabecera `Retry-After`,
+  timeout del proveedor, tabla de errores y tecnologías del README, decisión y autoría
+  en `AI_USAGE.md`. Corregida la descripción anterior: el guard predeterminado cuenta
+  **por IP y ruta**, no un total acumulado entre todas las rutas. `/run` comparte su
+  contador entre todos los agentes.
+- **Timeout:** `AI_PROVIDER_TIMEOUT`, HTTP 502 y mensaje propio en español para los
+  timeouts de OpenAI y Anthropic. Además de 45 s por intento y un reintento, un
+  `AbortSignal` limita el total a 100 s. La afirmación anterior «dos intentos de 45 s
+  caben en nginx» ignoraba las pausas `Retry-After`. Prueba con ambos SDK reales y
+  transporte simulado: un `Retry-After` de 600 s se cancela al vencer el plazo (reloj
+  acortado en la prueba, sin llamadas a servicios de pago).
+- **Proxy:** nginx sustituye `X-Forwarded-For` por `$remote_addr`. Antes conservaba
+  cabeceras del cliente, que podían alterar la IP considerada al entrar desde una red
+  privada. Comprobado contra nginx real: variar la cabecera en cada consulta no permite
+  saltarse el límite. La confianza en proxies locales sigue siendo para esta app local;
+  otro despliegue necesita configurar sus proxies concretos.
+- **Verificación automática:** lint, compilación de backend y frontend, tipos del
+  backend, **25 unitarias y 21 e2e**, `git diff --check` y `npm audit` completo en ambos
+  proyectos (0 vulnerabilidades).
+- **Docker real:** imágenes construidas desde el código actualizado, ambos servicios
+  `healthy`; página, ruta del frontend, Swagger y API; crear y consultar en mock; 429
+  en la undécima petición; persistencia después de reiniciar. Se usó un proyecto y
+  volumen de prueba, puerto 18080 y sin cargar el `.env` personal.
+- **Incidencia del equipo:** Docker tiene agotados sus rangos automáticos por redes de
+  otros proyectos. El primer arranque falló por ello; la comprobación usó un override
+  temporal con una subred libre (`10.254.253.0/24`). No se borraron redes ajenas ni se
+  fijó esa subred particular en el compose del repositorio.
+- **npm real:** `npm run start` y Vite en puertos aislados, SQLite en memoria y mock;
+  página, ruta del frontend, estado, Swagger, creación y consulta a través del proxy.
+  En el navegador, respuesta visible y peticiones de API al mismo origen.
+- **Analizadores Docker:** sin hallazgos críticos ni altos. Los avisos de `COPY . .` y
+  `HEALTHCHECK` están cubiertos por `.dockerignore` y los healthchecks de Compose.
+  Límites de memoria y redes explícitas siguen fuera del alcance local, como en etapa 49.
+- **Navegador:** consulta real al mock y mensaje de 429 real visibles; conserva el texto
+  para reintentar. El mensaje de timeout también se comprobó en la UI interceptando una
+  respuesta 502; su comportamiento en la API está cubierto por las e2e. No se repitieron
+  llamadas de pago a OpenAI ni Anthropic.
+- **Alcance del veredicto:** preparado como prueba técnica local. Sin autenticación ni
+  aislamiento por usuario, cuotas distribuidas o garantía contra caídas. Un healthcheck
+  marca el estado: no reinicia por sí solo un proceso bloqueado. El README lo aclara.
+- **Cierre solicitado:** revisión de coherencia de README, `AI_USAGE.md`, esta bitácora
+  y la guía del frontend; commit sin coautor y publicación en GitHub autorizados por mí.
+- **Fuentes contrastadas con las dependencias instaladas:**
+  [NestJS: rate limiting](https://docs.nestjs.com/security/rate-limiting),
+  [Express: proxies](https://expressjs.com/en/guide/behind-proxies/) y
+  [SDK TypeScript de OpenAI](https://developers.openai.com/api/reference/typescript).

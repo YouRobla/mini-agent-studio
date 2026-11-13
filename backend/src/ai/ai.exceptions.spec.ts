@@ -1,3 +1,5 @@
+import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 import { describe, expect, it } from 'vitest';
 import { aiProviderErrorFor } from './ai.exceptions.js';
 
@@ -15,6 +17,19 @@ describe('aiProviderErrorFor', () => {
     expect(aiProviderErrorFor({ status: 429 }).code).toBe(
       'AI_PROVIDER_RATE_LIMIT',
     );
+  });
+
+  it('identifica los timeouts de ambos SDK y el plazo total', () => {
+    for (const cause of [
+      new OpenAI.APIConnectionTimeoutError(),
+      new Anthropic.APIConnectionTimeoutError(),
+      new DOMException('Timeout', 'TimeoutError'),
+    ]) {
+      const error = aiProviderErrorFor(cause);
+      expect(error.getStatus()).toBe(502);
+      expect(error.code).toBe('AI_PROVIDER_TIMEOUT');
+      expect(error.message).toContain('tardó demasiado');
+    }
   });
 
   it('usa el error genérico para cualquier otro fallo', () => {

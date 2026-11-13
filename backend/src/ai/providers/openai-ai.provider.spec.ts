@@ -31,15 +31,18 @@ describe('OpenAiProvider', () => {
     const provider = new OpenAiProvider(client, 'gpt-6.1-terra');
 
     await expect(provider.generate(request)).resolves.toBe('Más corto.');
-    expect(create).toHaveBeenCalledWith({
-      model: 'gpt-6.1-terra',
-      instructions: 'Eres un asistente que resume textos',
-      input: [
-        { role: 'user', content: 'Resume esto' },
-        { role: 'assistant', content: 'Un resumen' },
-        { role: 'user', content: 'Ahora más corto' },
-      ],
-    });
+    expect(create).toHaveBeenCalledWith(
+      {
+        model: 'gpt-6.1-terra',
+        instructions: 'Eres un asistente que resume textos',
+        input: [
+          { role: 'user', content: 'Resume esto' },
+          { role: 'assistant', content: 'Un resumen' },
+          { role: 'user', content: 'Ahora más corto' },
+        ],
+      },
+      { signal: expect.any(AbortSignal) },
+    );
   });
 
   it('trata una respuesta sin texto como fallo del proveedor', async () => {

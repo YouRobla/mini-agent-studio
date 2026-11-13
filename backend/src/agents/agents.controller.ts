@@ -18,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import {
+  ApiRateLimitErrorResponse,
   ApiUnexpectedErrorResponse,
   ApiValidationErrorResponse,
 } from '../common/errors/api-error-responses.js';
@@ -50,6 +51,7 @@ import { AgentsService } from './agents.service.js';
  * no cambian su comportamiento.
  */
 @ApiTags('Agentes')
+@ApiRateLimitErrorResponse()
 @ApiUnexpectedErrorResponse()
 @Controller('agents')
 export class AgentsController {
@@ -128,6 +130,7 @@ export class AgentsController {
   // 200 y no 201: ejecutar una consulta no crea ningún recurso.
   // Cada consulta llama al proveedor de IA, que cuesta dinero: 10 por minuto.
   @Throttle({ default: { ttl: 60_000, limit: 10 } })
+  @ApiRateLimitErrorResponse(10)
   @Post(':id/run')
   @HttpCode(200)
   @ApiOperation({

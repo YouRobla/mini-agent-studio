@@ -45,6 +45,7 @@ describe('AnthropicAiProvider', () => {
           { role: 'user', content: 'Ahora más corto' },
         ],
       }),
+      { signal: expect.any(AbortSignal) },
     );
   });
 

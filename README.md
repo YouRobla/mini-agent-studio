@@ -105,7 +105,8 @@ Navegador ──► :8080 [ frontend: nginx ] ── /api ──► [ backend: N
 - **Datos:** la base SQLite vive en el volumen `agents-data`, así que los agentes
   sobreviven a reiniciar o reconstruir los contenedores.
 - **Salud:** el compose comprueba los dos servicios, y el frontend espera a que el
-  backend responda antes de arrancar.
+  backend responda antes de arrancar. `restart: unless-stopped` reinicia un proceso que
+  termina; un estado `unhealthy` por sí solo no reinicia el contenedor.
 
 **IA real con Docker:** `backend/.env` es opcional. Si existe, Compose pasa sus variables
 (`AI_PROVIDER`, la clave y `AI_MODEL`) al contenedor del backend al arrancarlo (`env_file`);
@@ -438,6 +439,25 @@ curl -X POST http://localhost:3000/api/agents/1c4c8e63-2f0e-4c24-aad6-57b31dfdc2
 
 La respuesta del mock indica el turno: `Tu consulta #2 fue: «Ahora hazlo más corto».`
 
+### Límite de peticiones y tiempo de espera
+
+La API usa `@nestjs/throttler`: **100 peticiones por minuto por IP y ruta**;
+`POST /api/agents/:id/run` permite **10 por minuto por IP**, compartidas entre todos
+los agentes. También cuentan las peticiones inválidas. Al superar el límite responde
+`429` con el formato habitual y la cabecera `Retry-After` en segundos. Se aplica tanto
+con npm como con Docker; el contador vive en memoria y se reinicia con el backend.
+
+Los SDK de IA tienen 45 segundos por intento y como máximo un reintento. Además, un
+plazo total de 100 segundos cancela la llamada, incluidas las pausas de reintento del
+proveedor, antes de los 120 segundos de nginx. El usuario recibe `502` con
+`AI_PROVIDER_TIMEOUT` y «El proveedor de IA tardó demasiado en responder. Inténtalo
+de nuevo.». El chat muestra ese mensaje igual que los demás errores de la API.
+
+nginx sustituye `X-Forwarded-For` por la IP de su conexión; no conserva la cabecera
+que envíe el cliente. El backend confía en proxies de la red local. Esa configuración
+corresponde a esta app local: hay que ajustarla a los proxies concretos antes de
+exponer directamente la API en otra infraestructura.
+
 ### Validación y errores
 
 | Campo | Regla |
@@ -463,6 +483,8 @@ Los espacios al inicio y al final se recortan. Todos los errores tienen el mismo
 | `400` | `VALIDATION_ERROR` | Faltan campos, superan el máximo o un parámetro de consulta no es válido (`details` indica cuáles) |
 | `400` | `BAD_REQUEST` | El cuerpo no es JSON válido |
 | `404` | `AGENT_NOT_FOUND` | El agente no existe |
+| `429` | `TOO_MANY_REQUESTS` | Se superó el límite de la API; esperar los segundos de `Retry-After` |
+| `502` | `AI_PROVIDER_TIMEOUT` | El proveedor tardó demasiado; volver a intentar la consulta |
 | `502` | `AI_PROVIDER_AUTH_ERROR` | El proveedor de IA rechazó la clave de API (revisar `backend/.env`); reintentar no sirve |
 | `502` | `AI_PROVIDER_RATE_LIMIT` | El proveedor de IA recibe demasiadas consultas; esperar y reintentar |
 | `502` | `AI_PROVIDER_ERROR` | Cualquier otro fallo del proveedor de IA |
@@ -472,8 +494,8 @@ Los espacios al inicio y al final se recortan. Todos los errores tienen el mismo
 
 ```bash
 cd backend
-npm test          # 22 pruebas unitarias
-npm run test:e2e  # 15 pruebas de la API completa con Supertest
+npm test          # 25 pruebas unitarias
+npm run test:e2e  # 21 pruebas de la API completa con Supertest
 ```
 
 | Qué se prueba | Dónde |
@@ -481,12 +503,14 @@ npm run test:e2e  # 15 pruebas de la API completa con Supertest
 | Servicio: paginación, búsqueda sin tildes, orden, detalle, editar y eliminar | `agents.service.spec.ts` |
 | Fábrica de proveedores: simulado por defecto, modelo por defecto o `AI_MODEL`, error claro sin clave, proveedor desconocido | `ai-provider.factory.spec.ts` |
 | Adaptadores de Claude y OpenAI: qué envían (instrucciones, historial y consulta) y cómo tratan un rechazo o una respuesta vacía | `providers/*.spec.ts` |
-| Errores del proveedor: clave inválida, demasiadas consultas y el resto | `ai.exceptions.spec.ts` |
-| API completa: flujo del §8 (crear → consultar), conversación con historial, validación, `404`, `/api/ai/status`, documentación, `PUT`, `DELETE` y proveedor caído (`502` sin detalles internos) | `test/agents.e2e-spec.ts` |
+| Errores del proveedor: clave inválida, demasiadas consultas, timeout de ambos SDK y el resto | `ai.exceptions.spec.ts` |
+| Plazo total: los SDK reales cancelan una pausa `Retry-After` larga, con transporte simulado y sin red | `ai.request.spec.ts` |
+| Límites: 10 consultas entre distintos agentes, 100 peticiones generales, `429`, `Retry-After`, aislamiento entre IP y rechazo sin llamar a la IA | `test/rate-limit.e2e-spec.ts` |
+| API completa: flujo del §8 (crear → consultar), conversación con historial, validación, `404`, `/api/ai/status`, documentación, `PUT`, `DELETE` y proveedor caído o lento (`502` sin detalles internos) | `test/agents.e2e-spec.ts` |
 
 Las pruebas usan una base SQLite en memoria y no tocan `backend/data/`. Ninguna llama a una
-API de IA real: los adaptadores se prueban con un cliente falso y las e2e usan siempre el
-proveedor simulado.
+API de IA real: los adaptadores usan clientes falsos o los SDK con transporte simulado;
+las e2e usan el proveedor simulado o uno que falla de forma controlada.
 
 ## Tecnologías y razones
 
@@ -499,6 +523,7 @@ proveedor simulado.
 | Sonner | Avisos de éxito (cola, cierre a los 4 s, pausa con el ratón) sin mantener un sistema propio; se pintan con el `alert` de daisyUI y siguen el tema |
 | Tailwind CSS 4 + daisyUI 5 | Estándar visual consistente con poco código; es solo CSS y se compila localmente. Dos temas propios (claro y oscuro) con contraste AA (4.5:1 como mínimo) |
 | NestJS 12 | Su inyección de dependencias hace explícita la separación entre controlador, lógica, persistencia y proveedor de IA |
+| `@nestjs/throttler` | Límite por IP en todas las rutas, más estricto al consultar IA; funciona con npm y Docker |
 | Zod en el backend | NestJS 12 lo valida de forma nativa (`StandardSchemaValidationPipe`), sin clases DTO |
 | Swagger (`@nestjs/swagger` 12) | Documenta y permite probar los endpoints desde el navegador; genera los esquemas a partir de Zod, sin escribir las reglas dos veces |
 | SQLite (`node:sqlite`) | Persistencia real con escritura segura, sin instalar dependencias ni un servidor |
@@ -519,8 +544,11 @@ razonamiento completo está en `BITACORA.md`.
 - Las reglas de validación están duplicadas en frontend y backend.
 - La conversación vive en la memoria del navegador: se pierde al recargar la página.
 - El modo mock no genera respuestas reales: devuelve el agente, sus instrucciones y la consulta.
-  Las respuestas reales necesitan una clave de API de Claude.
+  Las respuestas reales necesitan una clave de API de Claude u OpenAI.
 - La respuesta llega completa, no se va mostrando mientras se genera (sin streaming).
+- No hay autenticación ni separación de datos por usuario: está pensada como prueba local.
+- Los límites se guardan por proceso y por IP; no son una cuota de gasto ni se comparten
+  entre réplicas, y quienes compartan IP comparten cupo.
 - Las pruebas cubren el backend; el frontend no tiene pruebas automatizadas.
 - El selector de la vista Consultar carga como máximo 100 agentes. Un agente fuera de esa
   lista se puede consultar igualmente desde el listado, porque se busca por su id.

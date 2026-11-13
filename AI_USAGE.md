@@ -140,7 +140,7 @@ principal, teniendo en cuenta los extras?»*
 
 ## Qué hizo la IA y qué decidí o cambié yo
 
-La IA generó el código del backend y del frontend siguiendo el diseño acordado. Las
+La IA generó el código del backend y del frontend siguiendo el diseño acordado.
 
 | Parte del código | La escribió | Lo que decidí o cambié yo |
 | --- | --- | --- |
@@ -154,8 +154,10 @@ La IA generó el código del backend y del frontend siguiendo el diseño acordad
 | Consolidaciones, proxy de Vite, Sonner, `queryOptions`, errores | Claude Code (Opus 5.5) | Cada cambio tras pedir un análisis y aprobarlo; mantuve `window.location.search` cuando la IA quiso revertirlo |
 | Chat de varios turnos, fábrica de proveedores, adaptadores de Claude y OpenAI, errores del proveedor | Claude Code (Opus 5.5) | Pedí el chat continuo y poder cambiar entre Claude y ChatGPT; elegí los modelos ligeros (Claude Haiku 5.5 y `gpt-6.1-terra`); descarté runonweb y un modelo en el navegador porque el PDF pide que responda el backend; pedí mostrar el Markdown de las respuestas con formato |
 | Docker (frontend con nginx + backend) | Claude Code (Opus 5.5) | Docker como segunda vía (etapa 2). Probé un solo contenedor, pero el backend pasaba a servir el frontend; pedí separarlos por contenedor y que se buscara el estándar antes de implementar, y elegí nginx |
+| Límite de peticiones y tiempo de espera | Claude Code (etapa 53); Codex (cierre y verificación, etapa 54) | A raíz de la pregunta de entrevista, elegí proteger la API con el módulo oficial; pedí completar las pruebas, los mensajes de error, la documentación y la comprobación en Docker |
 | Icono y favicon | Worker Antigravity (`gemini-4-hydrogen-xhigh`) | Delegarlo al modelo con generación de imágenes; cambiar la estrella por un robot de chat porque no comunicaba nada; el lápiz blanco por estética |
-decisiones de diseño las tomé yo, y en varias corregí lo que la IA proponía:
+
+Las decisiones de diseño las tomé yo, y en varias corregí lo que la IA proponía:
 
 | Tema | Propuesta de la IA | Mi decisión |
 | --- | --- | --- |
@@ -173,6 +175,13 @@ visual de nodos, tipos de agente preseleccionables y Zustand. React Router lo de
 principio, con una sola pantalla, y lo incorporé cuando pasé a dos vistas.
 
 ### Lo que hice yo
+
+- **Resistencia de la API:** planteé la pregunta de entrevista sobre cómo evitar que
+  se caiga y decidí limitar peticiones en NestJS, también cuando se arranca con npm.
+  Pedí terminar los pendientes de la etapa 53 y un veredicto final con pruebas. Codex
+  completó el 429 automatizado y documentado, el mensaje de timeout y la verificación
+  en Docker; en la revisión corrigió la cabecera de IP de nginx y añadió un plazo total
+  de 100 segundos, porque los reintentos también pueden incluir pausas.
 
 - **Dirigí y delegué:** el código lo generaron los agentes. Mi trabajo fue decidir qué
   construir, escribir los encargos, revisar cada resultado en el navegador y pedir

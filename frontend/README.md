@@ -254,6 +254,11 @@ backend está apagado), se trata como «sin conexión»:
 - `isNotFound(error)`: si fue un 404.
 - `isRetryable(error)`: si repetir la petición puede servir (sin conexión o `5xx`).
 
+El chat muestra también los mensajes del backend para `429` (`TOO_MANY_REQUESTS`) y
+`502` (`AI_PROVIDER_TIMEOUT`), y conserva la consulta escrita cuando falla el envío.
+Los límites y tiempos de espera se aplican en el backend; sus valores están en el
+[README principal](../README.md#límite-de-peticiones-y-tiempo-de-espera).
+
 ## 4. Dónde vive cada estado
 
 | Estado | Dónde | Ejemplo |

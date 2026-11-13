@@ -33,7 +33,7 @@ export const ApiAgentNotFoundResponse = () =>
 export const ApiAiProviderErrorResponse = () =>
   ApiBadGatewayResponse({
     description:
-      'El proveedor de IA falló. `error` dice por qué: AI_PROVIDER_AUTH_ERROR (clave de API inválida), AI_PROVIDER_RATE_LIMIT (demasiadas consultas) o AI_PROVIDER_ERROR (cualquier otro fallo).',
+      'El proveedor de IA falló. `error` dice por qué: AI_PROVIDER_AUTH_ERROR (clave de API inválida), AI_PROVIDER_RATE_LIMIT (demasiadas consultas), AI_PROVIDER_TIMEOUT (tiempo de espera agotado) o AI_PROVIDER_ERROR (cualquier otro fallo).',
     standardSchema: errorResponseSchema,
     example: {
       statusCode: 502,

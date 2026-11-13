@@ -1,4 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
+import { APIConnectionTimeoutError as OpenAiTimeoutError } from 'openai';
+import { APIConnectionTimeoutError as AnthropicTimeoutError } from '@anthropic-ai/sdk';
 import { AppException } from '../common/errors/app.exception.js';
 
 /** El proveedor de IA falló. El código y el mensaje dicen por qué, si se sabe. */
@@ -17,6 +19,16 @@ export class AiProviderException extends AppException {
  * clave inválida reintentar no sirve, así que el mensaje lo dice.
  */
 export function aiProviderErrorFor(error: unknown): AiProviderException {
+  if (
+    error instanceof OpenAiTimeoutError ||
+    error instanceof AnthropicTimeoutError ||
+    (error instanceof DOMException && error.name === 'TimeoutError')
+  ) {
+    return new AiProviderException(
+      'AI_PROVIDER_TIMEOUT',
+      'El proveedor de IA tardó demasiado en responder. Inténtalo de nuevo.',
+    );
+  }
   const status =
     typeof error === 'object' && error !== null && 'status' in error
       ? error.status

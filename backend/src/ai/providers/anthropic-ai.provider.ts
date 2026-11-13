@@ -1,5 +1,6 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import type { AiProvider, AiRequest } from '../ai-provider.js';
+import { withAiDeadline } from '../ai.request.js';
 
 /** Tope de la respuesta. Con Haiku, 16 000 tokens de salida cuestan menos de un céntimo. */
 const MAX_TOKENS = 16000;
@@ -21,14 +22,19 @@ export class AnthropicAiProvider implements AiProvider {
   ) {}
 
   async generate({ instructions, history, query }: AiRequest): Promise<string> {
-    const response = await this.client.messages.create({
-      model: this.model,
-      max_tokens: MAX_TOKENS,
-      system: instructions,
-      // En un chat basta poco razonamiento: respuestas más rápidas y baratas.
-      output_config: { effort: 'low' },
-      messages: [...history, { role: 'user', content: query }],
-    });
+    const response = await withAiDeadline((signal) =>
+      this.client.messages.create(
+        {
+          model: this.model,
+          max_tokens: MAX_TOKENS,
+          system: instructions,
+          // En un chat basta poco razonamiento: respuestas más rápidas y baratas.
+          output_config: { effort: 'low' },
+          messages: [...history, { role: 'user', content: query }],
+        },
+        { signal },
+      ),
+    );
 
     // Un rechazo del modelo llega con estado 200: hay que mirarlo antes de leer el texto.
     if (response.stop_reason === 'refusal') {

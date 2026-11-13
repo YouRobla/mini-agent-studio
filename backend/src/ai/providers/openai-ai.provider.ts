@@ -1,5 +1,6 @@
 import type OpenAI from 'openai';
 import type { AiProvider, AiRequest } from '../ai-provider.js';
+import { withAiDeadline } from '../ai.request.js';
 
 /**
  * Proveedor real con la API de OpenAI (Responses API). Adapta el contrato
@@ -21,11 +22,16 @@ export class OpenAiProvider implements AiProvider {
   ) {}
 
   async generate({ instructions, history, query }: AiRequest): Promise<string> {
-    const response = await this.client.responses.create({
-      model: this.model,
-      instructions,
-      input: [...history, { role: 'user', content: query }],
-    });
+    const response = await withAiDeadline((signal) =>
+      this.client.responses.create(
+        {
+          model: this.model,
+          instructions,
+          input: [...history, { role: 'user', content: query }],
+        },
+        { signal },
+      ),
+    );
 
     // Sin texto (rechazo del modelo o respuesta incompleta) cuenta como fallo.
     if (!response.output_text) {
